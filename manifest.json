@@ -1,0 +1,19 @@
+{
+  "name": "FIT TRACKER 2",
+  "short_name": "FIT TRACKER",
+  "description": "체중 관리는 꾸준함이 답입니다 — 식단·체중·운동·물·습관·AI 코칭",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
