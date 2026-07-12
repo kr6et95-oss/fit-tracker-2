@@ -7,9 +7,7 @@
 
 ## 온라인 (어디서나)
 
-GitHub Pages 배포 후:
-
-`https://<GitHub아이디>.github.io/fit-tracker-2/`
+**https://kr6et95-oss.github.io/fit-tracker-2/**
 
 아이폰 Safari로 접속 → 공유 → **홈 화면에 추가** 하면 앱처럼 쓸 수 있습니다.
 
