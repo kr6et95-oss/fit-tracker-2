@@ -5,3 +5,8 @@ Thumbs.db
 .env.*
 .vscode/
 .idea/
+
+gh-login.bat
+push-now.bat
+gh-auth*.log
+*.bat
