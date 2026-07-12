@@ -703,7 +703,39 @@
       background: linear-gradient(135deg, #ecfdf5, #d1fae5);
       border-color: #6ee7b7; color: #065f46;
     }
-  </style>
+  
+    .comp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    @media (max-width: 380px) { .comp-row { grid-template-columns: 1fr 1fr; } }
+    .comp-mini {
+      border-radius: 14px; padding: 10px 10px 9px;
+      background: linear-gradient(145deg, #f5f3ff, #eef2ff);
+      border: 1px solid var(--line);
+    }
+    .comp-mini .cm-l { font-size: .68rem; color: var(--muted); margin-bottom: 2px; }
+    .comp-mini .cm-v { font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: -.02em; }
+    .comp-mini .cm-s { font-size: .65rem; color: var(--muted); margin-top: 2px; }
+    .wo-mode { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .wo-mode button {
+      flex: 1; min-width: 90px; padding: 8px 10px; border-radius: 999px;
+      background: #f3f0ff; border: 1px solid var(--line); font-size: .78rem; font-weight: 700;
+    }
+    .wo-mode button.on {
+      background: linear-gradient(135deg, var(--p1), var(--p2)); color: #fff; border-color: transparent;
+    }
+    .share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .migrate-box {
+      background: linear-gradient(145deg, #eef2ff, #faf5ff);
+      border: 1px solid #ddd6fe; border-radius: 16px; padding: 12px; margin-bottom: 10px;
+    }
+    .migrate-box h3 { font-size: .92rem; font-weight: 800; margin-bottom: 6px; }
+    .migrate-preview {
+      font-size: .78rem; line-height: 1.5; color: var(--muted);
+      background: #fff; border-radius: 12px; padding: 10px; margin: 8px 0;
+      border: 1px solid var(--line); max-height: 160px; overflow: auto; white-space: pre-wrap;
+    }
+    .sync-steps { font-size: .8rem; line-height: 1.55; color: var(--muted); margin: 8px 0 10px; padding-left: 1.1em; }
+    .sync-steps li { margin-bottom: 4px; }
+</style>
 </head>
 <body>
   <!-- First-run setup -->
@@ -736,7 +768,8 @@
       </div>
       <button class="btn btn-p" onclick="finishSetup()">시작하기 🚀</button>
       <div style="height:8px"></div>
-      <button class="btn btn-g" onclick="tryImportV1()">1탄 데이터 가져오기</button>
+      <button class="btn btn-g" onclick="tryImportV1(false)">1탄 데이터 가져오기</button>
+      <p class="muted" id="setupV1Hint" style="margin-top:10px;line-height:1.45;font-size:.75rem">같은 Safari/Chrome에 1탄 기록이 있으면 프로필·체중·식단을 이어받을 수 있어요.</p>
     </div>
   </div>
 
@@ -747,7 +780,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">2.7</div>
+        <div class="ver">2.8</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -759,8 +792,11 @@
     </header>
 
     <div class="banner" id="importBanner">
-      <strong>1탄 설정 발견!</strong> 아래에서 「1탄 가져오기」를 누르면 프로필을 이어받을 수 있어요.
-      <div style="margin-top:8px"><button class="btn btn-sm btn-s" style="width:auto" onclick="tryImportV1()">가져오기</button></div>
+      <strong>1탄 데이터 발견!</strong> 프로필·체중·식단을 2탄으로 이어받을 수 있어요. (사진 제외)
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-s" style="width:auto" onclick="tryImportV1(false)">가져오기</button>
+        <button class="btn btn-sm btn-g" style="width:auto" onclick="show('more'); moreTab('set'); setTimeout(refreshV1Preview, 50)">미리보기</button>
+      </div>
     </div>
 
     <!-- HOME -->
@@ -869,7 +905,12 @@
           <div class="stat s1" style="min-height:auto"><div class="l">오늘/최근</div><div class="v" id="hW2" style="font-size:1.2rem">—</div><div class="s" id="hWd2">—</div></div>
           <div class="stat s3" style="min-height:auto"><div class="l">7일 평균</div><div class="v" id="hWAvg" style="font-size:1.2rem">—</div><div class="s" id="hWAvgSub">측정 n회</div></div>
         </div>
-        <p class="muted" id="hWAvgHint" style="margin-top:8px;line-height:1.45">저울은 매일 흔들립니다. 코치는 주 평균을 더 믿습니다.</p>
+        <div class="comp-row" style="margin-top:10px" id="hCompRow">
+          <div class="comp-mini"><div class="cm-l">체지방</div><div class="cm-v" id="hFat">—</div><div class="cm-s" id="hFatSub">%</div></div>
+          <div class="comp-mini"><div class="cm-l">골격근</div><div class="cm-v" id="hMuscle">—</div><div class="cm-s" id="hMuscleSub">kg</div></div>
+          <div class="comp-mini"><div class="cm-l">체수분</div><div class="cm-v" id="hWaterPct">—</div><div class="cm-s" id="hWaterPctSub">%</div></div>
+        </div>
+        <p class="muted" id="hWAvgHint" style="margin-top:8px;line-height:1.45">저울은 매일 흔들립니다. 코치는 주 평균·체성분을 같이 봅니다.</p>
       </div>
 
       <div class="card" style="padding:12px">
@@ -1042,8 +1083,12 @@
         <div class="report-kpi" id="reportKpis"></div>
         <div id="reportInsights"></div>
         <div style="height:10px"></div>
-        <button class="btn btn-p" onclick="shareRecoveryReport()">🖼️ 회복 리포트 이미지 저장·공유</button>
-        <p class="muted" style="margin-top:8px;text-align:center">주간 기준 카드 이미지를 만들어 저장하거나 공유합니다</p>
+        <div class="share-actions">
+          <button class="btn btn-p" onclick="shareRecoveryReport()">🖼️ 회복 카드</button>
+          <button class="btn btn-s" onclick="shareWeeklyFriendReport()">👥 친구 공유</button>
+        </div>
+        <button class="btn btn-g" style="margin-top:8px" onclick="copyWeeklyShareText()">📋 주간 요약 텍스트 복사</button>
+        <p class="muted" style="margin-top:8px;text-align:center">이미지·텍스트로 친구·코치에게 주간 성과를 공유하세요</p>
       </div>
 
       <div class="card">
@@ -1054,6 +1099,12 @@
       <div class="card">
         <div class="card-h"><h2>⚖️ 체중 추이</h2><span class="muted" id="bmiTxt">BMI —</span></div>
         <div class="chart-box"><canvas id="wChart"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>🧬 체성분 추이</h2><span class="muted">체지방% · 골격근 kg</span></div>
+        <div class="chart-box"><canvas id="compChart"></canvas></div>
+        <p class="muted" id="compChartHint" style="margin-top:8px;line-height:1.4">체지방·골격근을 기록하면 그래프가 채워집니다.</p>
       </div>
 
       <div class="card">
@@ -1106,8 +1157,13 @@
           <div class="field"><label>체중 (kg)</label><input id="todayW" type="number" step="0.1" placeholder="64.8" /></div>
           <div class="field"><label>체지방 % (선택)</label><input id="todayFat" type="number" step="0.1" placeholder="24" /></div>
         </div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="field"><label>골격근량 kg (선택)</label><input id="todayMuscle" type="number" step="0.1" placeholder="25.5" /></div>
+          <div class="field"><label>체수분 % (선택)</label><input id="todayWaterPct" type="number" step="0.1" placeholder="52" /></div>
+        </div>
+        <p class="muted" style="margin:6px 0 10px;line-height:1.4;font-size:.72rem">인바디·스마트체중계 수치가 있으면 같이 남겨 두세요. 체중만보다 추이가 선명해집니다.</p>
         <div class="field"><label>메모</label><input id="todayMemo" placeholder="아침 공복, 컨디션 좋음" /></div>
-        <button class="btn btn-p" onclick="saveWeight()">체중 저장</button>
+        <button class="btn btn-p" onclick="saveWeight()">체성분 저장</button>
       </div>
 
       <div class="card">
@@ -1132,13 +1188,25 @@
     <section class="view" id="v-move">
       <div class="card">
         <div class="card-h"><h2>🏃 운동 기록</h2></div>
+        <div class="wo-mode">
+          <button type="button" class="on" id="woModeCardio" onclick="setWoMode('cardio')">🏃 유산소</button>
+          <button type="button" id="woModeStrength" onclick="setWoMode('strength')">🏋️ 근력</button>
+        </div>
         <div class="chips" id="woChips"></div>
-        <div class="field"><label>운동</label><input id="woName" placeholder="러닝, 헬스…" /></div>
+        <div class="field"><label>운동</label><input id="woName" placeholder="러닝, 스쿼트…" /></div>
         <div class="grid2">
           <div class="field"><label>시간 (분)</label><input id="woMin" type="number" placeholder="30" /></div>
           <div class="field"><label>소모 kcal</label><input id="woKcal" type="number" placeholder="200" /></div>
         </div>
-        <button class="btn btn-s" onclick="addWorkout()">운동 저장</button>
+        <div id="woStrengthFields" style="display:none">
+          <div class="grid3" style="margin-top:8px">
+            <div class="field"><label>세트</label><input id="woSets" type="number" min="1" placeholder="4" /></div>
+            <div class="field"><label>회(reps)</label><input id="woReps" type="number" min="1" placeholder="10" /></div>
+            <div class="field"><label>중량 kg</label><input id="woLoad" type="number" step="0.5" placeholder="40" /></div>
+          </div>
+          <p class="muted" style="margin:6px 0 0;font-size:.72rem;line-height:1.4">예: 스쿼트 4세트 × 10회 @ 40kg. 칼로리를 비우면 대략 추정합니다.</p>
+        </div>
+        <button class="btn btn-s" style="margin-top:10px" onclick="addWorkout()">운동 저장</button>
       </div>
       <div class="card">
         <div class="card-h"><h2>오늘 운동</h2><span class="muted" id="woSum">0분 · 0kcal</span></div>
@@ -1246,29 +1314,55 @@
           <p class="muted" id="geminiSetHint" style="margin-top:8px">미연결</p>
         </div>
         <div class="card">
-          <div class="card-h"><h2>💾 백업 · 복원 (아이폰 권장)</h2></div>
+          <div class="card-h"><h2>💾 백업 · 기기 동기화</h2></div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5">
-            아이폰은 홈 화면 앱을 지우면 기록이 날아갈 수 있어요.
-            <strong>파일 앱 / iCloud</strong>에 백업해 두면 다시 깔아도 복구할 수 있습니다.
+            서버 계정 없이 <strong>백업 파일 + iCloud/드라이브</strong>로 기기 간 데이터를 맞출 수 있어요.
+            아이폰 홈 화면 앱을 지우면 기록이 사라질 수 있으니 주기적으로 백업하세요.
           </p>
           <p class="muted" id="backupHint" style="margin-bottom:12px;line-height:1.45">최근 백업: 없음</p>
+          <div class="migrate-box">
+            <h3>🔄 다른 기기와 맞추기</h3>
+            <ol class="sync-steps">
+              <li>기기 A에서 <strong>백업 저장·공유</strong> → iCloud/드라이브에 저장</li>
+              <li>기기 B에서 같은 파일을 연 뒤 <strong>복원</strong> 또는 <strong>병합</strong></li>
+              <li><strong>덮어쓰기</strong>는 현재 기기 데이터를 지우고, <strong>병합</strong>은 날짜별로 합칩니다</li>
+            </ol>
+          </div>
           <button class="btn btn-p" onclick="exportData()">📤 백업 저장 · 공유</button>
           <div style="height:8px"></div>
-          <button class="btn btn-s" onclick="document.getElementById('backupFile').click()">📥 백업 파일로 복원</button>
+          <button class="btn btn-s" onclick="document.getElementById('backupFile').click()">📥 파일로 복원 (덮어쓰기)</button>
+          <div style="height:8px"></div>
+          <button class="btn btn-g" onclick="document.getElementById('backupFileMerge').click()">🔀 파일로 병합 (추천)</button>
           <input id="backupFile" type="file" accept="application/json,.json,text/plain" style="display:none" onchange="importBackupFromFile(event)" />
+          <input id="backupFileMerge" type="file" accept="application/json,.json,text/plain" style="display:none" onchange="importBackupFromFile(event, true)" />
           <div style="height:12px"></div>
           <div class="field">
-            <label>또는 JSON 붙여넣기 복원</label>
-            <textarea id="backupPaste" placeholder='백업 파일 내용을 붙여넣은 뒤 아래 버튼' style="min-height:90px"></textarea>
+            <label>또는 JSON 붙여넣기</label>
+            <textarea id="backupPaste" placeholder='백업 파일 내용을 붙여넣은 뒤 복원/병합' style="min-height:90px"></textarea>
           </div>
-          <button class="btn btn-g" onclick="importBackupFromPaste()">붙여넣기로 복원</button>
+          <div class="grid2">
+            <button class="btn btn-g" onclick="importBackupFromPaste(false)">덮어쓰기 복원</button>
+            <button class="btn btn-s" onclick="importBackupFromPaste(true)">병합 복원</button>
+          </div>
           <p class="muted" style="margin-top:10px;line-height:1.45">
             팁: 백업 → 공유 시트에서 <strong>파일에 저장</strong> → iCloud Drive 추천
           </p>
         </div>
         <div class="card">
-          <button class="btn btn-g" onclick="tryImportV1()">1탄 데이터 가져오기</button>
-          <div style="height:8px"></div>
+          <div class="card-h"><h2>📦 1탄 → 2탄 마이그레이션</h2></div>
+          <div class="migrate-box" id="v1DetectBox">
+            <h3>자동 감지</h3>
+            <div class="migrate-preview" id="v1Preview">검사 중…</div>
+            <button class="btn btn-p" id="v1ImportBtn" onclick="tryImportV1(false)">1탄 데이터 가져오기</button>
+            <div style="height:8px"></div>
+            <button class="btn btn-g" onclick="tryImportV1(true)">1탄 데이터 병합 가져오기</button>
+          </div>
+          <p class="muted" style="margin-bottom:8px;line-height:1.45">
+            같은 브라우저에 1탄이 없거나 다른 기기였다면, 1탄 백업 JSON이 있을 때 아래에서 가져올 수 있어요.
+          </p>
+          <button class="btn btn-s" onclick="document.getElementById('v1File').click()">📁 1탄 JSON 파일 가져오기</button>
+          <input id="v1File" type="file" accept="application/json,.json,text/plain" style="display:none" onchange="importV1FromFile(event)" />
+          <div style="height:12px"></div>
           <button class="btn btn-g" style="color:#e11d48" onclick="resetAll()">전체 초기화</button>
         </div>
       </div>
@@ -1354,16 +1448,32 @@
     const KEY = 'fit-tracker-2-v1';
     const FOODS = (window.FT_FOODS || []).map(f => ({ n: f.n, cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat, k: f.k || '' }));
     const FOOD_CATS = window.FT_FOOD_CATS || ['전체'];
-    const WORKOUTS = [
+    const WORKOUTS_CARDIO = [
       { n: '걷기', min: 30, cal: 120 },
       { n: '러닝', min: 30, cal: 280 },
-      { n: '헬스(근력)', min: 45, cal: 200 },
       { n: '자전거', min: 30, cal: 220 },
       { n: '요가', min: 30, cal: 100 },
       { n: '홈트', min: 20, cal: 150 },
       { n: '스트레칭', min: 15, cal: 40 },
-      { n: '가벼운 산책(회복)', min: 20, cal: 60 }
+      { n: '가벼운 산책(회복)', min: 20, cal: 60 },
+      { n: '줄넘기', min: 15, cal: 160 },
+      { n: '수영', min: 30, cal: 250 }
     ];
+    const WORKOUTS_STRENGTH = [
+      { n: '스쿼트', min: 15, cal: 90, sets: 4, reps: 10, load: 40 },
+      { n: '데드리프트', min: 15, cal: 100, sets: 3, reps: 8, load: 60 },
+      { n: '벤치프레스', min: 15, cal: 90, sets: 4, reps: 8, load: 40 },
+      { n: '오버헤드프레스', min: 12, cal: 70, sets: 3, reps: 8, load: 20 },
+      { n: '바벨로우', min: 12, cal: 80, sets: 3, reps: 10, load: 40 },
+      { n: '런지', min: 12, cal: 70, sets: 3, reps: 12, load: 12 },
+      { n: '풀업/랫풀다운', min: 12, cal: 70, sets: 3, reps: 8, load: 0 },
+      { n: '레그프레스', min: 12, cal: 80, sets: 4, reps: 12, load: 80 },
+      { n: '플랭크', min: 8, cal: 35, sets: 3, reps: 45, load: 0 },
+      { n: '헬스(전신)', min: 45, cal: 200, sets: 0, reps: 0, load: 0 }
+    ];
+    const WORKOUTS = WORKOUTS_CARDIO;
+    let woMode = 'cardio';
+    let compChart = null;
     const HABIT_P = ['물 2L', '야식 금지', '만보 걷기', '단백질 매끼', '11시 전 취침', '식후 산책 10분', '수면 7시간+', '스크린 11시 종료'];
 
     let S = load();
@@ -1739,7 +1849,21 @@
         }
       }
       if (logA) logA.textContent = a ? `주 평균 ${a.avg}kg` : '주 평균 —';
-    }
+    
+      const comp = typeof latestComposition === 'function' ? latestComposition() : null;
+      const hFat = document.getElementById('hFat');
+      const hMus = document.getElementById('hMuscle');
+      const hWp = document.getElementById('hWaterPct');
+      if (hFat) hFat.textContent = comp && comp.fat != null ? comp.fat + '%' : '—';
+      if (hMus) hMus.textContent = comp && comp.muscle != null ? comp.muscle + 'kg' : '—';
+      if (hWp) hWp.textContent = comp && comp.waterPct != null ? comp.waterPct + '%' : '—';
+      const hFatSub = document.getElementById('hFatSub');
+      const hMusSub = document.getElementById('hMuscleSub');
+      const hWpSub = document.getElementById('hWaterPctSub');
+      if (hFatSub) hFatSub.textContent = comp && comp.fat != null ? '최근 측정' : '기록 탭에서 입력';
+      if (hMusSub) hMusSub.textContent = comp && comp.muscle != null ? '골격근량' : '선택 입력';
+      if (hWpSub) hWpSub.textContent = comp && comp.waterPct != null ? '체수분' : '선택 입력';
+}
 
     function sleepPrefs() {
       if (!S.sleepPrefs) {
@@ -1952,6 +2076,8 @@
           water: 0,
           weight: null,
           bodyFat: null,
+          muscle: null,
+          waterPct: null,
           memo: '',
           rest: null
         };
@@ -2158,62 +2284,135 @@
       toast('FIT TRACKER 2 시작! 💪');
     }
 
-    function tryImportV1() {
+    function detectV1Data() {
       try {
         const settings = JSON.parse(localStorage.getItem('settings') || 'null');
         const goals = JSON.parse(localStorage.getItem('goals') || 'null');
-        const records = JSON.parse(localStorage.getItem('records') || '[]');
-        if (!settings && (!records || !records.length)) {
-          return toast('1탄 데이터를 찾지 못했어요');
-        }
-        if (settings) {
-          S.profile = {
-            sex: settings.gender || 'female',
-            age: settings.age || 30,
-            height: settings.height || 165,
-            weight: settings.weight || 60,
-            fat: settings.fat || 0,
-            target: settings.target || settings.weight - 5,
-            activity: settings.activity || 1.55
-          };
-          S.goals = goals && goals.cal ? goals : calcGoals(S.profile);
-          S.setup = true;
-        }
-        // import recent records (weight + meals summary where possible)
-        if (Array.isArray(records)) {
-          records.slice(0, 60).forEach(r => {
-            const d = new Date(r.date);
-            if (isNaN(d)) return;
-            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            const slot = day(key);
-            if (r.weight) slot.weight = r.weight;
-            if (r.memo) slot.memo = r.memo;
-            if (r.meals) {
-              ['breakfast','lunch','dinner','snack'].forEach(m => {
-                const arr = r.meals[m] || [];
-                slot.meals[m] = arr.map(f => ({
-                  id: uid(),
-                  name: f.name || '음식',
-                  cal: f.cal || 0,
-                  pro: f.pro || 0,
-                  carb: f.carb || 0,
-                  fat: f.fat || 0
-                }));
-              });
-            }
-            // skip large photo base64 to avoid storage bloat on import
+        let records = JSON.parse(localStorage.getItem('records') || '[]');
+        if (!Array.isArray(records)) records = [];
+        return { settings, goals, records, found: !!(settings || records.length) };
+      } catch (e) {
+        return { settings: null, goals: null, records: [], found: false };
+      }
+    }
+
+    function summarizeV1(v1) {
+      if (!v1 || !v1.found) return '이 브라우저에서 1탄 데이터를 찾지 못했습니다.\n· 1탄과 2탄을 같은 Safari/Chrome에서 썼는지 확인\n· 또는 아래에서 1탄 JSON 파일을 선택하세요';
+      const lines = [];
+      if (v1.settings) {
+        const s = v1.settings;
+        lines.push(`프로필: ${s.gender || s.sex || '?'} · ${s.age || '?'}세 · ${s.height || '?'}cm · ${s.weight || '?'}kg`);
+        if (s.fat) lines.push(`체지방: ${s.fat}%`);
+        if (s.target) lines.push(`목표 체중: ${s.target}kg`);
+      } else lines.push('프로필(settings): 없음');
+      lines.push(`일별 기록: ${v1.records.length}건`);
+      if (v1.records.length) {
+        const withW = v1.records.filter(r => r.weight).length;
+        const withM = v1.records.filter(r => r.meals && Object.values(r.meals).some(a => a && a.length)).length;
+        lines.push(`· 체중 기록 ${withW}일 · 식단 기록 ${withM}일`);
+      }
+      lines.push('', '가져오기 시 사진(base64)은 용량 때문에 제외됩니다.');
+      return lines.join('\n');
+    }
+
+    function refreshV1Preview() {
+      const el = document.getElementById('v1Preview');
+      const hint = document.getElementById('setupV1Hint');
+      const v1 = detectV1Data();
+      if (el) el.textContent = summarizeV1(v1);
+      if (hint) {
+        hint.textContent = v1.found
+          ? '1탄 데이터가 감지되었습니다. 가져오기를 누르면 이어서 쓸 수 있어요.'
+          : '같은 브라우저에 1탄 기록이 있으면 프로필·체중·식단을 이어받을 수 있어요.';
+      }
+      return v1;
+    }
+
+    function applyV1Payload(settings, goals, records, merge) {
+      records = Array.isArray(records) ? records : [];
+      if (!settings && !records.length) { toast('가져올 1탄 데이터가 없습니다'); return false; }
+      const ok = confirm(
+        `1탄 데이터를 ${merge ? '병합' : '가져오기'}할까요?\n\n기록 약 ${records.length}건\n프로필: ${settings ? '있음' : '없음'}\n` +
+        (merge ? '같은 날짜에 이미 2탄 기록이 있으면 비어 있는 칸만 채웁니다.' : '프로필이 있으면 현재 프로필을 1탄 값으로 바꿉니다.') +
+        '\n\n사진은 가져오지 않습니다.'
+      );
+      if (!ok) return false;
+      if (settings) {
+        const incoming = {
+          sex: settings.gender || settings.sex || 'female',
+          age: settings.age || 30, height: settings.height || 165, weight: settings.weight || 60,
+          fat: settings.fat || 0, target: settings.target || settings.weight - 5, activity: settings.activity || 1.55
+        };
+        if (!merge || !S.profile) S.profile = incoming;
+        else { S.profile = { ...incoming, ...S.profile }; if (!S.profile.weight) S.profile.weight = incoming.weight; }
+        S.goals = (goals && goals.cal) ? goals : calcGoals(S.profile);
+        S.setup = true;
+      }
+      records.slice(0, 90).forEach(r => {
+        const d = new Date(r.date);
+        if (isNaN(d)) return;
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const slot = day(key);
+        if (r.weight && (!merge || slot.weight == null)) slot.weight = r.weight;
+        if (r.bodyFat != null && (!merge || slot.bodyFat == null)) slot.bodyFat = r.bodyFat;
+        if (r.fat != null && (!merge || slot.bodyFat == null)) slot.bodyFat = r.fat;
+        if (r.muscle != null && (!merge || slot.muscle == null)) slot.muscle = r.muscle;
+        if (r.memo && (!merge || !slot.memo)) slot.memo = r.memo;
+        if (r.meals) {
+          ['breakfast','lunch','dinner','snack'].forEach(m => {
+            const arr = r.meals[m] || [];
+            if (!arr.length) return;
+            if (merge && slot.meals[m] && slot.meals[m].length) return;
+            slot.meals[m] = arr.map(f => ({
+              id: uid(), name: f.name || f.n || '음식', cal: f.cal || 0, pro: f.pro || 0, carb: f.carb || 0, fat: f.fat || 0
+            }));
           });
         }
-        save();
-        document.getElementById('setup').classList.remove('on');
-        document.getElementById('importBanner').classList.remove('on');
-        fillProfileForm();
-        render();
-        toast('1탄 데이터를 가져왔어요!');
-      } catch (e) {
-        console.error(e);
-        toast('가져오기 실패');
-      }
+      });
+      try { localStorage.setItem(KEY + '-imported-hint', '1'); } catch (e) {}
+      save();
+      const setupEl = document.getElementById('setup'); if (setupEl) setupEl.classList.remove('on');
+      const ban = document.getElementById('importBanner'); if (ban) ban.classList.remove('on');
+      fillProfileForm(); refreshV1Preview(); render();
+      toast(merge ? '1탄 데이터 병합 완료!' : '1탄 데이터를 가져왔어요!');
+      return true;
+    }
+
+    function tryImportV1(merge = false) {
+      try {
+        const v1 = detectV1Data();
+        if (!v1.found) { refreshV1Preview(); return toast('1탄 데이터를 찾지 못했어요 · JSON 파일로 시도해 보세요'); }
+        applyV1Payload(v1.settings, v1.goals, v1.records, !!merge);
+      } catch (e) { console.error(e); toast('가져오기 실패'); }
+    }
+
+    function importV1FromFile(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (parsed.app && parsed.data) return toast('이건 2탄 백업입니다. 위에서 복원/병합을 사용하세요');
+          let settings = parsed.settings || null;
+          let goals = parsed.goals || null;
+          let records = parsed.records || [];
+          if (parsed.profile && parsed.profile.height) {
+            settings = settings || {
+              gender: parsed.profile.sex, sex: parsed.profile.sex, age: parsed.profile.age,
+              height: parsed.profile.height, weight: parsed.profile.weight, fat: parsed.profile.fat,
+              target: parsed.profile.target, activity: parsed.profile.activity
+            };
+          }
+          if (!Array.isArray(records) && records && typeof records === 'object') {
+            records = Object.keys(records).map(k => ({ date: k, ...records[k] }));
+          }
+          if (!settings && parsed.weight && parsed.height) settings = parsed;
+          applyV1Payload(settings, goals, records, true);
+        } catch (e) { console.error(e); toast('1탄 JSON 파싱 실패'); }
+      };
+      reader.readAsText(file);
     }
 
     function saveProfile() {
@@ -2560,45 +2759,160 @@
       d.weight = w;
       const bf = document.getElementById('todayFat').value;
       d.bodyFat = bf === '' ? null : +bf;
+      const ms = document.getElementById('todayMuscle');
+      d.muscle = ms && ms.value !== '' ? +ms.value : null;
+      const wp = document.getElementById('todayWaterPct');
+      d.waterPct = wp && wp.value !== '' ? +wp.value : null;
       d.memo = document.getElementById('todayMemo').value.trim();
       if (S.profile) {
         S.profile.weight = w;
         if (d.bodyFat != null) S.profile.fat = d.bodyFat;
+        if (d.muscle != null) S.profile.muscle = d.muscle;
         S.goals = calcGoals(S.profile);
       }
       save();
-      toast('체중 저장!');
+      toast('체성분 저장!');
       render();
     }
 
     function weightSeries() {
       return Object.keys(S.days)
-        .filter(k => S.days[k].weight != null)
+        .filter(k => S.days[k].weight != null || S.days[k].bodyFat != null || S.days[k].muscle != null)
         .sort()
-        .map(k => ({ date: k, kg: S.days[k].weight, fat: S.days[k].bodyFat }));
+        .map(k => ({
+          date: k,
+          kg: S.days[k].weight,
+          fat: S.days[k].bodyFat,
+          muscle: S.days[k].muscle,
+          waterPct: S.days[k].waterPct
+        }));
+    }
+
+    function latestComposition() {
+      const series = weightSeries();
+      if (!series.length) return null;
+      let kg = null, fat = null, muscle = null, waterPct = null, date = null;
+      for (let i = series.length - 1; i >= 0; i--) {
+        const s = series[i];
+        if (kg == null && s.kg != null) { kg = s.kg; if (!date) date = s.date; }
+        if (fat == null && s.fat != null) fat = s.fat;
+        if (muscle == null && s.muscle != null) muscle = s.muscle;
+        if (waterPct == null && s.waterPct != null) waterPct = s.waterPct;
+        if (kg != null && fat != null && muscle != null && waterPct != null) break;
+      }
+      return { kg, fat, muscle, waterPct, date };
     }
 
     // ===== Workout =====
+    function setWoMode(mode) {
+      woMode = mode === 'strength' ? 'strength' : 'cardio';
+      const c = document.getElementById('woModeCardio');
+      const s = document.getElementById('woModeStrength');
+      if (c) c.classList.toggle('on', woMode === 'cardio');
+      if (s) s.classList.toggle('on', woMode === 'strength');
+      const sf = document.getElementById('woStrengthFields');
+      if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
+      renderWoChips();
+    }
+
+    function renderWoChips() {
+      const el = document.getElementById('woChips');
+      if (!el) return;
+      const list = woMode === 'strength' ? WORKOUTS_STRENGTH : WORKOUTS_CARDIO;
+      el.innerHTML = list.map((w, i) =>
+        `<button type="button" class="chip" onclick="pickWorkoutPreset('${woMode}',${i})">${w.n}</button>`
+      ).join('');
+    }
+
+    function pickWorkoutPreset(mode, idx) {
+      const list = mode === 'strength' ? WORKOUTS_STRENGTH : WORKOUTS_CARDIO;
+      const w = list[idx];
+      if (!w) return;
+      if (mode === 'strength' && woMode !== 'strength') setWoMode('strength');
+      if (mode === 'cardio' && woMode !== 'cardio') setWoMode('cardio');
+      document.getElementById('woName').value = w.n;
+      document.getElementById('woMin').value = w.min;
+      document.getElementById('woKcal').value = w.cal;
+      if (mode === 'strength') {
+        const a = document.getElementById('woSets');
+        const b = document.getElementById('woReps');
+        const c = document.getElementById('woLoad');
+        if (a) a.value = w.sets || '';
+        if (b) b.value = w.reps || '';
+        if (c) c.value = w.load || '';
+      }
+    }
+
+    function estimateStrengthCal(sets, reps, load, min) {
+      sets = +sets || 0; reps = +reps || 0; load = +load || 0; min = +min || 0;
+      if (sets && reps) {
+        const volume = sets * reps * Math.max(load, 5);
+        return Math.max(20, Math.round(volume * 0.05 + (min || sets * 2) * 3));
+      }
+      if (min) return Math.round(min * 4.5);
+      return 0;
+    }
+
     function addWorkout() {
       const name = document.getElementById('woName').value.trim();
-      const min = +document.getElementById('woMin').value;
-      const cal = +document.getElementById('woKcal').value || 0;
-      if (!name || !min) return toast('운동과 시간을 입력하세요');
-      day().workouts.unshift({ id: uid(), name, min, cal });
+      let min = +document.getElementById('woMin').value;
+      let calRaw = document.getElementById('woKcal').value;
+      let cal = calRaw === '' ? null : +calRaw;
+      const setsEl = document.getElementById('woSets');
+      const repsEl = document.getElementById('woReps');
+      const loadEl = document.getElementById('woLoad');
+      const sets = setsEl && setsEl.value !== '' ? +setsEl.value : null;
+      const reps = repsEl && repsEl.value !== '' ? +repsEl.value : null;
+      const load = loadEl && loadEl.value !== '' ? +loadEl.value : null;
+      const isStrength = woMode === 'strength' || (sets && reps);
+
+      if (!name) return toast('운동명을 입력하세요');
+      if (!min && !(sets && reps)) return toast('시간 또는 세트×횟수를 입력하세요');
+      if (!min && sets && reps) min = Math.max(5, sets * 3);
+      if (cal == null || cal === 0) {
+        cal = isStrength ? estimateStrengthCal(sets, reps, load, min) : 0;
+      }
+
+      const entry = { id: uid(), name, min: min || 0, cal: cal || 0, type: isStrength ? 'strength' : 'cardio' };
+      if (sets != null) entry.sets = sets;
+      if (reps != null) entry.reps = reps;
+      if (load != null) entry.load = load;
+
+      day().workouts.unshift(entry);
       save();
       document.getElementById('woName').value = '';
       document.getElementById('woMin').value = '';
       document.getElementById('woKcal').value = '';
+      if (setsEl) setsEl.value = '';
+      if (repsEl) repsEl.value = '';
+      if (loadEl) loadEl.value = '';
       toast('운동 기록!');
       render();
     }
+
     function removeWo(id) {
       day().workouts = day().workouts.filter(w => w.id !== id);
       save(); render();
     }
+
     function woTot(k = today()) {
-      return day(k).workouts.reduce((a, w) => ({ min: a.min + w.min, cal: a.cal + w.cal }), { min: 0, cal: 0 });
+      return day(k).workouts.reduce((a, w) => ({ min: a.min + (+w.min || 0), cal: a.cal + (+w.cal || 0) }), { min: 0, cal: 0 });
     }
+
+    function woDetailText(w) {
+      const parts = [];
+      if (w.sets || w.reps) {
+        let s = '';
+        if (w.sets) s += w.sets + '세트';
+        if (w.reps) s += (s ? ' × ' : '') + w.reps + (w.name && /플랭크/.test(w.name) ? '초' : '회');
+        if (w.load) s += ' @ ' + w.load + 'kg';
+        parts.push(s);
+      }
+      if (w.min) parts.push(w.min + '분');
+      return parts.join(' · ') || '기록';
+    }
+    
+
 
     // ===== Water =====
     function addWater(n) {
@@ -3505,7 +3819,23 @@
       if (wDelta != null && wDelta <= -1.5 && n <= 7) insights.push({ t: 'warn', m: '일주일 체중 감소가 가파릅니다. 수분·근육 손실 가능성 — 회복과 단백질을 점검하세요.' });
       if (woMin < 60 && n >= 7) insights.push({ t: 'warn', m: '운동량이 적은 편입니다. 회복이 좋다면 가벼운 걷기를 늘려보세요. 회복이 나쁘면 그대로 쉬는 것도 OK.' });
 
-      document.getElementById('reportInsights').innerHTML = insights.map(t =>
+      
+      const fatsI = keys.map(k => S.days[k]?.bodyFat).filter(v => v != null);
+      const musI = keys.map(k => S.days[k]?.muscle).filter(v => v != null);
+      if (fatsI.length >= 2) {
+        const fd = +(fatsI[fatsI.length-1] - fatsI[0]).toFixed(1);
+        if (fd <= -0.5) insights.push({ t: 'good', m: `체지방이 기간 중 ${Math.abs(fd)}%p 줄었습니다. 체중과 함께 질 좋은 변화입니다.` });
+        else if (fd >= 0.8) insights.push({ t: 'warn', m: `체지방이 ${fd}%p 늘었습니다. 수면·칼로리·회복을 같이 점검해 보세요.` });
+      }
+      if (musI.length >= 2) {
+        const md = +(musI[musI.length-1] - musI[0]).toFixed(1);
+        if (md >= 0.3) insights.push({ t: 'good', m: `골격근량이 +${md}kg 방향입니다. 근력 자극과 단백질을 유지하세요.` });
+        else if (md <= -0.4) insights.push({ t: 'warn', m: `골격근량이 ${md}kg 줄었습니다. 과도한 적자·회복 부족 가능성 — 단백질과 휴식일을 챙기세요.` });
+      } else if (!fatsI.length && !musI.length && n >= 7) {
+        insights.push({ t: 'warn', m: '체성분(체지방·골격근) 기록이 없습니다. 기록 탭에서 함께 남기면 체중 변화의 질을 볼 수 있어요.' });
+      }
+
+document.getElementById('reportInsights').innerHTML = insights.map(t =>
         `<div class="insight ${t.t}">${esc(t.m)}</div>`
       ).join('');
 
@@ -3547,6 +3877,7 @@
       destroyChart(repRestChart);
       destroyChart(repCalChart);
       destroyChart(wChart);
+      destroyChart(compChart);
       const commonOpt = {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
@@ -3636,10 +3967,48 @@
 
       const allW = weightSeries().slice(-30).reverse();
       document.getElementById('wList').innerHTML = allW.length
-        ? allW.slice(0, 15).map(s => `
-          <div class="item"><div class="t">${s.kg} kg ${s.fat != null ? '· ' + s.fat + '%' : ''}</div><div class="d">${s.date}</div></div>
-        `).join('')
-        : '<div class="empty">체중 기록이 없습니다</div>';
+        ? allW.slice(0, 15).map(s => {
+            const bits = [];
+            if (s.kg != null) bits.push(s.kg + ' kg');
+            if (s.fat != null) bits.push('체지방 ' + s.fat + '%');
+            if (s.muscle != null) bits.push('골격근 ' + s.muscle + 'kg');
+            if (s.waterPct != null) bits.push('수분 ' + s.waterPct + '%');
+            return `<div class="item"><div class="t">${bits.join(' · ') || '—'}</div><div class="d">${s.date}</div></div>`;
+          }).join('')
+        : '<div class="empty">체중·체성분 기록이 없습니다</div>';
+
+      destroyChart(compChart);
+      const fatSeries = keys.map(k => S.days[k]?.bodyFat != null ? S.days[k].bodyFat : null);
+      const musSeries = keys.map(k => S.days[k]?.muscle != null ? S.days[k].muscle : null);
+      const hasComp = fatSeries.some(v => v != null) || musSeries.some(v => v != null);
+      const cHint = document.getElementById('compChartHint');
+      if (cHint) {
+        cHint.textContent = hasComp
+          ? '체지방(%)과 골격근(kg)을 같이 보면 체중 변화의 질이 보입니다.'
+          : '기록 탭에서 체지방·골격근을 남기면 여기에 추이가 그려집니다.';
+      }
+      const cctx2 = document.getElementById('compChart');
+      if (cctx2 && typeof Chart !== 'undefined' && hasComp) {
+        compChart = new Chart(cctx2, {
+          type: 'line',
+          data: {
+            labels: keys.map(k => k.slice(5)),
+            datasets: [
+              { label: '체지방 %', data: fatSeries, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,.12)', fill: false, tension: 0.35, pointRadius: n > 14 ? 2 : 3, spanGaps: true, yAxisID: 'y' },
+              { label: '골격근 kg', data: musSeries, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.12)', fill: false, tension: 0.35, pointRadius: n > 14 ? 2 : 3, spanGaps: true, yAxisID: 'y1' }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 11 } } } },
+            scales: {
+              x: { ticks: { color: '#6b7280', maxTicksLimit: 8 }, grid: { color: 'rgba(102,126,234,.06)' } },
+              y: { position: 'left', ticks: { color: '#f43f5e' }, grid: { color: 'rgba(102,126,234,.06)' } },
+              y1: { position: 'right', ticks: { color: '#10b981' }, grid: { drawOnChartArea: false } }
+            }
+          }
+        });
+      }
     }
 
     function renderLog() {
@@ -3672,21 +4041,39 @@
       }
       if (d.weight) document.getElementById('todayW').value = d.weight;
       if (d.bodyFat != null) document.getElementById('todayFat').value = d.bodyFat;
+      const tm = document.getElementById('todayMuscle');
+      const tw = document.getElementById('todayWaterPct');
+      if (tm) tm.value = d.muscle != null ? d.muscle : '';
+      if (tw) tw.value = d.waterPct != null ? d.waterPct : '';
       if (d.memo) document.getElementById('todayMemo').value = d.memo;
       renderMicroUI();
     }
 
     function renderMove() {
       const wo = woTot();
-      document.getElementById('woSum').textContent = `${wo.min}분 · ${wo.cal} kcal`;
       const list = day().workouts;
-      document.getElementById('woList').innerHTML = list.length ? list.map(w => `
-        <div class="item">
-          <div><div class="t">${esc(w.name)}</div><div class="d">${w.min}분</div></div>
-          <div style="text-align:right"><div class="k">${w.cal} kcal</div>
-          <button class="btn-x" style="margin-top:6px" onclick="removeWo('${w.id}')">삭제</button></div>
-        </div>
-      `).join('') : '<div class="empty">오늘 운동이 없어요</div>';
+      const strengthN = list.filter(w => w.type === 'strength' || w.sets).length;
+      const sumEl = document.getElementById('woSum');
+      if (sumEl) sumEl.textContent = `${wo.min}분 · ${wo.cal} kcal` + (strengthN ? ` · 근력 ${strengthN}` : '');
+      const listEl = document.getElementById('woList');
+      if (listEl) {
+        listEl.innerHTML = list.length ? list.map(w => `
+          <div class="item">
+            <div>
+              <div class="t">${esc(w.name)}${w.type === 'strength' || w.sets ? ' 🏋️' : ''}</div>
+              <div class="d">${esc(woDetailText(w))}</div>
+            </div>
+            <div style="text-align:right"><div class="k">${w.cal || 0} kcal</div>
+            <button class="btn-x" style="margin-top:6px" onclick="removeWo('${w.id}')">삭제</button></div>
+          </div>
+        `).join('') : '<div class="empty">오늘 운동이 없어요 · 프리셋으로 빠르게 남겨보세요</div>';
+      }
+      const sf = document.getElementById('woStrengthFields');
+      if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
+      const c = document.getElementById('woModeCardio');
+      const s = document.getElementById('woModeStrength');
+      if (c) c.classList.toggle('on', woMode === 'cardio');
+      if (s) s.classList.toggle('on', woMode === 'strength');
     }
 
     function renderWater() {
@@ -3847,7 +4234,140 @@
       toast('이미지 저장 완료 🖼️');
     }
 
-    function roundRect(ctx, x, y, w, h, r) {
+    
+    function buildWeeklyShareStats() {
+      const keys = dateKeys(7);
+      let restScores = [], sleepSum = 0, sleepN = 0, restDays = 0, woMin = 0, woCal = 0, calSum = 0, calDays = 0, strengthSessions = 0;
+      keys.forEach(k => {
+        const rr = getRest(k);
+        const w = woTot(k);
+        woMin += w.min; woCal += w.cal;
+        const m = mealTotals(k);
+        if (m.cal > 0) { calSum += m.cal; calDays++; }
+        if (rr) {
+          const sc = rr.score != null ? rr.score : calcRestScore(rr, w.min);
+          restScores.push(sc);
+          sleepSum += +rr.sleepHrs || 0; sleepN++;
+          if (rr.restDay) restDays++;
+        }
+        (S.days[k]?.workouts || []).forEach(wo => { if (wo.type === 'strength' || wo.sets) strengthSessions++; });
+      });
+      const avgRest = restScores.length ? Math.round(restScores.reduce((a,b)=>a+b,0)/restScores.length) : null;
+      const avgSleep = sleepN ? (sleepSum / sleepN).toFixed(1) : '—';
+      const gr = restGrade(avgRest);
+      const weights = keys.map(k => S.days[k]?.weight).filter(v => v != null);
+      const wDelta = weights.length >= 2 ? +(weights[weights.length-1] - weights[0]).toFixed(1) : null;
+      const fats = keys.map(k => S.days[k]?.bodyFat).filter(v => v != null);
+      const fatDelta = fats.length >= 2 ? +(fats[fats.length-1] - fats[0]).toFixed(1) : null;
+      const muscles = keys.map(k => S.days[k]?.muscle).filter(v => v != null);
+      const musDelta = muscles.length >= 2 ? +(muscles[muscles.length-1] - muscles[0]).toFixed(1) : null;
+      const comp = typeof latestComposition === 'function' ? latestComposition() : null;
+      return { keys, avgRest, avgSleep, gr, restDays, woMin, woCal, strengthSessions,
+        avgCal: calDays ? Math.round(calSum / calDays) : null, wDelta, fatDelta, musDelta, comp,
+        start: keys[0].slice(5), end: keys[6].slice(5) };
+    }
+
+    function weeklyShareText() {
+      const s = buildWeeklyShareStats();
+      return [
+        '💪 FIT TRACKER 2 · 주간 공유',
+        `📅 ${s.start} ~ ${s.end}`, '',
+        `😴 평균 회복 ${s.avgRest == null ? '—' : s.avgRest + '/100'} (${s.avgRest == null ? '미기록' : s.gr.label})`,
+        `🛏️ 평균 수면 ${s.avgSleep}h · 완전 휴식 ${s.restDays}일`,
+        `🏃 운동 ${s.woMin}분 · 소모 ${s.woCal}kcal` + (s.strengthSessions ? ` · 근력 ${s.strengthSessions}회` : ''),
+        s.avgCal != null ? `🍽️ 평균 섭취 ${s.avgCal} kcal` : null,
+        s.wDelta != null ? `⚖️ 체중 ${s.wDelta > 0 ? '+' : ''}${s.wDelta}kg` : '⚖️ 체중 기록 부족',
+        s.fatDelta != null ? `🧬 체지방 ${s.fatDelta > 0 ? '+' : ''}${s.fatDelta}%p` : null,
+        s.musDelta != null ? `💪 골격근 ${s.musDelta > 0 ? '+' : ''}${s.musDelta}kg` : null,
+        '', '회복 > 영양 > 훈련', '체중 관리는 꾸준함이 답입니다.'
+      ].filter(Boolean).join('\n');
+    }
+
+    async function copyWeeklyShareText() {
+      const text = weeklyShareText();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          toast('주간 요약 복사됨 · 채팅에 붙여넣기 하세요');
+          return;
+        }
+      } catch (e) {}
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast('주간 요약 복사됨'); }
+      catch (e) { prompt('아래 텍스트를 복사하세요', text); }
+      ta.remove();
+    }
+
+    async function shareWeeklyFriendReport() {
+      const s = buildWeeklyShareStats();
+      const text = weeklyShareText();
+      const canvas = document.getElementById('shareCanvas');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#0f172a'); grad.addColorStop(0.4, '#312e81'); grad.addColorStop(1, '#7c3aed');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath(); ctx.arc(W - 60, 80, 200, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(40, H - 80, 180, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'left'; ctx.fillStyle = '#fff';
+      ctx.font = '700 34px Poppins, sans-serif'; ctx.fillText('FIT TRACKER 2', 64, 96);
+      ctx.font = '700 40px "Noto Sans KR", sans-serif'; ctx.fillText('이번 주 내 기록', 64, 150);
+      ctx.font = '500 24px "Noto Sans KR", sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.fillText(`${s.start} ~ ${s.end}`, 64, 190);
+      const hero = [
+        ['회복', s.avgRest == null ? '—' : String(s.avgRest), s.avgRest == null ? '미기록' : s.gr.label],
+        ['수면', s.avgSleep === '—' ? '—' : s.avgSleep + 'h', `휴식 ${s.restDays}일`],
+        ['운동', s.woMin + '분', s.strengthSessions ? `근력 ${s.strengthSessions}` : (s.woCal + 'kcal')]
+      ];
+      hero.forEach((h, i) => {
+        const x = 64 + i * 300, y = 240;
+        ctx.fillStyle = 'rgba(255,255,255,0.12)'; roundRect(ctx, x, y, 280, 170, 28); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '600 22px "Noto Sans KR", sans-serif'; ctx.fillText(h[0], x + 24, y + 48);
+        ctx.fillStyle = '#fff'; ctx.font = '800 52px Poppins, sans-serif'; ctx.fillText(h[1], x + 24, y + 110);
+        ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.font = '500 20px "Noto Sans KR", sans-serif'; ctx.fillText(h[2], x + 24, y + 145);
+      });
+      const rows = [
+        ['체중 변화', s.wDelta == null ? '기록 부족' : `${s.wDelta > 0 ? '+' : ''}${s.wDelta} kg`],
+        ['체지방 변화', s.fatDelta == null ? '—' : `${s.fatDelta > 0 ? '+' : ''}${s.fatDelta} %p`],
+        ['골격근 변화', s.musDelta == null ? '—' : `${s.musDelta > 0 ? '+' : ''}${s.musDelta} kg`],
+        ['평균 칼로리', s.avgCal == null ? '—' : `${s.avgCal} kcal`],
+        ['최근 체지방', s.comp && s.comp.fat != null ? s.comp.fat + '%' : '—'],
+        ['최근 골격근', s.comp && s.comp.muscle != null ? s.comp.muscle + 'kg' : '—']
+      ];
+      rows.forEach((r, i) => {
+        const col = i % 2, row = Math.floor(i / 2);
+        const x = 64 + col * 460, y = 460 + row * 110;
+        ctx.fillStyle = 'rgba(255,255,255,0.1)'; roundRect(ctx, x, y, 430, 92, 22); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '600 20px "Noto Sans KR", sans-serif'; ctx.fillText(r[0], x + 24, y + 36);
+        ctx.fillStyle = '#fff'; ctx.font = '800 32px Poppins, "Noto Sans KR", sans-serif'; ctx.fillText(r[1], x + 24, y + 72);
+      });
+      ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = '700 28px "Noto Sans KR", sans-serif'; ctx.fillText('회복 > 영양 > 훈련 · 같이 꾸준히 가요', W / 2, H - 90);
+      ctx.font = '500 20px "Noto Sans KR", sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText('from FIT TRACKER 2', W / 2, H - 50);
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+      if (!blob) return toast('이미지 생성 실패');
+      const file = new File([blob], `fit-tracker-week-${today()}.png`, { type: 'image/png' });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'FIT TRACKER 주간 공유', text });
+          toast('친구에게 공유 완료!'); return;
+        }
+        if (navigator.share) {
+          await navigator.share({ title: 'FIT TRACKER 주간 공유', text });
+          toast('텍스트로 공유했어요'); return;
+        }
+      } catch (e) { if (e && e.name === 'AbortError') return; }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+      URL.revokeObjectURL(a.href);
+      try { if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text); } catch (e) {}
+      toast('이미지 저장 · 텍스트 복사 완료');
+    }
+
+function roundRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
       ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -3858,24 +4378,30 @@
     }
 
     function renderPresets() {
-      // quick chips: popular protein + staples
       const quick = ['닭가슴살 100g', '흰쌀밥 1공기(210g)', '계란 1개', '그릭요거트 100g', '아메리카노', '프로틴 쉐이크 1잔', '샐러드(드레싱 적게)', '현미밥 1공기', '두부 150g', '바나나 1개'];
-      document.getElementById('foodChips').innerHTML = quick.map(name => {
-        const i = FOODS.findIndex(f => f.n === name);
-        if (i < 0) return '';
-        return `<button class="chip" onclick="pickFood(${i})">${name.split(' ')[0]}</button>`;
-      }).join('');
-      document.getElementById('foodCats').innerHTML = FOOD_CATS.map(c =>
-        `<button type="button" class="chip ${c === foodCat ? 'on' : ''}" data-cat="${c}" onclick="setFoodCat('${c}')">${c}</button>`
-      ).join('');
+      const foodChips = document.getElementById('foodChips');
+      if (foodChips) {
+        foodChips.innerHTML = quick.map(name => {
+          const i = FOODS.findIndex(f => f.n === name);
+          if (i < 0) return '';
+          return `<button class="chip" onclick="pickFood(${i})">${name.split(' ')[0]}</button>`;
+        }).join('');
+      }
+      const foodCats = document.getElementById('foodCats');
+      if (foodCats) {
+        foodCats.innerHTML = FOOD_CATS.map(c =>
+          `<button type="button" class="chip ${c === foodCat ? 'on' : ''}" data-cat="${c}" onclick="setFoodCat('${c}')">${c}</button>`
+        ).join('');
+      }
       const cnt = document.getElementById('foodDbCount');
       if (cnt) cnt.textContent = `(${FOODS.length}종)`;
-      document.getElementById('woChips').innerHTML = WORKOUTS.map((w) =>
-        `<button class="chip" onclick="document.getElementById('woName').value='${w.n}';document.getElementById('woMin').value=${w.min};document.getElementById('woKcal').value=${w.cal}">${w.n}</button>`
-      ).join('');
-      document.getElementById('habPresets').innerHTML = HABIT_P.map(n =>
-        `<button class="chip" onclick='addHabitP(${JSON.stringify(n)})'>+ ${n}</button>`
-      ).join('');
+      if (typeof renderWoChips === 'function') renderWoChips();
+      const hab = document.getElementById('habPresets');
+      if (hab) {
+        hab.innerHTML = HABIT_P.map(n =>
+          `<button class="chip" onclick='addHabitP(${JSON.stringify(n)})'>+ ${n}</button>`
+        ).join('');
+      }
     }
 
     // ===== Daily random 사자성어 + 동기부여 =====
@@ -3999,7 +4525,7 @@
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 2,
+        version: 2.8,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
@@ -4113,83 +4639,105 @@
       return { data, gemini };
     }
 
-    function applyBackup(parsed, sourceLabel) {
+    function applyBackup(parsed, sourceLabel, merge = false) {
       const { data, gemini } = normalizeBackup(parsed);
       const dayCount = data.days ? Object.keys(data.days).length : 0;
       const msg =
-        `백업을 복원할까요?\n\n` +
-        `출처: ${sourceLabel}\n` +
-        `기록 일수: 약 ${dayCount}일\n` +
-        `프로필: ${data.profile ? '있음' : '없음'}\n\n` +
-        `⚠️ 지금 기기 데이터는 백업 내용으로 덮어씁니다.`;
+        (merge ? `백업을 현재 데이터에 병합할까요?\n\n` : `백업으로 복원(덮어쓰기)할까요?\n\n`) +
+        `출처: ${sourceLabel}\n기록 일수: 약 ${dayCount}일\n프로필: ${data.profile ? '있음' : '없음'}\n\n` +
+        (merge ? '같은 날짜는 가능한 한 합치고, 빈 값은 백업으로 채웁니다.' : '⚠️ 지금 기기 데이터는 백업 내용으로 덮어씁니다.');
       if (!confirm(msg)) return;
-
-      // merge with defaults so new fields still work after app updates
-      const base = defaultS();
-      S = {
-        ...base,
-        ...data,
-        profile: data.profile || null,
-        goals: data.goals || null,
-        days: data.days || {},
-        habits: Array.isArray(data.habits) ? data.habits : base.habits,
-        habitDone: data.habitDone || {},
-        waterGoal: data.waterGoal || 8,
-        sleepPrefs: { ...base.sleepPrefs, ...(data.sleepPrefs || {}) },
-        weekPlan: data.weekPlan || {},
-        myFoods: Array.isArray(data.myFoods) ? data.myFoods : [],
-        setup: !!(data.setup || data.profile)
-      };
+      if (!merge) {
+        const base = defaultS();
+        S = {
+          ...base, ...data,
+          profile: data.profile || null, goals: data.goals || null, days: data.days || {},
+          habits: Array.isArray(data.habits) ? data.habits : base.habits,
+          habitDone: data.habitDone || {}, waterGoal: data.waterGoal || 8,
+          sleepPrefs: { ...base.sleepPrefs, ...(data.sleepPrefs || {}) },
+          weekPlan: data.weekPlan || {}, myFoods: Array.isArray(data.myFoods) ? data.myFoods : [],
+          setup: !!(data.setup || data.profile)
+        };
+      } else {
+        if (data.profile && !S.profile) S.profile = data.profile;
+        if (data.goals && !S.goals) S.goals = data.goals;
+        if (data.profile && S.profile) S.profile = { ...data.profile, ...S.profile };
+        if (data.waterGoal && !S.waterGoal) S.waterGoal = data.waterGoal;
+        if (data.sleepPrefs) S.sleepPrefs = { ...(S.sleepPrefs || {}), ...data.sleepPrefs };
+        if (data.weekPlan) S.weekPlan = { ...(S.weekPlan || {}), ...data.weekPlan };
+        if (Array.isArray(data.habits)) {
+          const names = new Set((S.habits || []).map(h => h.name));
+          data.habits.forEach(h => {
+            if (h && h.name && !names.has(h.name)) { S.habits = S.habits || []; S.habits.push({ id: h.id || uid(), name: h.name }); names.add(h.name); }
+          });
+        }
+        if (data.habitDone) S.habitDone = { ...(data.habitDone || {}), ...(S.habitDone || {}) };
+        if (Array.isArray(data.myFoods)) {
+          const names = new Set((S.myFoods || []).map(f => f.name));
+          data.myFoods.forEach(f => {
+            if (f && f.name && !names.has(f.name)) { S.myFoods = S.myFoods || []; S.myFoods.push({ ...f, id: f.id || uid() }); names.add(f.name); }
+          });
+        }
+        Object.keys(data.days || {}).forEach(k => {
+          const src = data.days[k];
+          if (!S.days[k]) { S.days[k] = JSON.parse(JSON.stringify(src)); return; }
+          const dst = day(k);
+          if (src.weight != null && dst.weight == null) dst.weight = src.weight;
+          if (src.bodyFat != null && dst.bodyFat == null) dst.bodyFat = src.bodyFat;
+          if (src.muscle != null && dst.muscle == null) dst.muscle = src.muscle;
+          if (src.waterPct != null && dst.waterPct == null) dst.waterPct = src.waterPct;
+          if (src.memo && !dst.memo) dst.memo = src.memo;
+          if (src.water && !dst.water) dst.water = src.water;
+          if (src.rest && !dst.rest) dst.rest = src.rest;
+          ['breakfast','lunch','dinner','snack'].forEach(m => {
+            if ((!dst.meals[m] || !dst.meals[m].length) && src.meals && src.meals[m] && src.meals[m].length)
+              dst.meals[m] = JSON.parse(JSON.stringify(src.meals[m]));
+          });
+          if ((!dst.workouts || !dst.workouts.length) && src.workouts && src.workouts.length)
+            dst.workouts = JSON.parse(JSON.stringify(src.workouts));
+        });
+        S.setup = !!(S.setup || S.profile || data.setup);
+        if (S.profile && !S.goals) S.goals = data.goals || calcGoals(S.profile);
+      }
       save();
-
       if (gemini && typeof gemini === 'object') {
         const prev = loadGeminiSettings();
         localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
           apiKey: gemini.apiKey || prev.apiKey || '',
-          model: gemini.model || prev.model || 'gemini-2.5-flash',
-          savedAt: Date.now()
+          model: gemini.model || prev.model || 'gemini-2.5-flash', savedAt: Date.now()
         }));
       }
-
       markBackupDone();
       document.getElementById('setup').classList.toggle('on', !S.setup || !S.profile);
-      if (S.setup && S.profile) {
-        fillProfileForm();
-        fillGeminiForm();
-        render();
-      }
-      updateGeminiStatusUI();
-      updateBackupHint();
-      toast('복원 완료! 💾');
+      if (S.setup && S.profile) { fillProfileForm(); fillGeminiForm(); render(); }
+      updateGeminiStatusUI(); updateBackupHint();
+      if (typeof refreshV1Preview === 'function') refreshV1Preview();
+      toast(merge ? '병합 복원 완료! 🔀' : '복원 완료! 💾');
     }
 
-    function importBackupFromFile(ev) {
-      const file = ev.target.files && ev.target.files[0];
-      ev.target.value = '';
+    function importBackupFromFile(event, merge = false) {
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
         try {
           const parsed = JSON.parse(String(reader.result));
-          applyBackup(parsed, file.name);
-        } catch (e) {
-          toast('복원 실패: ' + (e.message || '파일 읽기 오류'));
-        }
+          applyBackup(parsed, file.name || '파일', !!merge);
+        } catch (e) { toast('복원 실패: ' + (e.message || '파일 읽기 오류')); }
+        try { event.target.value = ''; } catch (e) {}
       };
       reader.onerror = () => toast('파일을 읽을 수 없습니다');
       reader.readAsText(file);
     }
 
-    function importBackupFromPaste() {
+    function importBackupFromPaste(merge = false) {
       const raw = (document.getElementById('backupPaste').value || '').trim();
       if (!raw) return toast('백업 JSON을 붙여넣어 주세요');
       try {
         const parsed = JSON.parse(raw);
-        applyBackup(parsed, '붙여넣기');
+        applyBackup(parsed, '붙여넣기', !!merge);
         document.getElementById('backupPaste').value = '';
-      } catch (e) {
-        toast('복원 실패: JSON 형식을 확인해 주세요');
-      }
+      } catch (e) { toast('복원 실패: JSON 형식을 확인해 주세요'); }
     }
 
     function resetAll() {
