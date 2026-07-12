@@ -2647,10 +2647,10 @@
     }
 
     // ===== Google Gemini API =====
-    // API 키는 설정 화면에서 입력 → 이 기기 localStorage에만 저장 (공개 배포용, 코드에 키 없음)
+    // 개인용 기본 키 (본인 사용). 설정에서 덮어쓸 수 있음.
     const GEMINI_KEY_STORE = 'fit-tracker-2-gemini';
     const GEMINI_DEFAULT = {
-      apiKey: '',
+      apiKey: 'AIzaSyAaLSowHAJEbPR4SkWKZwCKWRsJ2Ojwv80',
       model: 'gemini-2.5-flash'
     };
 
@@ -2658,26 +2658,42 @@
       try {
         const saved = JSON.parse(localStorage.getItem(GEMINI_KEY_STORE) || '{}');
         return {
-          apiKey: (saved.apiKey && String(saved.apiKey).trim()) || '',
+          apiKey: (saved.apiKey && String(saved.apiKey).trim()) || GEMINI_DEFAULT.apiKey,
           model: (saved.model && String(saved.model).trim()) || GEMINI_DEFAULT.model,
           savedAt: saved.savedAt || null
         };
       } catch {
-        return { apiKey: '', model: GEMINI_DEFAULT.model, savedAt: null };
+        return { ...GEMINI_DEFAULT };
       }
     }
 
     function ensureGeminiSeeded() {
-      // 공개 사이트: 기본 키를 심지 않음. 사용자가 설정에서 넣을 때만 저장.
       try {
         const raw = localStorage.getItem(GEMINI_KEY_STORE);
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        if (!s.model) {
-          s.model = GEMINI_DEFAULT.model;
-          localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify(s));
+        if (!raw) {
+          localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
+            apiKey: GEMINI_DEFAULT.apiKey,
+            model: GEMINI_DEFAULT.model,
+            savedAt: Date.now(),
+            seeded: true
+          }));
+        } else {
+          const s = JSON.parse(raw);
+          if (!s.apiKey || !String(s.apiKey).trim()) {
+            s.apiKey = GEMINI_DEFAULT.apiKey;
+            s.model = s.model || GEMINI_DEFAULT.model;
+            s.savedAt = Date.now();
+            localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify(s));
+          }
         }
-      } catch { /* ignore */ }
+      } catch {
+        localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
+          apiKey: GEMINI_DEFAULT.apiKey,
+          model: GEMINI_DEFAULT.model,
+          savedAt: Date.now(),
+          seeded: true
+        }));
+      }
     }
 
     function getGeminiKey() {
@@ -2699,11 +2715,11 @@
     }
 
     function saveGeminiSettings() {
-      const apiKey = document.getElementById('geminiKey').value.trim();
+      const apiKey = document.getElementById('geminiKey').value.trim() || GEMINI_DEFAULT.apiKey;
       const model = document.getElementById('geminiModel').value || GEMINI_DEFAULT.model;
       localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({ apiKey, model, savedAt: Date.now() }));
       updateGeminiStatusUI();
-      toast(apiKey ? 'Gemini 키 저장됨' : '키가 비어 있어요 · AI 기능은 로컬 코칭만');
+      toast(apiKey ? 'Gemini 키 저장됨' : '키가 비어 있어요');
     }
 
     function updateGeminiStatusUI() {
