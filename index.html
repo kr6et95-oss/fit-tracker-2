@@ -17,6 +17,7 @@
   <script src="foods.js"></script>
   <script src="workouts.js"></script>
   <script src="garmin.js"></script>
+  <script src="fightlab.js"></script>
   <script src="micros.js"></script>
   <style>
     :root {
@@ -1210,6 +1211,136 @@
     .train-ai-card.boxing-skin {
       background: linear-gradient(160deg, #1c1917 0%, #7f1d1d 45%, #b45309 100%);
     }
+
+    /* FIGHT//LAB program */
+    .fl-wrap { color: var(--ink); }
+    .fl-header {
+      background: #0a0a0a; color: #fff; border-radius: 20px;
+      padding: 16px 16px 14px; margin-bottom: 12px;
+      border: 1px solid #1f1f1f;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .fl-logo {
+      font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.25rem;
+      letter-spacing: .08em; color: #ef4444;
+    }
+    .fl-logo span { color: #444; }
+    .fl-week-pill {
+      background: #141414; border: 1px solid #2a2a2a; border-radius: 999px;
+      padding: 6px 12px; font-size: .72rem; font-weight: 800; color: #9ca3af;
+      letter-spacing: .06em;
+    }
+    .fl-phase {
+      border-radius: 16px; padding: 12px 14px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .fl-phase .fp-label { font-size: .68rem; font-weight: 800; letter-spacing: .08em; }
+    .fl-phase .fp-title { font-size: 1.15rem; font-weight: 800; margin-top: 2px; }
+    .fl-phase .fp-desc { font-size: .72rem; opacity: .85; text-align: right; max-width: 48%; line-height: 1.35; }
+    .fl-tabs {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px;
+    }
+    .fl-tabs button {
+      padding: 10px 6px; border-radius: 12px; font-size: .78rem; font-weight: 800;
+      background: #f3f0ff; border: 1px solid var(--line);
+    }
+    .fl-tabs button.on {
+      background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border: 0;
+    }
+    .fl-sec {
+      font-size: .68rem; font-weight: 800; letter-spacing: .1em;
+      color: var(--muted); text-transform: uppercase; margin: 14px 0 8px;
+    }
+    .fl-day-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; gap: 10px;
+    }
+    .fl-type {
+      font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.1rem;
+    }
+    .fl-count {
+      font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.6rem;
+    }
+    .fl-ex {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 0; border-top: 1px solid var(--line); cursor: pointer;
+    }
+    .fl-ex.done { opacity: .55; }
+    .fl-check {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+      border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 800;
+    }
+    .fl-ex.done .fl-check {
+      background: #22c55e; border-color: #22c55e; color: #fff;
+    }
+    .fl-ex .nm { font-weight: 800; font-size: .92rem; }
+    .fl-ex.done .nm { text-decoration: line-through; color: var(--muted); }
+    .fl-ex .tm { font-size: .72rem; font-weight: 800; margin-left: 8px; white-space: nowrap; }
+    .fl-ex .dt { font-size: .75rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .fl-macro {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .fl-macro .m {
+      border-radius: 14px; padding: 12px; border: 1px solid var(--line); background: #fff;
+    }
+    .fl-macro .m .l { font-size: .65rem; font-weight: 800; color: var(--muted); letter-spacing: .04em; }
+    .fl-macro .m .v { font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.25rem; margin-top: 2px; }
+    .fl-macro .m .u { font-size: .7rem; color: var(--muted); }
+    .fl-weeks { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+    .fl-weeks button {
+      flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px;
+      font-weight: 800; font-size: .9rem;
+      border: 2px solid var(--line); background: #fff;
+    }
+    .fl-weeks button.on { color: #fff; border-color: transparent; }
+    .fl-progress {
+      height: 8px; border-radius: 999px; background: #e5e7eb; overflow: hidden; margin-top: 8px;
+    }
+    .fl-progress > i {
+      display: block; height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #ef4444, #f97316);
+      transition: width .35s;
+    }
+    .fl-sch-day {
+      border: 1px solid var(--line); border-radius: 14px; margin-bottom: 8px;
+      background: #fff; overflow: hidden;
+    }
+    .fl-sch-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 12px; cursor: pointer; gap: 10px;
+    }
+    .fl-badge {
+      width: 40px; height: 40px; border-radius: 10px; display: flex;
+      align-items: center; justify-content: center; font-size: .72rem; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .fl-meal {
+      border: 1px solid var(--line); border-radius: 14px; margin-bottom: 8px; background: #fff;
+    }
+    .fl-meal-h {
+      padding: 12px; display: flex; justify-content: space-between; cursor: pointer; gap: 8px;
+    }
+    .fl-meal-b { padding: 0 12px 12px; font-size: .8rem; color: var(--muted); line-height: 1.5; }
+    .fl-rest {
+      text-align: center; padding: 28px 16px; color: var(--muted);
+    }
+    .fl-rest .big { font-size: 2rem; margin-bottom: 6px; }
+    .fl-water-bar {
+      height: 8px; border-radius: 999px; background: #e0f2fe; overflow: hidden; margin-top: 10px;
+    }
+    .fl-water-bar > i {
+      display: block; height: 100%;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      transition: width .3s;
+    }
+    .fl-measure li {
+      padding: 8px 0; border-bottom: 1px solid var(--line);
+      font-size: .82rem; line-height: 1.4; color: #4b5563;
+      display: flex; gap: 8px;
+    }
+    .fl-measure li:last-child { border-bottom: 0; }
+    .fl-measure .n { color: #ef4444; font-weight: 800; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -1255,7 +1386,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.6</div>
+        <div class="ver">3.7</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1700,6 +1831,9 @@
         <button type="button" class="btn btn-s" onclick="document.getElementById('garminRunFileMove').click()">⌚ 가민</button>
         <button type="button" class="btn btn-g" onclick="document.getElementById('woRoutineSection')?.scrollIntoView({behavior:'smooth',block:'start'})">📋 루틴</button>
       </div>
+      <button type="button" class="btn btn-s" style="margin-bottom:12px;background:linear-gradient(135deg,#0a0a0a,#1f1f1f);color:#ef4444;border:1px solid #333" onclick="show('fightlab')">
+        🥊 FIGHT//LAB 6주 프로그램 열기
+      </button>
       <input id="garminRunFileMove" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
 
       <div class="core-alert-strip" id="coreAlertMove"></div>
@@ -1982,6 +2116,111 @@
     </section>
   </div>
 
+  <!-- FIGHT//LAB 6-week program -->
+  <section class="view" id="v-fightlab">
+    <div class="fl-wrap">
+      <div class="fl-header">
+        <div>
+          <div class="fl-logo">FIGHT<span>//</span>LAB</div>
+          <div class="muted" style="font-size:.7rem;margin-top:2px;color:#6b7280">6WK SOLO PROGRAM</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div class="fl-week-pill" id="flWeekPill">W1 · 6WK</div>
+          <button type="button" class="btn-x" style="color:#9ca3af" onclick="show('move')">← 운동 탭</button>
+        </div>
+      </div>
+
+      <div class="fl-phase" id="flPhaseStrip">
+        <div>
+          <div class="fp-label" id="flPhaseLabel">PHASE</div>
+          <div class="fp-title" id="flPhaseTitle">FOUNDATION</div>
+        </div>
+        <div class="fp-desc" id="flPhaseDesc"></div>
+      </div>
+
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;font-weight:700">
+          <span>6주 진행률</span>
+          <span id="flProgressTxt">0%</span>
+        </div>
+        <div class="fl-progress"><i id="flProgressBar" style="width:0%"></i></div>
+      </div>
+
+      <div class="fl-tabs">
+        <button type="button" class="on" data-fl="today" onclick="setFlTab('today')">오늘</button>
+        <button type="button" data-fl="plan" onclick="setFlTab('plan')">주간 플랜</button>
+        <button type="button" data-fl="fuel" onclick="setFlTab('fuel')">영양·물</button>
+      </div>
+
+      <!-- TODAY -->
+      <div id="flTabToday">
+        <div class="card">
+          <div class="fl-day-head">
+            <div>
+              <div class="muted" style="font-size:.72rem" id="flTodayDay">TODAY</div>
+              <div class="fl-type" id="flTodayType">STRIKING</div>
+              <div class="muted" style="font-size:.75rem;margin-top:2px" id="flTodayMeta">—</div>
+            </div>
+            <div class="fl-count" id="flTodayCount" style="color:var(--p1)">0/0</div>
+          </div>
+          <div id="flTodayList"></div>
+        </div>
+
+        <div class="fl-sec">일일 목표 (프로그램 기준)</div>
+        <div class="fl-macro" id="flMacroGrid"></div>
+
+        <div class="fl-sec">수분 (프로그램 3.5L)</div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-family:Poppins,sans-serif;font-weight:800;font-size:1.4rem" id="flWaterL">0.00L <span class="muted" style="font-size:.85rem">/ 3.5L</span></div>
+              <div class="muted" style="font-size:.75rem" id="flWaterN">0 × 250ml</div>
+            </div>
+            <button type="button" class="btn btn-s" style="width:auto;padding:10px 14px" onclick="flAddWater()">+ 1컵</button>
+          </div>
+          <div class="fl-water-bar"><i id="flWaterBar" style="width:0%"></i></div>
+          <p class="muted" style="margin-top:8px;font-size:.7rem">앱 물 기록과도 연동됩니다 (+1컵)</p>
+        </div>
+
+        <div class="fl-sec">현재 주차</div>
+        <div class="fl-weeks" id="flWeekBtns"></div>
+
+        <div style="height:10px"></div>
+        <button type="button" class="btn btn-p" onclick="flLogTodayToWorkouts()">오늘 세션을 운동 기록에 넣기</button>
+      </div>
+
+      <!-- PLAN -->
+      <div id="flTabPlan" style="display:none">
+        <div class="fl-sec">6주 페이즈</div>
+        <div id="flPhases"></div>
+
+        <div class="fl-sec">주간 스케줄</div>
+        <div id="flSchedule"></div>
+
+        <div class="fl-sec">주차 노트</div>
+        <div class="card">
+          <textarea id="flNote" placeholder="이번 주 컨디션, 느낀 점…" style="min-height:100px" onblur="flSaveNote()"></textarea>
+          <p class="muted" style="margin-top:6px;font-size:.68rem">포커스 아웃 시 자동 저장</p>
+        </div>
+
+        <div class="fl-sec">무엇을 측정할까</div>
+        <div class="card">
+          <ul class="fl-measure" id="flMeasures" style="list-style:none;padding:0;margin:0"></ul>
+        </div>
+      </div>
+
+      <!-- FUEL -->
+      <div id="flTabFuel" style="display:none">
+        <div class="fl-sec">훈련일 식단 가이드</div>
+        <p class="muted" style="margin-bottom:8px;font-size:.78rem;line-height:1.45">FIGHT//LAB 기본 템플릿입니다. 본인 목표 칼로리와 다르면 기록 탭 목표를 우선하세요.</p>
+        <div id="flMeals"></div>
+
+        <div class="fl-sec">매크로 합계 (가이드)</div>
+        <div class="fl-macro" id="flMacroSum"></div>
+      </div>
+    </div>
+  </section>
+
   <nav class="nav">
     <button class="on" data-v="home" onclick="show('home')"><span class="i">🏠</span>홈</button>
     <button data-v="log" onclick="show('log')"><span class="i">🍽️</span>기록</button>
@@ -2181,6 +2420,10 @@
     let trainMode = 'gym'; // gym | boxing
     let boxFocus = 'striking'; // mixed | shadow | bag | mitt | conditioning
     let lastTrainPlan = null;
+    let flTab = 'today'; // today | plan | fuel
+    let flExpandedDay = null;
+    let flExpandedMeal = null;
+    const FL_KEY = KEY + '-fightlab';
 
     /** 핵심 3종: 러닝 4일, 스쿼트·데드 7일 */
     const CORE_LIFTS = [
@@ -3820,13 +4063,13 @@ function startAlarmLoop() {
       document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
       const el = document.getElementById('v-' + name);
       if (el) el.classList.add('on');
-      // habit stays under 더보기; move is own tab
-      const navMap = { habit: 'more' };
+      const navMap = { habit: 'more', fightlab: 'move' };
       const navName = navMap[name] || name;
       document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === navName));
       if (name === 'rest') { loadRestForm(); renderRest(); }
       if (name === 'report') renderReport();
       if (name === 'move') { try { renderMove(); } catch (e) {} }
+      if (name === 'fightlab') { try { renderFightLab(); } catch (e) {} }
       if (name === 'more') moreTab(document.querySelector('#v-more .tab.on')?.dataset?.t || 'water');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -4795,6 +5038,347 @@ function startAlarmLoop() {
       render();
       toast('세션이 오늘 기록에 추가됐어요');
       try { tickCoreAlerts(true); } catch (e) {}
+    }
+
+
+    /* ===== FIGHT//LAB full program ===== */
+    function defaultFlState() {
+      return {
+        week: 1,
+        completed: {},
+        notes: {},
+        water: 0,
+        waterDate: today()
+      };
+    }
+
+    function loadFl() {
+      try {
+        const raw = localStorage.getItem(FL_KEY);
+        if (!raw) return defaultFlState();
+        const s = { ...defaultFlState(), ...JSON.parse(raw) };
+        if (s.waterDate !== today()) {
+          s.water = 0;
+          s.waterDate = today();
+        }
+        if (!s.week || s.week < 1 || s.week > 6) s.week = 1;
+        if (!s.completed || typeof s.completed !== 'object') s.completed = {};
+        if (!s.notes || typeof s.notes !== 'object') s.notes = {};
+        return s;
+      } catch (e) {
+        return defaultFlState();
+      }
+    }
+
+    function saveFl(state) {
+      try {
+        localStorage.setItem(FL_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function flData() {
+      return window.FT_FIGHTLAB;
+    }
+
+    function setFlTab(t) {
+      flTab = t === 'plan' || t === 'fuel' ? t : 'today';
+      document.querySelectorAll('.fl-tabs button').forEach(b => b.classList.toggle('on', b.dataset.fl === flTab));
+      const a = document.getElementById('flTabToday');
+      const b = document.getElementById('flTabPlan');
+      const c = document.getElementById('flTabFuel');
+      if (a) a.style.display = flTab === 'today' ? '' : 'none';
+      if (b) b.style.display = flTab === 'plan' ? '' : 'none';
+      if (c) c.style.display = flTab === 'fuel' ? '' : 'none';
+    }
+
+    function flExKey(week, id) {
+      return `w${week}-${id}`;
+    }
+
+    function flToggleExercise(id) {
+      const st = loadFl();
+      const key = flExKey(st.week, id);
+      st.completed[key] = !st.completed[key];
+      saveFl(st);
+      renderFightLab();
+    }
+
+    function flSetWeek(w) {
+      const st = loadFl();
+      st.week = Math.max(1, Math.min(6, +w || 1));
+      saveFl(st);
+      flExpandedDay = null;
+      renderFightLab();
+    }
+
+    function flAddWater() {
+      const st = loadFl();
+      if (st.waterDate !== today()) {
+        st.water = 0;
+        st.waterDate = today();
+      }
+      st.water = (st.water || 0) + 1;
+      saveFl(st);
+      // sync main app water
+      try {
+        day().water = (day().water || 0) + 1;
+        save();
+      } catch (e) {}
+      renderFightLab();
+      try { renderWater(); } catch (e) {}
+      toast('+250ml');
+    }
+
+    function flSaveNote() {
+      const st = loadFl();
+      const ta = document.getElementById('flNote');
+      if (!ta) return;
+      st.notes[st.week] = ta.value;
+      saveFl(st);
+    }
+
+    function flLogTodayToWorkouts() {
+      const FL = flData();
+      if (!FL) return toast('fightlab.js 로드 실패');
+      const st = loadFl();
+      const daySch = FL.schedule[FL.todayIndex()];
+      if (!daySch || !daySch.exercises.length) return toast('오늘은 REST 데이예요');
+      const ok = confirm(`오늘 ${daySch.type} 세션 ${daySch.exercises.length}개를 운동 기록에 추가할까요?`);
+      if (!ok) return;
+      const ph = FL.phaseForWeek(st.week);
+      daySch.exercises.forEach(ex => {
+        // rough min parse
+        let min = 10;
+        const m1 = String(ex.time).match(/(\d+)\s*×\s*(\d+)/);
+        const m2 = String(ex.time).match(/(\d+)\s*분/);
+        if (m1) min = (+m1[1]) * (+m1[2] + 1); // rounds * (work+rest approx)
+        else if (m2) min = +m2[1];
+        // adjust rounds for phase
+        if (/셰도우|라운드|×/.test(ex.time + ex.name) && ph.workMin) {
+          const rounds = m1 ? +m1[1] : 3;
+          min = rounds * (ph.workMin + 1);
+        }
+        day().workouts.unshift({
+          id: uid(),
+          name: ex.name,
+          min,
+          cal: Math.round(min * 7),
+          type: /그라운드|테이크|GRAPPL/i.test(ex.name + daySch.type) ? 'strength'
+            : /카디오|컨디션|CONDITION|파워|엔듀런스|어질/i.test(ex.name + daySch.type) ? 'cardio'
+            : 'sports',
+          note: `${ex.detail} · FIGHT//LAB W${st.week} ${ph.label}`,
+          source: 'fightlab'
+        });
+        // mark done
+        st.completed[flExKey(st.week, ex.id)] = true;
+      });
+      saveFl(st);
+      save();
+      toast('운동 기록에 추가 · 체크 완료');
+      renderFightLab();
+      try { renderMove(); } catch (e) {}
+    }
+
+    function renderFightLab() {
+      const FL = flData();
+      if (!FL) {
+        toast('fightlab.js를 불러오지 못했어요');
+        return;
+      }
+      const st = loadFl();
+      const ph = FL.phaseForWeek(st.week);
+      const dayIdx = FL.todayIndex();
+      const daySch = FL.schedule[dayIdx];
+
+      // header
+      const pill = document.getElementById('flWeekPill');
+      if (pill) pill.textContent = `W${st.week} · 6WK`;
+
+      const strip = document.getElementById('flPhaseStrip');
+      if (strip) {
+        strip.style.background = ph.color + '18';
+        strip.style.border = `1px solid ${ph.color}40`;
+      }
+      const pl = document.getElementById('flPhaseLabel');
+      const pt = document.getElementById('flPhaseTitle');
+      const pd = document.getElementById('flPhaseDesc');
+      if (pl) { pl.textContent = `PHASE — WEEK ${st.week}`; pl.style.color = ph.color; }
+      if (pt) pt.textContent = ph.label;
+      if (pd) pd.textContent = ph.desc + ` (${ph.workMin}분 라운드)`;
+
+      // progress
+      const total = FL.totalExercises();
+      const doneCount = Object.values(st.completed || {}).filter(Boolean).length;
+      const pct = total ? Math.min(100, Math.round((doneCount / total) * 100)) : 0;
+      const ptxt = document.getElementById('flProgressTxt');
+      const pbar = document.getElementById('flProgressBar');
+      if (ptxt) ptxt.textContent = `${pct}% · ${doneCount}/${total}`;
+      if (pbar) pbar.style.width = pct + '%';
+
+      // week buttons
+      const wbBtns = document.getElementById('flWeekBtns');
+      if (wbBtns) {
+        wbBtns.innerHTML = [1, 2, 3, 4, 5, 6].map(w => {
+          const p = FL.phaseForWeek(w);
+          const on = w === st.week;
+          return `<button type="button" class="${on ? 'on' : ''}" style="${on ? `background:${p.color}` : ''}" onclick="flSetWeek(${w})">W${w}</button>`;
+        }).join('');
+      }
+
+      // today
+      const todayDone = daySch.exercises.filter(e => st.completed[flExKey(st.week, e.id)]).length;
+      const nEx = daySch.exercises.length;
+      const elDay = document.getElementById('flTodayDay');
+      const elType = document.getElementById('flTodayType');
+      const elMeta = document.getElementById('flTodayMeta');
+      const elCnt = document.getElementById('flTodayCount');
+      if (elDay) elDay.textContent = `TODAY — ${daySch.day}`;
+      if (elType) { elType.textContent = daySch.type; elType.style.color = daySch.color; }
+      if (elMeta) elMeta.textContent = nEx ? `${nEx} exercises · ${ph.label}` : 'Active recovery day';
+      if (elCnt) {
+        elCnt.textContent = nEx ? `${todayDone}/${nEx}` : '—';
+        elCnt.style.color = (nEx && todayDone === nEx) ? '#22c55e' : daySch.color;
+      }
+      const list = document.getElementById('flTodayList');
+      if (list) {
+        if (!nEx) {
+          list.innerHTML = `<div class="fl-rest"><div class="big">🛌</div><div style="font-weight:800;letter-spacing:.08em">REST DAY</div><div style="margin-top:6px;font-size:.8rem">회복도 훈련의 일부입니다</div></div>`;
+        } else {
+          list.innerHTML = daySch.exercises.map(ex => {
+            const done = !!st.completed[flExKey(st.week, ex.id)];
+            return `<div class="fl-ex ${done ? 'done' : ''}" onclick="flToggleExercise('${ex.id}')">
+              <div class="fl-check">${done ? '✓' : ''}</div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                  <div class="nm">${esc(ex.name)}</div>
+                  <div class="tm" style="color:${daySch.color}">${esc(ex.time)}</div>
+                </div>
+                <div class="dt">${esc(ex.detail)}</div>
+              </div>
+            </div>`;
+          }).join('');
+        }
+      }
+
+      // macros targets
+      const mg = document.getElementById('flMacroGrid');
+      if (mg) {
+        const t = FL.dailyTargets;
+        const cells = [
+          { l: 'CALORIES', v: t.cal, u: 'kcal/day', c: '#ef4444' },
+          { l: 'PROTEIN', v: t.pro + 'g', u: 'per day', c: '#f97316' },
+          { l: 'CARBS', v: t.carb + 'g', u: 'per day', c: '#eab308' },
+          { l: 'FAT', v: t.fat + 'g', u: 'per day', c: '#22c55e' }
+        ];
+        mg.innerHTML = cells.map(m => `
+          <div class="m"><div class="l">${m.l}</div><div class="v" style="color:${m.c}">${m.v}</div><div class="u">${m.u}</div></div>
+        `).join('');
+      }
+
+      // water
+      const liters = (st.water || 0) * 0.25;
+      const wl = document.getElementById('flWaterL');
+      const wn = document.getElementById('flWaterN');
+      const wb = document.getElementById('flWaterBar');
+      if (wl) wl.innerHTML = `${liters.toFixed(2)}L <span class="muted" style="font-size:.85rem">/ ${FL.dailyTargets.waterL}L</span>`;
+      if (wn) wn.textContent = `${st.water || 0} × 250ml`;
+      if (wb) wb.style.width = Math.min(100, (liters / FL.dailyTargets.waterL) * 100) + '%';
+
+      // phases list
+      const phEl = document.getElementById('flPhases');
+      if (phEl) {
+        phEl.innerHTML = FL.phases.map(p => `
+          <div class="card" style="border-left:3px solid ${p.color};padding:12px 14px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.7rem;font-weight:800;color:${p.color}">WEEK ${esc(p.num)}</span>
+              <strong>${esc(p.label)}</strong>
+            </div>
+            <div class="muted" style="font-size:.78rem;margin-top:6px;line-height:1.4">${esc(p.desc)}</div>
+          </div>
+        `).join('');
+      }
+
+      // schedule
+      const sch = document.getElementById('flSchedule');
+      if (sch) {
+        sch.innerHTML = FL.schedule.map((d, i) => {
+          const open = flExpandedDay === i;
+          const body = (!d.exercises.length)
+            ? ''
+            : (open ? d.exercises.map(ex => {
+                const done = !!st.completed[flExKey(st.week, ex.id)];
+                return `<div class="fl-ex ${done ? 'done' : ''}" style="padding:10px 12px" onclick="event.stopPropagation();flToggleExercise('${ex.id}')">
+                  <div class="fl-check">${done ? '✓' : ''}</div>
+                  <div><div class="nm">${esc(ex.name)} <span class="tm" style="color:${d.color}">· ${esc(ex.time)}</span></div>
+                  <div class="dt">${esc(ex.detail)}</div></div>
+                </div>`;
+              }).join('') : '');
+          return `<div class="fl-sch-day">
+            <div class="fl-sch-head" onclick="flToggleDay(${i})">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="fl-badge" style="background:${d.color}18;color:${d.color};border:1px solid ${d.color}40">${esc(d.short)}</div>
+                <div><div style="font-weight:800">${esc(d.day)}</div><div class="muted" style="font-size:.75rem">${esc(d.type)}</div></div>
+              </div>
+              <span class="muted">${d.exercises.length ? (open ? '▲' : '▼') : ''}</span>
+            </div>
+            ${body}
+          </div>`;
+        }).join('');
+      }
+
+      // note
+      const note = document.getElementById('flNote');
+      if (note && document.activeElement !== note) {
+        note.value = st.notes[st.week] || '';
+        note.placeholder = `Week ${st.week} — 훈련 소감은?`;
+      }
+
+      // measures
+      const ms = document.getElementById('flMeasures');
+      if (ms) {
+        ms.innerHTML = FL.measures.map((m, i) =>
+          `<li><span class="n">${i + 1}</span><span>${esc(m)}</span></li>`
+        ).join('');
+      }
+
+      // meals
+      const meals = document.getElementById('flMeals');
+      if (meals) {
+        meals.innerHTML = FL.meals.map((m, i) => {
+          const open = flExpandedMeal === i;
+          return `<div class="fl-meal">
+            <div class="fl-meal-h" onclick="flToggleMeal(${i})">
+              <div>
+                <div style="font-weight:800">${esc(m.name)}</div>
+                <div class="muted" style="font-size:.72rem">${esc(m.time)} · P${m.p} C${m.c} F${m.f}</div>
+              </div>
+              <div style="font-weight:800;color:var(--p1)">${m.cal} kcal</div>
+            </div>
+            ${open ? `<div class="fl-meal-b">${m.foods.map(f => `· ${esc(f)}`).join('<br>')}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+      const msum = document.getElementById('flMacroSum');
+      if (msum) {
+        const t = FL.dailyTargets;
+        msum.innerHTML = [
+          { l: 'TOTAL KCAL', v: t.cal, c: '#ef4444' },
+          { l: 'PROTEIN', v: t.pro + 'g', c: '#f97316' },
+          { l: 'CARBS', v: t.carb + 'g', c: '#eab308' },
+          { l: 'FAT', v: t.fat + 'g', c: '#22c55e' }
+        ].map(m => `<div class="m"><div class="l">${m.l}</div><div class="v" style="color:${m.c}">${m.v}</div></div>`).join('');
+      }
+
+      setFlTab(flTab);
+    }
+
+    function flToggleDay(i) {
+      flExpandedDay = flExpandedDay === i ? null : i;
+      renderFightLab();
+    }
+    function flToggleMeal(i) {
+      flExpandedMeal = flExpandedMeal === i ? null : i;
+      renderFightLab();
     }
 
 function openWoModal(presetMode) {
@@ -6939,7 +7523,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.6,
+        version: 3.7,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey

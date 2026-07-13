@@ -1,10 +1,11 @@
-const CACHE = 'fit-tracker-2-v20';
+const CACHE = 'fit-tracker-2-v21';
 const ASSETS = [
   './',
   './index.html',
   './foods.js',
   './workouts.js',
   './garmin.js',
+  './fightlab.js',
   './micros.js',
   './manifest.json',
   './icon.svg',
