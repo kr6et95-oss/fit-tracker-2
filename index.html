@@ -787,6 +787,56 @@
     }
     .garmin-steps { font-size: .78rem; line-height: 1.55; color: var(--muted); margin: 0 0 10px; padding-left: 1.15em; }
     .garmin-steps li { margin-bottom: 4px; }
+
+    .wcomment {
+      margin-top: 12px;
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, #f8fafc, #f5f3ff);
+    }
+    .wcomment.tone-good {
+      background: linear-gradient(145deg, #ecfdf5, #f0fdf4);
+      border-color: #a7f3d0;
+    }
+    .wcomment.tone-warn {
+      background: linear-gradient(145deg, #fffbeb, #fef3c7);
+      border-color: #fde68a;
+    }
+    .wcomment.tone-bad {
+      background: linear-gradient(145deg, #fef2f2, #ffe4e6);
+      border-color: #fecdd3;
+    }
+    .wcomment.tone-info {
+      background: linear-gradient(145deg, #eff6ff, #eef2ff);
+      border-color: #c7d2fe;
+    }
+    .wcomment .wc-kicker {
+      font-size: .68rem; font-weight: 800; letter-spacing: .04em;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
+    }
+    .wcomment .wc-title {
+      font-size: .98rem; font-weight: 800; line-height: 1.35; margin-bottom: 6px;
+    }
+    .wcomment .wc-body {
+      font-size: .8rem; line-height: 1.5; color: #374151; margin-bottom: 8px;
+    }
+    .wcomment .wc-metrics {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0 10px;
+    }
+    .wcomment .wc-m {
+      background: rgba(255,255,255,.75); border-radius: 12px; padding: 8px 10px;
+      border: 1px solid rgba(0,0,0,.04);
+    }
+    .wcomment .wc-m .l { font-size: .65rem; color: var(--muted); }
+    .wcomment .wc-m .v { font-family: Poppins, sans-serif; font-weight: 800; font-size: .95rem; margin-top: 2px; }
+    .wcomment .wc-tips { margin: 0; padding-left: 1.1em; font-size: .75rem; line-height: 1.5; color: #4b5563; }
+    .wcomment .wc-tips li { margin-bottom: 3px; }
+    .wcomment .wc-badge {
+      display: inline-block; font-size: .68rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px; margin-bottom: 6px;
+      background: rgba(0,0,0,.06);
+    }
 </style>
 </head>
 <body>
@@ -832,7 +882,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.0</div>
+        <div class="ver">3.1</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -963,6 +1013,7 @@
           <div class="comp-mini"><div class="cm-l">체수분</div><div class="cm-v" id="hWaterPct">—</div><div class="cm-s" id="hWaterPctSub">%</div></div>
         </div>
         <p class="muted" id="hWAvgHint" style="margin-top:8px;line-height:1.45">저울은 매일 흔들립니다. 코치는 주 평균·체성분을 같이 봅니다.</p>
+        <div id="weightCommentHome" class="wcomment tone-info" style="display:none"></div>
       </div>
 
       <div class="card" style="padding:12px">
@@ -1137,6 +1188,7 @@
         </div>
         <div class="report-kpi" id="reportKpis"></div>
         <div id="reportInsights"></div>
+        <div id="weightCommentReport" class="wcomment tone-info" style="display:none;margin-top:12px"></div>
         <div style="height:10px"></div>
         <div class="share-actions">
           <button class="btn btn-p" onclick="shareRecoveryReport()">🖼️ 회복 카드</button>
@@ -1219,6 +1271,7 @@
         <p class="muted" style="margin:6px 0 10px;line-height:1.4;font-size:.72rem">인바디·스마트체중계 수치가 있으면 같이 남겨 두세요. 체중만보다 추이가 선명해집니다.</p>
         <div class="field"><label>메모</label><input id="todayMemo" placeholder="아침 공복, 컨디션 좋음" /></div>
         <button class="btn btn-p" onclick="saveWeight()">체성분 저장</button>
+        <div id="weightCommentLog" class="wcomment tone-info" style="display:none;margin-top:12px"></div>
       </div>
 
       <div class="card">
@@ -2002,7 +2055,326 @@
       if (hFatSub) hFatSub.textContent = comp && comp.fat != null ? '최근 측정' : '기록 탭에서 입력';
       if (hMusSub) hMusSub.textContent = comp && comp.muscle != null ? '골격근량' : '선택 입력';
       if (hWpSub) hWpSub.textContent = comp && comp.waterPct != null ? '체수분' : '선택 입력';
-}
+
+      if (typeof renderWeightCommentUI === 'function') renderWeightCommentUI();
+    }
+
+    /** 체중 코멘트 엔진 — 예상 감량 / 정체 / 급감·급증 등 */
+    function weightWindowAvgs() {
+      // 최근 7일 평균 vs 그 직전 7일 평균
+      const recent = [];
+      const prev = [];
+      const keys14 = dateKeys(14);
+      keys14.forEach((k, i) => {
+        const w = S.days[k]?.weight;
+        if (w == null || isNaN(w)) return;
+        if (i < 7) prev.push(+w);
+        else recent.push(+w);
+      });
+      const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+      return {
+        recentN: recent.length,
+        prevN: prev.length,
+        recentAvg: avg(recent),
+        prevAvg: avg(prev),
+        all7: avgWeight(7),
+        series: weightSeries().filter(s => s.kg != null)
+      };
+    }
+
+    function calorieContext(days = 7) {
+      const g = S.goals;
+      const tdee = g?.tdee || null;
+      const goalCal = g?.cal || null;
+      let sum = 0, n = 0, woCal = 0;
+      dateKeys(days).forEach(k => {
+        const m = mealTotals(k);
+        if (m.cal > 200) { sum += m.cal; n++; }
+        woCal += woTot(k).cal || 0;
+      });
+      const avgIntake = n >= 3 ? Math.round(sum / n) : null;
+      const plannedDeficit = (tdee != null && goalCal != null) ? (tdee - goalCal) : 500;
+      // 실제 순적자 대략: TDEE + 운동칼로리/일 - 섭취 (운동은 이중계산 주의 → 절반만 가산)
+      const avgWo = woCal / days;
+      let actualDeficit = null;
+      if (avgIntake != null && tdee != null) {
+        actualDeficit = Math.round(tdee + avgWo * 0.5 - avgIntake);
+      }
+      const expectedWeeklyFromPlan = Math.round((plannedDeficit * 7 / 7700) * 100) / 100; // kg
+      const expectedWeeklyFromActual = actualDeficit != null
+        ? Math.round((actualDeficit * 7 / 7700) * 100) / 100
+        : expectedWeeklyFromPlan;
+      return {
+        tdee, goalCal, avgIntake, intakeDays: n,
+        plannedDeficit, actualDeficit,
+        expectedWeeklyFromPlan, expectedWeeklyFromActual
+      };
+    }
+
+    function analyzeWeightComment() {
+      const p = S.profile;
+      const g = S.goals;
+      const win = weightWindowAvgs();
+      const cal = calorieContext(7);
+      const series = win.series;
+      const a7 = win.all7;
+
+      const fmt = (x, dig = 1) => (x == null || isNaN(x)) ? '—' : (x > 0 ? '+' : '') + (+x).toFixed(dig);
+      const kg = (x) => (x == null || isNaN(x)) ? '—' : (+x).toFixed(1) + 'kg';
+
+      // 측정 부족
+      if (!series.length || (a7 && a7.n < 2) || series.length < 2) {
+        return {
+          tone: 'info',
+          badge: '기록 부족',
+          code: 'need_data',
+          title: '체중을 2–3일 더 남겨 주세요',
+          body: '예상 감량·정체·급변 코멘트는 주 평균이 쌓여야 정확해집니다. 매일 같은 조건(아침 공복)으로 재면 좋아요.',
+          metrics: [
+            { l: '7일 측정', v: a7 ? a7.n + '회' : '0회' },
+            { l: '목표 체중', v: p?.target ? p.target + 'kg' : '—' }
+          ],
+          tips: [
+            '아침 화장실 후·공복·비슷한 옷으로 측정',
+            '하루 출렁임(±0.5kg)보다 7일 평균을 보세요',
+            '목표 칼로리 적자가 설정돼 있으면 예상 감량도 계산됩니다'
+          ],
+          expectedWeekly: cal.expectedWeeklyFromPlan,
+          actualWeekly: null
+        };
+      }
+
+      // 주간 실제 변화: 직전 7일 평균 → 최근 7일 평균 (둘 다 2회 이상일 때)
+      let actualWeekly = null;
+      if (win.recentAvg != null && win.prevAvg != null && win.recentN >= 2 && win.prevN >= 2) {
+        actualWeekly = +(win.recentAvg - win.prevAvg).toFixed(2);
+      } else if (series.length >= 2) {
+        // fallback: 최근 측정 vs 7일 전 가장 가까운 측정
+        const last = series[series.length - 1];
+        let base = null;
+        for (let i = series.length - 2; i >= 0; i--) {
+          const d0 = new Date(series[i].date);
+          const d1 = new Date(last.date);
+          const diff = (d1 - d0) / 86400000;
+          if (diff >= 5 && diff <= 10) { base = series[i]; break; }
+        }
+        if (!base && series.length >= 2) base = series[Math.max(0, series.length - 4)];
+        if (base && last.kg != null && base.kg != null) {
+          const days = Math.max(1, (new Date(last.date) - new Date(base.date)) / 86400000);
+          actualWeekly = +(((last.kg - base.kg) / days) * 7).toFixed(2);
+        }
+      }
+
+      // 전일 대비 급변
+      let dayDelta = null;
+      if (series.length >= 2) {
+        dayDelta = +(series[series.length - 1].kg - series[series.length - 2].kg).toFixed(1);
+      }
+
+      const expected = cal.avgIntake != null ? cal.expectedWeeklyFromActual : cal.expectedWeeklyFromPlan;
+      const target = p?.target != null ? +p.target : null;
+      const cur = series[series.length - 1].kg;
+      const toGo = target != null ? +(cur - target).toFixed(1) : null;
+
+      // 체성분 힌트
+      const fats = series.filter(s => s.fat != null);
+      const mus = series.filter(s => s.muscle != null);
+      let fatDelta = null, musDelta = null;
+      if (fats.length >= 2) fatDelta = +(fats[fats.length - 1].fat - fats[0].fat).toFixed(1);
+      if (mus.length >= 2) musDelta = +(mus[mus.length - 1].muscle - mus[0].muscle).toFixed(1);
+
+      const rest = getRest();
+      const sleepDebt = typeof calcSleepDebt === 'function' ? calcSleepDebt(7) : null;
+
+      // ——— 시나리오 판정 (우선순위) ———
+      let tone = 'info', badge = '분석', code = 'neutral', title = '', body = '', tips = [];
+
+      // 1) 급감 (일간 또는 주간)
+      if ((dayDelta != null && dayDelta <= -1.0) || (actualWeekly != null && actualWeekly <= -1.2)) {
+        tone = 'warn';
+        badge = '급격한 감소';
+        code = 'sudden_drop';
+        title = dayDelta != null && dayDelta <= -1.0
+          ? `하루 만에 ${dayDelta}kg — 지방만 빠진 건 아닐 수 있어요`
+          : `주 ${actualWeekly}kg 속도 — 너무 가파른 감량입니다`;
+        body = '짧은 기간 큰 하락은 체지방보다 수분·글리코겐·장 내용물 비중이 큽니다. 회복·단백질이 부족하면 근육도 같이 줄 수 있어요.';
+        tips = [
+          '2–3일 주 평균을 더 보고 판단하세요 (하루 수치에 과민 반응 X)',
+          '단백질·수면 7h+·완전 휴식일을 점검',
+          '어지럼·무기력·생리 이상이 있으면 적자를 줄이세요',
+          fatDelta != null && fatDelta <= -0.3 ? '체지방도 함께 내려가는 중이면 방향은 좋습니다' : '가능하면 체지방·골격근도 같이 기록해 보세요'
+        ];
+      }
+      // 2) 급증
+      else if ((dayDelta != null && dayDelta >= 1.0) || (actualWeekly != null && actualWeekly >= 1.0)) {
+        tone = 'info';
+        badge = '급격한 증가';
+        code = 'sudden_gain';
+        title = dayDelta != null && dayDelta >= 1.0
+          ? `하루 +${dayDelta}kg — 지방 증가로 보기 이릅니다`
+          : `주 +${actualWeekly}kg — 수분·염분 영향 가능성이 큽니다`;
+        body = '짜게 먹었거나 탄수화물·술을 늘리면 수분이 붙습니다. 생리 주기, 근육통(염증), 수면 부족도 저울을 올립니다.';
+        tips = [
+          '3–4일 평균이 유지되는지만 보세요',
+          '나트륨·술·야식을 점검',
+          '운동을 막 재개했다면 근육 수분 증가일 수 있어요',
+          '목표 칼로리를 넘기고 있다면 한 끼 구성만 조정'
+        ];
+      }
+      // 3) 정체 (적자 있는데 안 빠짐)
+      else if (actualWeekly != null && Math.abs(actualWeekly) < 0.2 && expected >= 0.25) {
+        tone = 'warn';
+        badge = '정체기 신호';
+        code = 'plateau';
+        title = '저울은 멈추었지만, 과정이 틀린 건 아닐 수 있어요';
+        body = `계획상 주 약 ${expected.toFixed(2)}kg 감량이 기대되는데, 최근 주 평균 변화는 ${fmt(actualWeekly)}kg입니다. 수분 정체, 근육 증가, 섭취 과소 기록, TDEE 과대평가가 흔합니다.`;
+        tips = [
+          cal.avgIntake == null ? '식단 기록을 3일 이상 채우면 예상 적자가 더 정확해집니다' : `최근 평균 섭취 ${cal.avgIntake}kcal · 목표 ${cal.goalCal || '—'}kcal`,
+          '주 평균 2주 추이를 보고 판단 (1주는 노이즈)',
+          '수면 부족·스트레스면 코르티솔·수분 저류 가능',
+          '체지방%가 내려가면 체중 정체여도 성공에 가깝습니다',
+          '4주 이상 완전 정체면 활동 추정치를 한 단계 낮추거나 소폭 조정'
+        ];
+        if (musDelta != null && musDelta >= 0.2) {
+          tips.unshift(`골격근 +${musDelta}kg 방향 — 체중 정체는 ‘리컴프’일 수 있어요`);
+        }
+      }
+      // 4) 너무 빠른 감량 (기대보다 훨씬 빠름)
+      else if (actualWeekly != null && actualWeekly <= -0.7 && actualWeekly < expected - 0.35) {
+        tone = 'warn';
+        badge = '예상보다 빠름';
+        code = 'faster_than_expected';
+        title = `주 ${actualWeekly}kg — 예상(${expected.toFixed(2)}kg)보다 가파릅니다`;
+        body = '빠른 감량은 초반 수분 효과일 수 있지만, 지속되면 회복·근육·호르몬에 부담이 됩니다. 적자를 조금 줄이는 편이 장기적으로 유리합니다.';
+        tips = [
+          '단백질과 근력 자극을 유지',
+          '회복 점수가 낮으면 칼로리를 100–200 올리기',
+          '주 0.3–0.7% 체중 감량이 일반적으로 안전 구간'
+        ];
+      }
+      // 5) 늘고 있음 (컷 목표인데)
+      else if (actualWeekly != null && actualWeekly >= 0.3 && (toGo == null || toGo > 0.5)) {
+        tone = 'warn';
+        badge = '체중 상승 구간';
+        code = 'gaining';
+        title = `주 ${fmt(actualWeekly)}kg — 지금은 늘고 있는 구간입니다`;
+        body = cal.avgIntake != null && cal.goalCal
+          ? `평균 섭취 ${cal.avgIntake}kcal vs 목표 ${cal.goalCal}kcal. 기록이 맞다면 적자가 없거나 주말에 크게 넘겼을 수 있어요.`
+          : '목표보다 섭취가 많거나, 수분·근육 증가일 수 있습니다. 식단 기록을 보강하면 원인이 분명해집니다.';
+        tips = [
+          '주말·외식 칼로리를 빼먹지 않았는지 확인',
+          '음료·소스·오일 숨은 칼로리 체크',
+          '근력 시작 초기 수분 증가는 정상일 수 있음',
+          toGo != null ? `목표까지 약 ${toGo}kg` : '목표 체중을 프로필에 설정해 주세요'
+        ];
+      }
+      // 6) 정상 감량 궤도
+      else if (actualWeekly != null && actualWeekly <= -0.15 && actualWeekly >= -0.85) {
+        const close = Math.abs(actualWeekly - (-Math.abs(expected))) <= 0.25;
+        tone = 'good';
+        badge = close ? '예상 궤도' : '감량 진행 중';
+        code = close ? 'on_track' : 'losing';
+        title = close
+          ? `주 ${actualWeekly}kg — 예상 감량과 잘 맞습니다`
+          : `주 ${actualWeekly}kg — 꾸준히 내려가는 중입니다`;
+        body = `계획 기준 주 약 ${cal.expectedWeeklyFromPlan.toFixed(2)}kg` +
+          (cal.avgIntake != null ? ` · 실제 섭취 기준 약 ${cal.expectedWeeklyFromActual.toFixed(2)}kg` : '') +
+          ` 감량이 이론값입니다. 지금은 저울보다 습관 유지가 더 중요합니다.`;
+        tips = [
+          '일일 출렁임에 일희일비하지 않기',
+          '회복 > 영양 > 훈련 순서 유지',
+          toGo != null && actualWeekly < 0
+            ? `이 속도면 목표까지 대략 ${Math.max(1, Math.ceil(toGo / Math.abs(actualWeekly)))}주 전후 (개인차 큼)`
+            : '목표 체중을 설정하면 남은 기간 추정이 됩니다',
+          '체지방을 같이 재면 ‘질 좋은 감량’인지 확인 가능'
+        ];
+      }
+      // 7) 소폭 변동 / 유지
+      else if (actualWeekly != null && Math.abs(actualWeekly) < 0.2) {
+        tone = 'info';
+        badge = '유지 구간';
+        code = 'maintain';
+        title = '주 평균이 거의 그대로입니다';
+        body = expected < 0.2
+          ? '목표 적자가 크지 않아 유지에 가까운 설정입니다. 감량이 목표면 활동 또는 섭취를 소폭 조정하세요.'
+          : '측정 오차·수분 범위 안에서의 유지일 수 있습니다. 한 주 더 평균을 모아 보세요.';
+        tips = [
+          '같은 시간대 측정 습관 유지',
+          '식단·수면 로그를 채우면 다음 주 코멘트가 날카로워집니다'
+        ];
+      }
+      // 8) 기타
+      else {
+        tone = 'info';
+        badge = '추이 관찰';
+        code = 'watch';
+        title = actualWeekly != null
+          ? `주 ${fmt(actualWeekly)}kg 변화 — 조금 더 관찰해 볼까요`
+          : '체중 추이를 모으는 중입니다';
+        body = '개인차·생리·수면·염분에 따라 같은 적자도 저울 반응이 다릅니다. 2주 단위로 주 평균을 비교하는 것이 안전합니다.';
+        tips = [
+          `이론상 주 감량 약 ${expected.toFixed(2)}kg (적자 기준)`,
+          '급하지 않게, 회복을 지키며 조정'
+        ];
+      }
+
+      // 목표 도달 임박
+      if (toGo != null && toGo <= 1 && toGo >= -1 && code !== 'need_data') {
+        tips = [`목표 ${target}kg까지 ${toGo > 0 ? toGo + 'kg' : '도달·유지 구간'}`, ...tips];
+      }
+
+      // 수면 부채 보강
+      if (sleepDebt && sleepDebt.logged && sleepDebt.net <= -3 && (code === 'plateau' || code === 'gaining')) {
+        tips = ['수면 부채가 큽니다 — 정체·수분 저류와 관련될 수 있어요', ...tips];
+      }
+
+      const metrics = [
+        { l: '예상 주 감량', v: (expected >= 0 ? '−' : '+') + Math.abs(expected).toFixed(2) + 'kg' },
+        { l: '실제 주 변화', v: actualWeekly == null ? '—' : fmt(actualWeekly) + 'kg' },
+        { l: '7일 평균', v: a7 ? a7.avg + 'kg' : '—' },
+        { l: cal.avgIntake != null ? '평균 섭취' : '목표 칼로리', v: cal.avgIntake != null ? cal.avgIntake + '' : (cal.goalCal || '—') + '' }
+      ];
+
+      return {
+        tone, badge, code, title, body, tips, metrics,
+        expectedWeekly: expected,
+        actualWeekly,
+        dayDelta,
+        toGo
+      };
+    }
+
+    function renderWeightCommentUI() {
+      const data = analyzeWeightComment();
+      const htmlCard = (d) => {
+        if (!d) return '';
+        const tips = (d.tips || []).slice(0, 5).map(t => `<li>${esc(t)}</li>`).join('');
+        const metrics = (d.metrics || []).map(m =>
+          `<div class="wc-m"><div class="l">${esc(m.l)}</div><div class="v">${esc(String(m.v))}</div></div>`
+        ).join('');
+        return `
+          <div class="wc-kicker">Weight coach</div>
+          <span class="wc-badge">${esc(d.badge)}</span>
+          <div class="wc-title">${esc(d.title)}</div>
+          <div class="wc-body">${esc(d.body)}</div>
+          <div class="wc-metrics">${metrics}</div>
+          <ul class="wc-tips">${tips}</ul>
+        `;
+      };
+      const inner = htmlCard(data);
+      ['weightCommentHome', 'weightCommentLog', 'weightCommentReport'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'wcomment tone-' + (data.tone || 'info');
+        if (id === 'weightCommentHome' || id === 'weightCommentLog') {
+          el.style.marginTop = id === 'weightCommentLog' ? '12px' : '';
+        }
+        if (id === 'weightCommentReport') el.style.marginTop = '12px';
+        el.style.display = '';
+        el.innerHTML = inner;
+      });
+    }
+
 
     function sleepPrefs() {
       if (!S.sleepPrefs) {
@@ -4332,6 +4704,8 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
           }
         });
       }
+    
+      if (typeof renderWeightCommentUI === 'function') renderWeightCommentUI();
     }
 
     function renderLog() {
@@ -5000,7 +5374,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.0,
+        version: 3.1,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
