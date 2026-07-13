@@ -1308,7 +1308,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.4</div>
+        <div class="ver">4.5</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1767,7 +1767,7 @@
       <div class="train-ai-card" id="trainAiCard">
         <div class="ta-kicker" id="trainAiKicker">AI S&amp;C · 강혁 데스크</div>
         <div class="ta-title" id="trainAiTitle">오늘의 훈련 추천</div>
-        <div class="ta-sub" id="trainAiSub">회복·핵심 3종·최근 볼륨을 보고, 선택한 강도에 맞춰 세션을 짜 줍니다. (Gemini 연결 시 AI, 없으면 로컬 처방)</div>
+        <div class="ta-sub" id="trainAiSub">회복·핵심 3종·최근 볼륨을 보고, 선택한 강도에 맞춰 세션을 짜 줍니다. (설정에 Gemini 키 있으면 AI, 없으면 로컬 처방)</div>
 
         <div class="train-mode-hint" id="trainModeHint">여러 종목을 <strong>동시에</strong> 고를 수 있어요 (조합 추천)</div>
         <div class="train-mode-row" id="trainModeRow">
@@ -1920,11 +1920,13 @@
         <div class="card">
           <div class="card-h"><h2>✨ Google Gemini 연동</h2></div>
           <p class="muted" style="margin-bottom:10px;line-height:1.45">
-            개인용으로 <strong>기본 API 키가 이미 들어 있습니다.</strong>
-            Gemini 보드 · 음식 사진 분석을 바로 쓸 수 있어요. 다른 키로 바꾸려면 아래를 수정 후 저장하세요.
+            이전 기본 키는 <strong>비활성</strong>이라 AI가 실패합니다.
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent,#6366f1);font-weight:700">Google AI Studio</a>에서
+            <strong>새 API 키를 발급</strong> → 아래에 붙여넣기 → <strong>키 저장</strong> → <strong>연결 테스트</strong>.
+            (Google 계정 로그인 후 Create API key. 무료 할당량으로 충분합니다.)
           </p>
-          <div class="field"><label>Gemini API 키</label>
-            <input id="geminiKey" type="password" placeholder="AIza..." autocomplete="off" />
+          <div class="field"><label>Gemini API 키 (재발급 키 붙여넣기)</label>
+            <input id="geminiKey" type="password" placeholder="AIza... (AI Studio 새 키)" autocomplete="off" />
           </div>
           <div class="field"><label>모델</label>
             <select id="geminiModel">
@@ -1937,8 +1939,9 @@
           <div class="btn-row">
             <button class="btn btn-g" onclick="saveGeminiSettings()">키 저장</button>
             <button class="btn btn-s" onclick="testGemini()">연결 테스트</button>
+            <button class="btn btn-s" type="button" onclick="clearGeminiKey()">키 지우기</button>
           </div>
-          <p class="muted" id="geminiSetHint" style="margin-top:8px">미연결</p>
+          <p class="muted" id="geminiSetHint" style="margin-top:8px">미연결 · 새 키 필요</p>
         </div>
         <div class="card">
           <div class="card-h"><h2>🎯 핵심 운동 알림</h2></div>
@@ -5997,20 +6000,26 @@ function setWoMode(mode) {
     // 개인용 기본 키 (본인 사용). 설정에서 덮어쓸 수 있음.
     const GEMINI_KEY_STORE = 'fit-tracker-2-gemini';
     const GEMINI_DEFAULT = {
-      apiKey: 'AIzaSyAaLSowHAJEbPR4SkWKZwCKWRsJ2Ojwv80',
+      apiKey: '', // 사용자가 AI Studio에서 발급한 키를 설정에 저장
       model: 'gemini-2.5-flash'
-    };
+    }
+    const GEMINI_DEAD_KEYS = ['AIzaSyAaLSowHAJEbPR4SkWKZwCKWRsJ2Ojwv80'];;
 
     function loadGeminiSettings() {
       try {
         const saved = JSON.parse(localStorage.getItem(GEMINI_KEY_STORE) || '{}');
+        let apiKey = (saved.apiKey && String(saved.apiKey).trim()) || '';
+        // drop known-dead / disabled seeded keys so UI asks for re-issue
+        if (apiKey && typeof GEMINI_DEAD_KEYS !== 'undefined' && GEMINI_DEAD_KEYS.includes(apiKey)) {
+          apiKey = '';
+        }
         return {
-          apiKey: (saved.apiKey && String(saved.apiKey).trim()) || GEMINI_DEFAULT.apiKey,
+          apiKey,
           model: (saved.model && String(saved.model).trim()) || GEMINI_DEFAULT.model,
           savedAt: saved.savedAt || null
         };
       } catch {
-        return { ...GEMINI_DEFAULT };
+        return { apiKey: '', model: GEMINI_DEFAULT.model, savedAt: null };
       }
     }
 
@@ -6019,23 +6028,31 @@ function setWoMode(mode) {
         const raw = localStorage.getItem(GEMINI_KEY_STORE);
         if (!raw) {
           localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
-            apiKey: GEMINI_DEFAULT.apiKey,
+            apiKey: '',
             model: GEMINI_DEFAULT.model,
             savedAt: Date.now(),
             seeded: true
           }));
-        } else {
-          const s = JSON.parse(raw);
-          if (!s.apiKey || !String(s.apiKey).trim()) {
-            s.apiKey = GEMINI_DEFAULT.apiKey;
-            s.model = s.model || GEMINI_DEFAULT.model;
-            s.savedAt = Date.now();
-            localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify(s));
-          }
+          return;
+        }
+        const s = JSON.parse(raw);
+        let dirty = false;
+        const k = (s.apiKey && String(s.apiKey).trim()) || '';
+        if (k && typeof GEMINI_DEAD_KEYS !== 'undefined' && GEMINI_DEAD_KEYS.includes(k)) {
+          s.apiKey = '';
+          dirty = true;
+        }
+        if (!s.model) {
+          s.model = GEMINI_DEFAULT.model;
+          dirty = true;
+        }
+        if (dirty) {
+          s.savedAt = Date.now();
+          localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify(s));
         }
       } catch {
         localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
-          apiKey: GEMINI_DEFAULT.apiKey,
+          apiKey: '',
           model: GEMINI_DEFAULT.model,
           savedAt: Date.now(),
           seeded: true
@@ -6062,12 +6079,33 @@ function setWoMode(mode) {
     }
 
     function saveGeminiSettings() {
-      const apiKey = document.getElementById('geminiKey').value.trim() || GEMINI_DEFAULT.apiKey;
-      const model = document.getElementById('geminiModel').value || GEMINI_DEFAULT.model;
+      const el = document.getElementById('geminiKey');
+      const apiKey = (el && el.value ? el.value.trim() : '') || '';
+      if (apiKey && typeof GEMINI_DEAD_KEYS !== 'undefined' && GEMINI_DEAD_KEYS.includes(apiKey)) {
+        toast('이 키는 비활성입니다. AI Studio에서 새 키를 발급하세요');
+        return;
+      }
+      const model = (document.getElementById('geminiModel')?.value) || GEMINI_DEFAULT.model;
       localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({ apiKey, model, savedAt: Date.now() }));
       updateGeminiStatusUI();
-      toast(apiKey ? 'Gemini 키 저장됨' : '키가 비어 있어요');
+      if (!apiKey) toast('키가 비어 있어요 · AI Studio에서 발급 후 붙여넣기');
+      else toast('Gemini 키 저장됨 · 연결 테스트로 확인하세요');
     }
+
+    function clearGeminiKey() {
+      localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
+        apiKey: '',
+        model: GEMINI_DEFAULT.model,
+        savedAt: Date.now()
+      }));
+      const k = document.getElementById('geminiKey');
+      if (k) k.value = '';
+      updateGeminiStatusUI();
+      const hint = document.getElementById('geminiSetHint');
+      if (hint) hint.textContent = '키 삭제됨 · AI Studio에서 새 키를 발급하세요';
+      toast('Gemini 키 지움');
+    }
+
 
     function updateGeminiStatusUI() {
       ensureGeminiSeeded();
@@ -6075,10 +6113,12 @@ function setWoMode(mode) {
       const model = getGeminiModel();
       const st = document.getElementById('geminiStatus');
       const hint = document.getElementById('geminiSetHint');
-      if (st) st.textContent = has
-        ? `Gemini 연결됨 · ${model} · 사진 분석·코칭 바로 사용 가능`
-        : 'Gemini 키 없음 · 더보기 → 설정에서 연결 (없으면 로컬 코칭만)';
-      if (hint) hint.textContent = has ? `개인 키 적용됨 · 모델 ${model}` : '미연결';
+      if (st) st.textContent = has ? ('연결됨 · ' + model) : '키 없음 · 재발급 필요';
+      if (hint && !hint.dataset.testing) {
+        hint.textContent = has
+          ? ('저장됨 · ' + model + ' · 연결 테스트로 확인')
+          : '미연결 · AI Studio에서 새 키 발급 후 붙여넣기';
+      }
     }
 
     function extractGeminiText(data) {
@@ -6209,20 +6249,33 @@ function setWoMode(mode) {
 
     async function testGemini() {
       saveGeminiSettings();
-      if (!getGeminiKey()) return toast('API 키를 먼저 입력하세요');
+      if (!getGeminiKey()) {
+        toast('API 키를 먼저 입력하세요');
+        const hint0 = document.getElementById('geminiSetHint');
+        if (hint0) hint0.innerHTML = '키 없음 · <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">AI Studio에서 발급</a>';
+        return;
+      }
       const hint = document.getElementById('geminiSetHint');
-      if (hint) hint.textContent = '테스트 중…';
+      if (hint) { hint.dataset.testing = '1'; hint.textContent = '테스트 중…'; }
       try {
         const t = await callGemini({
           prompt: '한 줄로만 답해: FIT TRACKER 연결 성공',
-          temperature: 0.2
+          temperature: 0.2,
+          maxOutputTokens: 64
         });
-        if (hint) hint.textContent = '연결 성공 ✓ ' + t.slice(0, 80);
+        if (hint) {
+          delete hint.dataset.testing;
+          hint.textContent = '연결 성공 ✓ ' + String(t).slice(0, 80);
+        }
         toast('Gemini 연결 성공!');
         updateGeminiStatusUI();
       } catch (e) {
-        if (hint) hint.textContent = '실패: ' + e.message;
-        toast('연결 실패: ' + e.message);
+        const msg = (e && e.message) ? String(e.message) : String(e);
+        if (hint) {
+          delete hint.dataset.testing;
+          hint.textContent = '실패: ' + msg.slice(0, 220);
+        }
+        toast('연결 실패 — 새 키를 발급해 보세요');
       }
     }
 
@@ -7794,7 +7847,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.4,
+        version: 4.5,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
