@@ -16,6 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="foods.js"></script>
   <script src="workouts.js"></script>
+  <script src="garmin.js"></script>
   <script src="micros.js"></script>
   <style>
     :root {
@@ -769,6 +770,23 @@
       -webkit-overflow-scrolling: touch;
     }
     .wo-chips-scroll .chip { flex: 0 0 auto; }
+
+    .garmin-box {
+      background: linear-gradient(145deg, #ecfeff, #f0f9ff);
+      border: 1px solid #a5f3fc;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .garmin-box h3 { font-size: .92rem; font-weight: 800; margin-bottom: 6px; }
+    .garmin-preview {
+      font-size: .75rem; line-height: 1.5; color: var(--muted);
+      background: #fff; border-radius: 12px; padding: 10px; margin: 8px 0;
+      border: 1px solid var(--line); max-height: 180px; overflow: auto; white-space: pre-wrap;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+    }
+    .garmin-steps { font-size: .78rem; line-height: 1.55; color: var(--muted); margin: 0 0 10px; padding-left: 1.15em; }
+    .garmin-steps li { margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -814,7 +832,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">2.9</div>
+        <div class="ver">3.0</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1040,6 +1058,9 @@
           <div class="field"><label>수면 시간 (시간)</label><input id="sleepHrs" type="number" min="0" max="16" step="0.5" placeholder="7.5" /></div>
           <div class="field"><label>취침 시각 (선택)</label><input id="bedTime" type="time" /></div>
         </div>
+        <p class="muted" style="margin:0 0 10px;font-size:.72rem;line-height:1.4">
+          Forerunner 265 수면은 <button type="button" class="btn-x" style="display:inline;padding:0;color:var(--p1);font-weight:700" onclick="show('more'); moreTab('set'); setTimeout(()=>document.getElementById('garminSleepPaste')?.focus(), 80)">가민 가져오기</button>에서 붙여넣을 수 있어요.
+        </p>
         <div class="field">
           <label>수면 질 (1 나쁨 → 5 최고)</label>
           <div class="scale-row" id="sleepQualScale"></div>
@@ -1227,6 +1248,8 @@
           <div class="wo-stat"><div class="ws-l">kcal</div><div class="ws-v" id="woStatKcal">0</div></div>
           <div class="wo-stat"><div class="ws-l">볼륨</div><div class="ws-v" id="woStatVol">0</div></div>
         </div>
+        <button type="button" class="btn btn-g" style="margin-bottom:10px" id="garminQuickRun" onclick="document.getElementById('garminRunFileMove').click()">⌚ 가민 러닝 파일 (TCX/GPX)</button>
+        <input id="garminRunFileMove" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
         <div class="wo-modes" id="woModeBar"></div>
         <div class="wo-chips-scroll" id="woMuscleBar" style="display:none"></div>
         <div class="field wo-search"><label>운동 검색</label>
@@ -1387,6 +1410,45 @@
           </div>
           <p class="muted" id="geminiSetHint" style="margin-top:8px">미연결</p>
         </div>
+        <div class="card">
+          <div class="card-h"><h2>⌚ 가민 가져오기</h2><span class="muted">Forerunner 265</span></div>
+          <div class="garmin-box">
+            <h3>수면 + 러닝 자동 채우기</h3>
+            <p class="muted" style="line-height:1.45;margin-bottom:8px">
+              공식 API 없이 <strong>Connect 내보내기 파일</strong>로 휴식·운동을 채웁니다.
+              주관 점수(에너지·피로)는 그대로 두고, 측정값만 덮어씁니다.
+            </p>
+            <ol class="garmin-steps">
+              <li><strong>러닝:</strong> Garmin Connect → 활동 선택 → 내보내기 → <strong>TCX</strong> 또는 <strong>GPX</strong></li>
+              <li><strong>수면:</strong> 날짜·시간 붙여넣기 또는 CSV (예: <code>2026-07-12 7.5 23:30</code>)</li>
+              <li>미리보기 확인 후 <strong>적용</strong> (같은 날짜 러닝은 병합·추가)</li>
+            </ol>
+          </div>
+
+          <div class="field"><label>러닝 파일 (TCX / GPX)</label></div>
+          <button class="btn btn-s" onclick="document.getElementById('garminRunFile').click()">🏃 러닝 파일 선택</button>
+          <input id="garminRunFile" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
+          <div style="height:10px"></div>
+
+          <div class="field">
+            <label>수면 붙여넣기 (한 줄에 하루)</label>
+            <textarea id="garminSleepPaste" placeholder="2026-07-12 7.5 23:30&#10;2026-07-11 7h20m 00:10&#10;7.5" style="min-height:88px"></textarea>
+          </div>
+          <button class="btn btn-g" onclick="garminPreviewSleepPaste()">수면 미리보기</button>
+          <div style="height:8px"></div>
+          <button class="btn btn-g" onclick="document.getElementById('garminSleepFile').click()">😴 수면 CSV 파일</button>
+          <input id="garminSleepFile" type="file" accept=".csv,text/csv,text/plain" style="display:none" onchange="garminLoadSleepFile(event)" />
+
+          <div class="garmin-preview" id="garminPreview">아직 불러온 항목이 없습니다.</div>
+          <div class="grid2">
+            <button class="btn btn-p" onclick="garminApplyImport(false)">적용 (채우기)</button>
+            <button class="btn btn-s" onclick="garminApplyImport(true)">강제 덮어쓰기</button>
+          </div>
+          <p class="muted" style="margin-top:8px;line-height:1.45;font-size:.72rem">
+            FIT 원본은 Connect에서 TCX/GPX로 변환해 주세요. 수면 품질 점수가 CSV에 있으면 1–5로 환산합니다.
+          </p>
+        </div>
+
         <div class="card">
           <div class="card-h"><h2>💾 백업 · 기기 동기화</h2></div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5">
@@ -4642,6 +4704,144 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       toast('이미지 저장 · 텍스트 복사 완료');
     }
 
+
+    /* ===== Garmin Forerunner 265 import ===== */
+    let garminPending = [];
+
+    function garminSetPreview(items, note) {
+      garminPending = items || [];
+      const el = document.getElementById('garminPreview');
+      if (!el) return;
+      const G = window.FT_GARMIN;
+      const body = G && items && items.length ? G.summarize(items) : (note || '아직 불러온 항목이 없습니다.');
+      el.textContent = body;
+    }
+
+    async function garminLoadRunFile(ev) {
+      const files = ev.target.files ? [...ev.target.files] : [];
+      ev.target.value = '';
+      if (!files.length) return;
+      if (!window.FT_GARMIN) return toast('garmin.js 로드 실패');
+      const all = [];
+      for (const f of files) {
+        try {
+          const rows = await window.FT_GARMIN.parseActivityFile(f);
+          all.push(...rows);
+        } catch (e) {
+          toast((f.name || '파일') + ': ' + (e.message || e));
+        }
+      }
+      if (!all.length) return toast('러닝 데이터를 읽지 못했어요');
+      // merge with existing pending sleep
+      const sleep = garminPending.filter(x => x.kind === 'sleep');
+      garminSetPreview([...sleep, ...all]);
+      toast(`러닝 ${all.length}건 미리보기 준비`);
+    }
+
+    async function garminLoadSleepFile(ev) {
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = '';
+      if (!file) return;
+      if (!window.FT_GARMIN) return toast('garmin.js 로드 실패');
+      try {
+        const rows = await window.FT_GARMIN.parseSleepFile(file);
+        const acts = garminPending.filter(x => x.kind === 'activity');
+        garminSetPreview([...rows, ...acts]);
+        toast(`수면 ${rows.length}건 미리보기`);
+      } catch (e) {
+        toast(e.message || '수면 파일 실패');
+      }
+    }
+
+    function garminPreviewSleepPaste() {
+      const raw = (document.getElementById('garminSleepPaste')?.value || '').trim();
+      if (!raw) return toast('수면 텍스트를 붙여넣어 주세요');
+      if (!window.FT_GARMIN) return toast('garmin.js 로드 실패');
+      try {
+        const rows = window.FT_GARMIN.parseSleepText(raw);
+        const acts = garminPending.filter(x => x.kind === 'activity');
+        garminSetPreview([...rows, ...acts]);
+        toast(`수면 ${rows.length}건 미리보기`);
+      } catch (e) {
+        toast(e.message || '해석 실패');
+      }
+    }
+
+    function garminApplyImport(force = false) {
+      if (!garminPending.length) return toast('먼저 파일·수면을 불러와 미리보세요');
+      const sleepN = garminPending.filter(x => x.kind === 'sleep').length;
+      const actN = garminPending.filter(x => x.kind === 'activity').length;
+      const ok = confirm(
+        `가민 데이터를 적용할까요?\n\n수면 ${sleepN}건 · 활동 ${actN}건\n` +
+        (force
+          ? '강제 덮어쓰기: 같은 날짜 수면·동일 가민 러닝을 대체합니다.'
+          : '채우기: 수면이 비어 있을 때만 채우고, 러닝은 새로 추가합니다.')
+      );
+      if (!ok) return;
+
+      let sApplied = 0, aApplied = 0;
+      garminPending.forEach(item => {
+        if (item.kind === 'sleep') {
+          const slot = day(item.date);
+          const prev = slot.rest || null;
+          if (!force && prev && prev.sleepHrs) {
+            // keep existing measured sleep unless force
+            return;
+          }
+          const r = {
+            sleepHrs: item.sleepHrs,
+            bedTime: item.bedTime || (prev && prev.bedTime) || '',
+            sleepQ: item.sleepQ != null ? item.sleepQ : (prev && prev.sleepQ) || 3,
+            energy: (prev && prev.energy) || 3,
+            soreness: (prev && prev.soreness) || 2,
+            stress: (prev && prev.stress) || 2,
+            restDay: (prev && prev.restDay) || false,
+            memo: [prev && prev.memo, '⌚ Garmin FR265'].filter(Boolean).join(' · '),
+            at: Date.now(),
+            source: 'garmin'
+          };
+          r.score = calcRestScore(r, woTot(item.date).min);
+          slot.rest = r;
+          sApplied++;
+        } else if (item.kind === 'activity') {
+          const slot = day(item.date);
+          slot.workouts = slot.workouts || [];
+          // dedupe: same source run approx same min+dist same day
+          const sig = `garmin|${item.min}|${item.dist || 0}|${item.name}`;
+          const exists = slot.workouts.some(w =>
+            w.source === 'garmin' && w.min === item.min && (+w.dist || 0) === (+item.dist || 0) && w.name === item.name
+          );
+          if (exists && !force) return;
+          if (exists && force) {
+            slot.workouts = slot.workouts.filter(w =>
+              !(w.source === 'garmin' && w.min === item.min && (+w.dist || 0) === (+item.dist || 0))
+            );
+          }
+          slot.workouts.unshift({
+            id: uid(),
+            name: item.name || '러닝 (Garmin)',
+            min: item.min || 0,
+            cal: item.cal || 0,
+            dist: item.dist != null ? item.dist : undefined,
+            pace: item.pace || '',
+            type: 'cardio',
+            muscle: '전신',
+            note: 'Forerunner 265',
+            source: 'garmin',
+            startISO: item.startISO || ''
+          });
+          aApplied++;
+        }
+      });
+
+      save();
+      // refresh today's rest form if needed
+      try { loadRestForm(); } catch (e) {}
+      render();
+      toast(`적용 완료 · 수면 ${sApplied} · 러닝 ${aApplied}`);
+      garminSetPreview([], '적용 완료. 새 파일을 불러오면 여기에 미리보기가 표시됩니다.');
+    }
+
 function roundRect(ctx, x, y, w, h, r) {
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -4800,7 +5000,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 2.9,
+        version: 3.0,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
