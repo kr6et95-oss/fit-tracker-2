@@ -837,6 +837,131 @@
       padding: 3px 8px; border-radius: 999px; margin-bottom: 6px;
       background: rgba(0,0,0,.06);
     }
+
+    /* 6-tab nav */
+    .nav { grid-template-columns: repeat(6, 1fr) !important; }
+    .nav button { font-size: .62rem !important; gap: 2px; padding: 2px 0; }
+    .nav button .i { font-size: 1.15rem !important; }
+    .nav button.on { color: var(--p1); font-weight: 800; }
+
+    /* Workout tab UX */
+    .wo-hero {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 22px;
+      padding: 16px 16px 14px;
+      color: #fff;
+      margin-bottom: 12px;
+      box-shadow: 0 12px 32px rgba(102,126,234,.28);
+      position: relative;
+      overflow: hidden;
+    }
+    .wo-hero::after {
+      content: "";
+      position: absolute; right: -24px; top: -30px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.12);
+    }
+    .wo-hero-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 10px; position: relative; z-index: 1;
+    }
+    .wo-hero-label { font-size: .72rem; opacity: .9; font-weight: 600; }
+    .wo-hero-title { font-size: 1.2rem; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; }
+    .wo-hero-sub { font-size: .75rem; opacity: .88; margin-top: 4px; }
+    .wo-hero-add {
+      flex-shrink: 0;
+      background: #fff; color: var(--p1);
+      border-radius: 999px; padding: 10px 14px;
+      font-weight: 800; font-size: .8rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+    }
+    .wo-hero-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-top: 14px; position: relative; z-index: 1;
+    }
+    .wo-hero-stat {
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px; padding: 10px 8px; text-align: center;
+    }
+    .wo-hero-stat .l { font-size: .65rem; opacity: .9; }
+    .wo-hero-stat .v {
+      font-family: Poppins, sans-serif; font-weight: 800;
+      font-size: 1.15rem; margin-top: 2px; letter-spacing: -.02em;
+    }
+    .wo-action-row {
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .wo-action-row .btn { padding: 12px 8px; font-size: .8rem; }
+    .wo-empty {
+      text-align: center; padding: 28px 16px;
+      color: var(--muted); font-size: .85rem; line-height: 1.5;
+    }
+    .wo-empty .big { font-size: 2rem; margin-bottom: 8px; }
+    .wo-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--line);
+    }
+    .wo-item:last-child { border-bottom: 0; }
+    .wo-item .wo-ic {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; flex-shrink: 0;
+      background: linear-gradient(145deg, #f5f3ff, #eef2ff);
+    }
+    .wo-item .wo-body { flex: 1; min-width: 0; }
+    .wo-item .wo-name { font-weight: 800; font-size: .92rem; }
+    .wo-item .wo-meta { font-size: .75rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .wo-item .wo-right { text-align: right; flex-shrink: 0; }
+    .wo-item .wo-kcal { font-weight: 800; font-size: .88rem; color: var(--p1); }
+    .routine-scroll {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+    }
+    .routine-card {
+      flex: 0 0 140px;
+      text-align: left; padding: 12px;
+      border-radius: 16px;
+      background: linear-gradient(160deg, #f8fafc, #eef2ff);
+      border: 1px solid var(--line);
+      font-weight: 800; font-size: .82rem;
+    }
+    .routine-card span {
+      display: block; font-size: .7rem; font-weight: 500;
+      color: var(--muted); margin-top: 6px; line-height: 1.35;
+    }
+    .wo-sheet { max-height: min(92dvh, 820px); }
+    .wo-sheet .sheet-b { padding-bottom: 88px; }
+    .wo-sticky-save {
+      position: sticky; bottom: 0; left: 0; right: 0;
+      padding: 10px 0 4px;
+      background: linear-gradient(180deg, rgba(255,255,255,0), #fff 28%);
+      z-index: 2;
+    }
+    .wo-mode-seg {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+      margin-bottom: 12px;
+    }
+    .wo-mode-seg button {
+      padding: 10px 4px; border-radius: 12px;
+      font-size: .72rem; font-weight: 800; line-height: 1.25;
+      background: #f3f0ff; border: 1px solid var(--line);
+    }
+    .wo-mode-seg button.on {
+      background: linear-gradient(135deg, var(--p1), var(--p2));
+      color: #fff; border-color: transparent;
+    }
+    .section-label {
+      font-size: .72rem; font-weight: 800; color: var(--muted);
+      letter-spacing: .02em; margin: 4px 0 8px;
+    }
+    .wo-chip-grid {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      max-height: 120px; overflow-y: auto;
+      margin-bottom: 10px;
+    }
+    .wo-chip-grid .chip { font-size: .75rem; }
 </style>
 </head>
 <body>
@@ -882,7 +1007,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.1</div>
+        <div class="ver">3.2</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -972,7 +1097,7 @@
 
       <div class="grid2">
         <div class="stat s3" onclick="show('more')" style="cursor:pointer"><div class="l">💧 물</div><div class="v" id="hWater">0/8</div><div class="s">컵</div></div>
-        <div class="stat s4" onclick="show('more'); moreTab('move')" style="cursor:pointer"><div class="l">🏃 운동</div><div class="v" id="hMove">0분</div><div class="s" id="hMoveK">0 kcal</div></div>
+        <div class="stat s4" onclick="show('move')" style="cursor:pointer"><div class="l">🏃 운동</div><div class="v" id="hMove">0분</div><div class="s" id="hMoveK">0 kcal</div></div>
         <div class="stat s6" onclick="show('more'); moreTab('habit')" style="cursor:pointer"><div class="l">✅ 습관</div><div class="v" id="hHabit">0/0</div><div class="s">완료</div></div>
         <div class="stat s1" onclick="show('report')" style="cursor:pointer"><div class="l">⚖️ 최근 체중</div><div class="v" id="hW">—</div><div class="s" id="hWd">기록하기</div></div>
       </div>
@@ -1294,72 +1419,51 @@
 
     <!-- MOVE -->
     <section class="view" id="v-move">
+      <!-- Hero summary -->
+      <div class="wo-hero">
+        <div class="wo-hero-top">
+          <div>
+            <div class="wo-hero-label">TODAY WORKOUT</div>
+            <div class="wo-hero-title" id="woHeroTitle">오늘 운동</div>
+            <div class="wo-hero-sub" id="woHeroSub">기록이 성과를 만듭니다</div>
+          </div>
+          <button type="button" class="wo-hero-add" onclick="openWoModal()">+ 추가</button>
+        </div>
+        <div class="wo-hero-stats">
+          <div class="wo-hero-stat"><div class="l">시간</div><div class="v" id="woStatMin">0</div></div>
+          <div class="wo-hero-stat"><div class="l">kcal</div><div class="v" id="woStatKcal">0</div></div>
+          <div class="wo-hero-stat"><div class="l">볼륨</div><div class="v" id="woStatVol">0</div></div>
+        </div>
+      </div>
+
+      <div class="wo-action-row">
+        <button type="button" class="btn btn-p" onclick="openWoModal()">+ 운동 기록하기</button>
+        <button type="button" class="btn btn-s" onclick="document.getElementById('garminRunFileMove').click()">⌚ 가민</button>
+        <button type="button" class="btn btn-g" onclick="document.getElementById('woRoutineSection')?.scrollIntoView({behavior:'smooth',block:'start'})">📋 루틴</button>
+      </div>
+      <input id="garminRunFileMove" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
+
       <div class="card">
-        <div class="card-h"><h2>🏃 운동 기록</h2><span class="muted" id="woLibCount">라이브러리</span></div>
-        <div class="wo-stats" id="woTodayStats">
-          <div class="wo-stat"><div class="ws-l">오늘 분</div><div class="ws-v" id="woStatMin">0</div></div>
-          <div class="wo-stat"><div class="ws-l">kcal</div><div class="ws-v" id="woStatKcal">0</div></div>
-          <div class="wo-stat"><div class="ws-l">볼륨</div><div class="ws-v" id="woStatVol">0</div></div>
+        <div class="card-h">
+          <h2>오늘 한 운동</h2>
+          <span class="muted" id="woSum">0분 · 0kcal</span>
         </div>
-        <button type="button" class="btn btn-g" style="margin-bottom:10px" id="garminQuickRun" onclick="document.getElementById('garminRunFileMove').click()">⌚ 가민 러닝 파일 (TCX/GPX)</button>
-        <input id="garminRunFileMove" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
-        <div class="wo-modes" id="woModeBar"></div>
-        <div class="wo-chips-scroll" id="woMuscleBar" style="display:none"></div>
-        <div class="field wo-search"><label>운동 검색</label>
-          <input id="woSearch" placeholder="스쿼트, 러닝, 배드민턴…" oninput="renderWoChips()" />
-        </div>
-        <div class="chips" id="woChips"></div>
-        <div class="field"><label>운동</label><input id="woName" placeholder="종목 이름" /></div>
-        <div class="grid2">
-          <div class="field"><label>시간 (분)</label><input id="woMin" type="number" placeholder="30" /></div>
-          <div class="field"><label>소모 kcal</label><input id="woKcal" type="number" placeholder="200" /></div>
-        </div>
-        <div id="woCardioFields">
-          <div class="grid2" style="margin-top:8px">
-            <div class="field"><label>거리 (km)</label><input id="woDist" type="number" step="0.1" placeholder="5.0" /></div>
-            <div class="field"><label>페이스/메모</label><input id="woPace" placeholder="5:30/km 등" /></div>
-          </div>
-        </div>
-        <div id="woStrengthFields" style="display:none">
-          <div class="grid3" style="margin-top:8px">
-            <div class="field"><label>세트</label><input id="woSets" type="number" min="1" placeholder="4" /></div>
-            <div class="field"><label>회(reps)</label><input id="woReps" type="number" min="1" placeholder="10" /></div>
-            <div class="field"><label>중량 kg</label><input id="woLoad" type="number" step="0.5" placeholder="40" /></div>
-          </div>
-          <p class="muted" style="margin:6px 0 0;font-size:.72rem;line-height:1.4">플랭크 등은 횟수에 초를 넣어도 됩니다. 칼로리 비우면 추정합니다.</p>
-        </div>
-        <div class="grid2" style="margin-top:8px">
-          <div class="field"><label>RPE (1–10)</label><input id="woRpe" type="number" min="1" max="10" step="0.5" placeholder="7" /></div>
-          <div class="field"><label>부위</label>
-            <select id="woMuscle">
-              <option value="">—</option>
-              <option>가슴</option><option>등</option><option>어깨</option>
-              <option>하체</option><option>팔</option><option>코어</option><option>전신</option>
-            </select>
-          </div>
-        </div>
-        <div class="field"><label>메모</label><input id="woNote" placeholder="컨디션, PR, 통증 여부…" /></div>
-        <button class="btn btn-s" style="margin-top:10px" onclick="addWorkout()">운동 저장</button>
+        <div id="woList"></div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>📋 루틴 원탭 추가</h2></div>
-        <p class="muted" style="margin-bottom:6px;line-height:1.4">구성 운동을 오늘 기록에 한 번에 넣습니다. 중량은 이후에 수정하세요.</p>
-        <div class="routine-grid" id="woRoutines"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h2>⏱ 최근 운동 다시 하기</h2></div>
+        <div class="card-h"><h2>⏱ 다시 하기</h2><span class="muted">최근 종목</span></div>
         <div class="chips" id="woRecent"></div>
       </div>
 
-      <div class="card">
-        <div class="card-h"><h2>오늘 운동</h2><span class="muted" id="woSum">0분 · 0kcal</span></div>
-        <div class="list" id="woList"></div>
+      <div class="card" id="woRoutineSection">
+        <div class="card-h"><h2>📋 루틴 원탭</h2><span class="muted" id="woLibCount">라이브러리</span></div>
+        <p class="muted" style="margin-bottom:8px;line-height:1.4;font-size:.78rem">구성 운동을 오늘 기록에 한 번에 넣습니다.</p>
+        <div class="routine-scroll" id="woRoutines"></div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>📅 최근 7일 운동 요약</h2></div>
+        <div class="card-h"><h2>📅 최근 7일</h2></div>
         <div class="list" id="woWeekList"></div>
       </div>
     </section>
@@ -1383,9 +1487,8 @@
 
     <!-- MORE -->
     <section class="view" id="v-more">
-      <div class="tabs" style="grid-template-columns:repeat(4,1fr)">
+      <div class="tabs" style="grid-template-columns:repeat(3,1fr)">
         <button class="tab on" data-t="water" onclick="moreTab('water')">물</button>
-        <button class="tab" data-t="move" onclick="moreTab('move')">운동</button>
         <button class="tab" data-t="habit" onclick="moreTab('habit')">습관</button>
         <button class="tab" data-t="set" onclick="moreTab('set')">설정</button>
       </div>
@@ -1561,10 +1664,70 @@
   <nav class="nav">
     <button class="on" data-v="home" onclick="show('home')"><span class="i">🏠</span>홈</button>
     <button data-v="log" onclick="show('log')"><span class="i">🍽️</span>기록</button>
+    <button data-v="move" onclick="show('move')"><span class="i">🏃</span>운동</button>
     <button data-v="rest" onclick="show('rest')"><span class="i">😴</span>휴식</button>
     <button data-v="report" onclick="show('report')"><span class="i">📊</span>리포트</button>
     <button data-v="more" onclick="show('more')"><span class="i">⋯</span>더보기</button>
   </nav>
+
+  <!-- Workout add modal -->
+  <div class="modal" id="woModal" onclick="if(event.target===this)closeWoModal()">
+    <div class="sheet wo-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-h">
+        <h3 id="woModalTitle">운동 추가</h3>
+        <button type="button" class="close-x" onclick="closeWoModal()">×</button>
+      </div>
+      <div class="sheet-b">
+        <div class="section-label">운동 유형</div>
+        <div class="wo-mode-seg" id="woModeBar"></div>
+        <div class="wo-chips-scroll" id="woMuscleBar" style="display:none;margin-bottom:8px"></div>
+
+        <div class="field">
+          <label>종목 검색 · 선택</label>
+          <input id="woSearch" placeholder="스쿼트, 러닝, 배드민턴…" oninput="renderWoChips()" />
+        </div>
+        <div class="section-label">추천 · 검색 결과 <span class="muted" id="woChipHint"></span></div>
+        <div class="wo-chip-grid chips" id="woChips"></div>
+
+        <div class="section-label">상세 기록</div>
+        <div class="field"><label>운동 이름</label><input id="woName" placeholder="종목 이름" /></div>
+        <div class="grid2">
+          <div class="field"><label>시간 (분)</label><input id="woMin" type="number" inputmode="numeric" placeholder="30" /></div>
+          <div class="field"><label>소모 kcal</label><input id="woKcal" type="number" inputmode="numeric" placeholder="비우면 추정" /></div>
+        </div>
+        <div id="woCardioFields">
+          <div class="grid2" style="margin-top:8px">
+            <div class="field"><label>거리 (km)</label><input id="woDist" type="number" step="0.1" inputmode="decimal" placeholder="5.0" /></div>
+            <div class="field"><label>페이스</label><input id="woPace" placeholder="5:30/km" /></div>
+          </div>
+        </div>
+        <div id="woStrengthFields" style="display:none">
+          <div class="grid3" style="margin-top:8px">
+            <div class="field"><label>세트</label><input id="woSets" type="number" min="1" inputmode="numeric" placeholder="4" /></div>
+            <div class="field"><label>회/초</label><input id="woReps" type="number" min="1" inputmode="numeric" placeholder="10" /></div>
+            <div class="field"><label>중량 kg</label><input id="woLoad" type="number" step="0.5" inputmode="decimal" placeholder="40" /></div>
+          </div>
+          <p class="muted" style="margin:6px 0 0;font-size:.72rem;line-height:1.4">플랭크는 횟수에 초를 넣어도 됩니다.</p>
+        </div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="field"><label>RPE (1–10)</label><input id="woRpe" type="number" min="1" max="10" step="0.5" inputmode="decimal" placeholder="7" /></div>
+          <div class="field"><label>부위</label>
+            <select id="woMuscle">
+              <option value="">—</option>
+              <option>가슴</option><option>등</option><option>어깨</option>
+              <option>하체</option><option>팔</option><option>코어</option><option>전신</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>메모</label><input id="woNote" placeholder="컨디션, PR, 통증…" /></div>
+
+        <div class="wo-sticky-save">
+          <button type="button" class="btn btn-p" onclick="addWorkout()">저장하고 닫기</button>
+          <button type="button" class="btn btn-g" style="margin-top:8px" onclick="addWorkout(true)">저장 후 하나 더</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Meal modal -->
   <div class="modal" id="mealModal">
@@ -2958,33 +3121,39 @@
 
     // ===== Navigation =====
     function show(name) {
-      // move/habit live as views but nav maps to more when needed
       document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
       const el = document.getElementById('v-' + name);
       if (el) el.classList.add('on');
-      const navMap = { move: 'more', habit: 'more' };
+      // habit stays under 더보기; move is own tab
+      const navMap = { habit: 'more' };
       const navName = navMap[name] || name;
       document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === navName));
       if (name === 'rest') { loadRestForm(); renderRest(); }
       if (name === 'report') renderReport();
+      if (name === 'move') { try { renderMove(); } catch (e) {} }
       if (name === 'more') moreTab(document.querySelector('#v-more .tab.on')?.dataset?.t || 'water');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     function moreTab(t) {
+      // legacy: deep-link move → dedicated tab
       if (t === 'move') { show('move'); return; }
       if (t === 'habit') { show('habit'); return; }
-      // ensure more view
       document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
       document.getElementById('v-more').classList.add('on');
       document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === 'more'));
       document.querySelectorAll('#v-more > .tabs .tab').forEach(x => x.classList.toggle('on', x.dataset.t === t));
-      document.getElementById('more-water').style.display = t === 'water' ? '' : 'none';
-      document.getElementById('more-move').style.display = 'none';
-      document.getElementById('more-habit').style.display = 'none';
-      document.getElementById('more-set').style.display = t === 'set' ? '' : 'none';
+      const water = document.getElementById('more-water');
+      const habit = document.getElementById('more-habit');
+      const set = document.getElementById('more-set');
+      const move = document.getElementById('more-move');
+      if (water) water.style.display = t === 'water' ? '' : 'none';
+      if (habit) habit.style.display = 'none';
+      if (move) move.style.display = 'none';
+      if (set) set.style.display = t === 'set' ? '' : 'none';
       if (t === 'set') {
         fillGeminiForm();
         updateBackupHint();
+        try { refreshV1Preview(); } catch (e) {}
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3329,19 +3498,52 @@
     }
 
     // ===== Workout =====
-    function setWoMode(mode) {
+    function openWoModal(presetMode) {
+      const modal = document.getElementById('woModal');
+      if (!modal) return;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      if (presetMode) setWoMode(presetMode);
+      else {
+        renderWoModeBar();
+        renderWoChips();
+        // field visibility
+        const sf = document.getElementById('woStrengthFields');
+        const cf = document.getElementById('woCardioFields');
+        if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
+        if (cf) cf.style.display = (woMode === 'cardio' || woMode === 'sports') ? '' : 'none';
+        const mb = document.getElementById('woMuscleBar');
+        if (mb) mb.style.display = woMode === 'strength' ? '' : 'none';
+      }
+      setTimeout(() => {
+        const s = document.getElementById('woSearch');
+        if (s) s.focus();
+      }, 200);
+    }
+
+    function closeWoModal() {
+      const modal = document.getElementById('woModal');
+      if (modal) modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function clearWoForm() {
+      const ids = ['woName','woMin','woKcal','woSets','woReps','woLoad','woDist','woPace','woRpe','woNote','woSearch'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const muscle = document.getElementById('woMuscle');
+      if (muscle) muscle.value = '';
+    }
+
+function setWoMode(mode) {
       const allowed = WO_MODES.map(m => m.id);
       woMode = allowed.includes(mode) ? mode : 'cardio';
       const bar = document.getElementById('woModeBar');
       if (bar) {
         bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mode === woMode));
       }
-      // legacy dual buttons if present
-      const c = document.getElementById('woModeCardio');
-      const s = document.getElementById('woModeStrength');
-      if (c) c.classList.toggle('on', woMode === 'cardio');
-      if (s) s.classList.toggle('on', woMode === 'strength');
-
       const sf = document.getElementById('woStrengthFields');
       const cf = document.getElementById('woCardioFields');
       if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
@@ -3353,10 +3555,11 @@
 
     function renderWoModeBar() {
       const bar = document.getElementById('woModeBar');
-      if (!bar) return;
-      bar.innerHTML = WO_MODES.map(m =>
-        `<button type="button" data-mode="${m.id}" class="${m.id === woMode ? 'on' : ''}" onclick="setWoMode('${m.id}')">${m.label}</button>`
-      ).join('');
+      if (bar) {
+        bar.innerHTML = WO_MODES.map(m =>
+          `<button type="button" data-mode="${m.id}" class="${m.id === woMode ? 'on' : ''}" onclick="setWoMode('${m.id}')">${m.label}</button>`
+        ).join('');
+      }
       const mb = document.getElementById('woMuscleBar');
       if (mb) {
         mb.innerHTML = WO_MUSCLES.map(m =>
@@ -3366,7 +3569,7 @@
       const routines = document.getElementById('woRoutines');
       if (routines) {
         routines.innerHTML = WO_ROUTINES.map(r =>
-          `<button type="button" class="routine-btn" onclick="applyWoRoutine('${r.id}')">${esc(r.name)}<span>${r.items.length}개 동작</span></button>`
+          `<button type="button" class="routine-card" onclick="applyWoRoutine('${r.id}')">${esc(r.name)}<span>${r.items.length}개 동작 · 탭해서 추가</span></button>`
         ).join('');
       }
       const lib = document.getElementById('woLibCount');
@@ -3401,12 +3604,12 @@
           (w.muscle && w.muscle.includes(q))
         );
       }
-      el.innerHTML = list.slice(0, 40).map((w, i) => {
-        // find real index in mode list
+      const hint = document.getElementById('woChipHint');
+      if (hint) hint.textContent = list.length ? `(${Math.min(list.length, 48)}개)` : '';
+      el.innerHTML = list.slice(0, 48).map((w) => {
         const real = (WO_LIB[woMode] || []).indexOf(w);
-        const sub = w.muscle ? w.muscle : '';
-        return `<button type="button" class="chip" onclick="pickWorkoutPreset('${woMode}',${real})">${esc(w.n)}${sub && woMode==='strength' ? '' : ''}</button>`;
-      }).join('') || '<span class="muted" style="font-size:.78rem">검색 결과 없음</span>';
+        return `<button type="button" class="chip" onclick="pickWorkoutPreset('${woMode}',${real})">${esc(w.n)}</button>`;
+      }).join('') || '<span class="muted" style="font-size:.78rem">검색 결과가 없어요. 이름을 직접 입력하세요.</span>';
     }
 
     function pickWorkoutPreset(mode, idx) {
@@ -3427,7 +3630,10 @@
         if (b) b.value = w.reps || '';
         if (c) c.value = w.load || '';
       }
-      toast(w.n + ' 선택');
+      // soft highlight: scroll to name field
+      const nameEl = document.getElementById('woName');
+      if (nameEl) nameEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      toast(w.n + ' 선택됨');
     }
 
     function estimateStrengthCal(sets, reps, load, min) {
@@ -3446,7 +3652,7 @@
       return Math.round(min * 5);
     }
 
-    function addWorkout() {
+    function addWorkout(keepOpen = false) {
       const name = document.getElementById('woName').value.trim();
       let min = +document.getElementById('woMin').value;
       let calRaw = document.getElementById('woKcal').value;
@@ -3492,18 +3698,17 @@
 
       day().workouts.unshift(entry);
       save();
-      document.getElementById('woName').value = '';
-      document.getElementById('woMin').value = '';
-      document.getElementById('woKcal').value = '';
-      if (setsEl) setsEl.value = '';
-      if (repsEl) repsEl.value = '';
-      if (loadEl) loadEl.value = '';
-      if (distEl) distEl.value = '';
-      if (paceEl) paceEl.value = '';
-      if (rpeEl) rpeEl.value = '';
-      if (noteEl) noteEl.value = '';
-      toast('운동 기록!');
+      clearWoForm();
+      toast('운동 저장!');
       render();
+      if (keepOpen) {
+        // stay in modal for next entry
+        renderWoChips();
+        const s = document.getElementById('woSearch');
+        if (s) s.focus();
+      } else {
+        closeWoModal();
+      }
     }
 
     function removeWo(id) {
@@ -3582,10 +3787,10 @@
           if (!seen.has(key)) seen.set(key, { ...w, _k: k });
         });
       });
-      const items = [...seen.values()].slice(0, 12);
+      const items = [...seen.values()].slice(0, 16);
       el.innerHTML = items.length ? items.map(w =>
         `<button type="button" class="chip" onclick="reAddWorkout('${w._k}','${w.id}')">${esc(w.name)}</button>`
-      ).join('') : '<span class="muted" style="font-size:.78rem">최근 기록이 있으면 여기에 뜹니다</span>';
+      ).join('') : '<div class="muted" style="font-size:.8rem;line-height:1.45">최근 2주 기록이 여기 모여요. 탭 한 번으로 오늘에 다시 넣을 수 있습니다.</div>';
     }
 
     function renderWoWeek() {
@@ -4753,34 +4958,76 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       if (typeof renderWoWeek === 'function') renderWoWeek();
 
       const wo = woTot();
-      const list = day().workouts;
+      const list = day().workouts || [];
       let vol = 0;
       list.forEach(w => { vol += woVolume(w); });
       const strengthN = list.filter(w => w.type === 'strength' || w.sets).length;
 
       const sumEl = document.getElementById('woSum');
-      if (sumEl) sumEl.textContent = `${wo.min}분 · ${wo.cal} kcal` + (strengthN ? ` · 근력 ${strengthN}` : '');
+      if (sumEl) sumEl.textContent = list.length
+        ? `${list.length}개 · ${wo.min}분 · ${wo.cal}kcal`
+        : '아직 없음';
+
       const sm = document.getElementById('woStatMin');
       const sk = document.getElementById('woStatKcal');
       const sv = document.getElementById('woStatVol');
-      if (sm) sm.textContent = wo.min;
-      if (sk) sk.textContent = wo.cal;
-      if (sv) sv.textContent = vol >= 1000 ? (vol/1000).toFixed(1) + 't' : vol;
+      if (sm) sm.textContent = wo.min + (wo.min ? '' : '');
+      if (sm) sm.textContent = String(wo.min);
+      if (sk) sk.textContent = String(wo.cal);
+      if (sv) sv.textContent = vol >= 1000 ? (vol / 1000).toFixed(1) + 't' : String(vol);
+
+      const heroTitle = document.getElementById('woHeroTitle');
+      const heroSub = document.getElementById('woHeroSub');
+      if (heroTitle) {
+        if (!list.length) heroTitle.textContent = '오늘 운동 시작하기';
+        else if (strengthN && wo.min) heroTitle.textContent = `오늘 ${list.length}세션 완료`;
+        else heroTitle.textContent = `오늘 ${wo.min}분 움직였어요`;
+      }
+      if (heroSub) {
+        if (!list.length) heroSub.textContent = '한 세션만 남겨도 기록이 쌓입니다';
+        else {
+          const parts = [];
+          if (strengthN) parts.push(`근력 ${strengthN}`);
+          if (list.some(w => w.type === 'cardio' || w.dist)) parts.push('유산소');
+          if (list.some(w => w.type === 'mobility')) parts.push('회복');
+          heroSub.textContent = (parts.join(' · ') || '좋은 페이스') + ' · 회복도 챙기세요';
+        }
+      }
 
       const listEl = document.getElementById('woList');
       if (listEl) {
-        listEl.innerHTML = list.length ? list.map(w => `
-          <div class="item">
-            <div>
-              <div class="t">${esc(w.name)}${w.type === 'strength' || w.sets ? ' 🏋️' : (w.type === 'mobility' ? ' 🧘' : (w.type === 'sports' ? ' ⚡' : ''))}</div>
-              <div class="d">${esc(woDetailText(w))}</div>
+        if (!list.length) {
+          listEl.innerHTML = `
+            <div class="wo-empty">
+              <div class="big">🏃</div>
+              아직 오늘 운동이 없어요<br>
+              <button type="button" class="btn btn-p" style="margin-top:12px;width:auto;padding:10px 18px" onclick="openWoModal()">첫 운동 기록하기</button>
+            </div>`;
+        } else {
+          const icon = (w) => {
+            if (w.type === 'strength' || w.sets) return '🏋️';
+            if (w.type === 'mobility') return '🧘';
+            if (w.type === 'sports') return '⚡';
+            if (w.source === 'garmin') return '⌚';
+            return '🏃';
+          };
+          listEl.innerHTML = list.map(w => `
+            <div class="wo-item">
+              <div class="wo-ic">${icon(w)}</div>
+              <div class="wo-body">
+                <div class="wo-name">${esc(w.name)}</div>
+                <div class="wo-meta">${esc(woDetailText(w))}</div>
+              </div>
+              <div class="wo-right">
+                <div class="wo-kcal">${w.cal || 0}<span style="font-size:.68rem;font-weight:600"> kcal</span></div>
+                <button type="button" class="btn-x" style="margin-top:6px" onclick="removeWo('${w.id}')">삭제</button>
+              </div>
             </div>
-            <div style="text-align:right"><div class="k">${w.cal || 0} kcal</div>
-            <button class="btn-x" style="margin-top:6px" onclick="removeWo('${w.id}')">삭제</button></div>
-          </div>
-        `).join('') : '<div class="empty">오늘 운동이 없어요 · 프리셋·루틴으로 빠르게 남겨보세요</div>';
+          `).join('');
+        }
       }
 
+      // modal field visibility if open
       const sf = document.getElementById('woStrengthFields');
       const cf = document.getElementById('woCardioFields');
       if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
@@ -5106,10 +5353,24 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
         }
       }
       if (!all.length) return toast('러닝 데이터를 읽지 못했어요');
-      // merge with existing pending sleep
-      const sleep = garminPending.filter(x => x.kind === 'sleep');
-      garminSetPreview([...sleep, ...all]);
-      toast(`러닝 ${all.length}건 미리보기 준비`);
+      const sleepKeep = garminPending.filter(x => x.kind === 'sleep');
+      garminSetPreview([...sleepKeep, ...all]);
+      const onMove = document.getElementById('v-move')?.classList.contains('on');
+      if (onMove) {
+        const ok = confirm(`가민 러닝 ${all.length}건을 운동 기록에 추가할까요?`);
+        if (ok) {
+          garminPending = all.slice();
+          garminApplyImport(false, true);
+          if (sleepKeep.length) garminSetPreview(sleepKeep);
+          else garminSetPreview([]);
+          try { renderMove(); } catch (e) {}
+          return;
+        }
+        toast('미리보기만 저장됨 · 설정 > 가민에서 적용 가능');
+        return;
+      }
+      toast(`러닝 ${all.length}건 미리보기`);
+      try { show('more'); moreTab('set'); } catch (e) {}
     }
 
     async function garminLoadSleepFile(ev) {
@@ -5141,17 +5402,19 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       }
     }
 
-    function garminApplyImport(force = false) {
+    function garminApplyImport(force = false, skipConfirm = false) {
       if (!garminPending.length) return toast('먼저 파일·수면을 불러와 미리보세요');
       const sleepN = garminPending.filter(x => x.kind === 'sleep').length;
       const actN = garminPending.filter(x => x.kind === 'activity').length;
-      const ok = confirm(
-        `가민 데이터를 적용할까요?\n\n수면 ${sleepN}건 · 활동 ${actN}건\n` +
-        (force
-          ? '강제 덮어쓰기: 같은 날짜 수면·동일 가민 러닝을 대체합니다.'
-          : '채우기: 수면이 비어 있을 때만 채우고, 러닝은 새로 추가합니다.')
-      );
-      if (!ok) return;
+      if (!skipConfirm) {
+        const ok = confirm(
+          `가민 데이터를 적용할까요?\n\n수면 ${sleepN}건 · 활동 ${actN}건\n` +
+          (force
+            ? '강제 덮어쓰기: 같은 날짜 수면·동일 가민 러닝을 대체합니다.'
+            : '채우기: 수면이 비어 있을 때만 채우고, 러닝은 새로 추가합니다.')
+        );
+        if (!ok) return;
+      }
 
       let sApplied = 0, aApplied = 0;
       garminPending.forEach(item => {
@@ -5374,7 +5637,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.1,
+        version: 3.2,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
@@ -5617,6 +5880,12 @@ function roundRect(ctx, x, y, w, h, r) {
       } catch {}
     }
     startAlarmLoop();
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        try { closeWoModal(); } catch (err) {}
+        try { closeMeal(); } catch (err) {}
+      }
+    }); // keydown-wo-modal
     ensureGeminiSeeded();
     updateGeminiStatusUI();
 
