@@ -1066,6 +1066,119 @@
     .core-emergency-banner .ab-actions button.primary {
       background: #fff; color: #be123c; border: 0;
     }
+
+    .train-ai-card {
+      background: linear-gradient(160deg, #0f172a 0%, #312e81 48%, #4c1d95 100%);
+      color: #fff;
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 14px 36px rgba(49, 46, 129, .35);
+      position: relative;
+      overflow: hidden;
+    }
+    .train-ai-card::after {
+      content: "";
+      position: absolute; right: -20px; top: -30px;
+      width: 140px; height: 140px; border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+    .train-ai-card .ta-kicker {
+      font-size: .68rem; font-weight: 800; letter-spacing: .06em;
+      opacity: .85; position: relative; z-index: 1;
+    }
+    .train-ai-card .ta-title {
+      font-size: 1.1rem; font-weight: 800; margin: 4px 0 6px;
+      position: relative; z-index: 1;
+    }
+    .train-ai-card .ta-sub {
+      font-size: .78rem; line-height: 1.45; opacity: .9;
+      margin-bottom: 12px; position: relative; z-index: 1;
+    }
+    .intensity-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 10px; position: relative; z-index: 1;
+    }
+    .intensity-row button {
+      padding: 12px 8px; border-radius: 14px; font-weight: 800; font-size: .88rem;
+      border: 2px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.1); color: #fff;
+      transition: transform .12s, background .12s;
+    }
+    .intensity-row button:active { transform: scale(.97); }
+    .intensity-row button .il {
+      display: block; font-size: .65rem; font-weight: 600; opacity: .85; margin-top: 2px;
+    }
+    .intensity-row button.on-low {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      border-color: transparent; color: #064e3b;
+    }
+    .intensity-row button.on-mid {
+      background: linear-gradient(135deg, #60a5fa, #6366f1);
+      border-color: transparent;
+    }
+    .intensity-row button.on-high {
+      background: linear-gradient(135deg, #fb7185, #e11d48);
+      border-color: transparent;
+    }
+    .train-ai-card .ta-suggest {
+      font-size: .72rem; opacity: .88; margin-bottom: 10px;
+      position: relative; z-index: 1;
+    }
+    .train-ai-card .ta-go {
+      width: 100%; padding: 12px; border-radius: 14px; font-weight: 800;
+      background: #fff; color: #312e81; border: 0;
+      position: relative; z-index: 1;
+    }
+    .train-ai-card .ta-go:disabled { opacity: .55; }
+    .train-plan {
+      margin-top: 12px; position: relative; z-index: 1;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 16px; padding: 12px;
+    }
+    .train-plan .tp-head {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .train-plan .tp-title { font-weight: 800; font-size: .98rem; line-height: 1.3; }
+    .train-plan .tp-badge {
+      flex-shrink: 0; font-size: .68rem; font-weight: 800;
+      padding: 4px 8px; border-radius: 999px;
+      background: rgba(255,255,255,.18);
+    }
+    .train-plan .tp-why {
+      font-size: .78rem; line-height: 1.45; opacity: .92; margin-bottom: 10px;
+    }
+    .train-plan .tp-block {
+      margin-bottom: 8px; padding: 8px 10px;
+      border-radius: 12px; background: rgba(0,0,0,.15);
+    }
+    .train-plan .tp-block h4 {
+      font-size: .72rem; font-weight: 800; opacity: .85; margin-bottom: 4px;
+    }
+    .train-plan .tp-item {
+      font-size: .8rem; line-height: 1.4; padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .train-plan .tp-item:last-child { border-bottom: 0; }
+    .train-plan .tp-item .meta { opacity: .8; font-size: .72rem; }
+    .train-plan .tp-cues {
+      margin: 8px 0 0; padding-left: 1.1em; font-size: .75rem; line-height: 1.45; opacity: .9;
+    }
+    .train-plan .tp-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;
+    }
+    .train-plan .tp-actions button {
+      padding: 10px 8px; border-radius: 12px; font-weight: 800; font-size: .78rem;
+      border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12); color: #fff;
+    }
+    .train-plan .tp-actions button.primary {
+      background: #fff; color: #312e81; border: 0;
+    }
+    .train-plan .tp-source {
+      margin-top: 8px; font-size: .68rem; opacity: .75; text-align: right;
+    }
 </style>
 </head>
 <body>
@@ -1111,7 +1224,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.3</div>
+        <div class="ver">3.4</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1567,6 +1680,20 @@
         <div class="core-grid" id="coreGridMove"></div>
       </div>
 
+      <div class="train-ai-card" id="trainAiCard">
+        <div class="ta-kicker">AI S&amp;C · 강혁 데스크</div>
+        <div class="ta-title">오늘의 훈련 추천</div>
+        <div class="ta-sub">회복·핵심 3종·최근 볼륨을 보고, 선택한 강도에 맞춰 세션을 짜 줍니다. (Gemini 연결 시 AI, 없으면 로컬 처방)</div>
+        <div class="ta-suggest" id="trainSuggestHint">추천 강도 계산 중…</div>
+        <div class="intensity-row" id="intensityRow">
+          <button type="button" data-iv="low" onclick="setTrainIntensity('low')">하<span class="il">회복·기술</span></button>
+          <button type="button" data-iv="mid" class="on-mid" onclick="setTrainIntensity('mid')">중<span class="il">표준 자극</span></button>
+          <button type="button" data-iv="high" onclick="setTrainIntensity('high')">상<span class="il">하드 데이</span></button>
+        </div>
+        <button type="button" class="ta-go" id="trainGoBtn" onclick="requestTrainingPlan()">이 강도로 추천 받기</button>
+        <div id="trainPlanBox" style="display:none"></div>
+      </div>
+
       <div class="card">
         <div class="card-h">
           <h2>오늘 한 운동</h2>
@@ -2004,6 +2131,8 @@
     let alarmFiredKey = '';
     let coreAlertTimer = null;
     let coreSnoozeUntil = 0;
+    let trainIntensity = 'mid'; // low | mid | high
+    let lastTrainPlan = null;
 
     /** 핵심 3종: 러닝 4일, 스쿼트·데드 7일 */
     const CORE_LIFTS = [
@@ -4018,7 +4147,391 @@ function startAlarmLoop() {
     }
 
     // ===== Workout =====
-    function openWoModal(presetMode) {
+    
+    /* ===== AI / local daily training plan (하·중·상) ===== */
+    function setTrainIntensity(iv) {
+      trainIntensity = (iv === 'low' || iv === 'high') ? iv : 'mid';
+      const row = document.getElementById('intensityRow');
+      if (row) {
+        row.querySelectorAll('button').forEach(b => {
+          b.classList.remove('on-low', 'on-mid', 'on-high');
+          if (b.dataset.iv === trainIntensity) {
+            b.classList.add(trainIntensity === 'low' ? 'on-low' : trainIntensity === 'high' ? 'on-high' : 'on-mid');
+          }
+        });
+      }
+      updateTrainSuggestHint();
+    }
+
+    function suggestedTrainIntensity() {
+      const r = getRest();
+      const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
+      const core = (typeof analyzeCoreLifts === 'function') ? analyzeCoreLifts() : [];
+      const em = core.filter(c => c.status === 'emergency' || c.status === 'never').length;
+      const hard = typeof countConsecutiveHard === 'function' ? countConsecutiveHard() : 0;
+      if (score != null && score < 50) return { iv: 'low', reason: `회복 ${score}점 — 하 강도·회복 우선` };
+      if (hard >= 3) return { iv: 'low', reason: `고강도 ${hard}일 연속 — 오늘은 하 강도 권장` };
+      if (score != null && score < 65) return { iv: 'mid', reason: `회복 ${score}점 — 중 강도·볼륨 조절` };
+      if (em >= 2 && score != null && score >= 70) return { iv: 'high', reason: `핵심 밀림 ${em}종 · 회복 양호 — 상 강도로 정리 가능` };
+      if (score != null && score >= 80 && hard < 2) return { iv: 'high', reason: `회복 ${score}점 — 상 강도 창이 열려 있음` };
+      if (em > 0) return { iv: 'mid', reason: '핵심 기한 관리 · 중 강도 권장' };
+      return { iv: 'mid', reason: '기본 추천: 중 강도 (균형 자극)' };
+    }
+
+    function updateTrainSuggestHint() {
+      const el = document.getElementById('trainSuggestHint');
+      if (!el) return;
+      const s = suggestedTrainIntensity();
+      const labels = { low: '하', mid: '중', high: '상' };
+      el.innerHTML = `💡 오늘 데이터 추천: <strong>${labels[s.iv]}</strong> — ${esc(s.reason)} · 버튼을 눌러 바꿀 수 있어요`;
+    }
+
+    function buildTrainContext(intensity) {
+      const base = typeof buildCoachContext === 'function' ? buildCoachContext() : {};
+      const core = (typeof analyzeCoreLifts === 'function') ? analyzeCoreLifts() : [];
+      return {
+        ...base,
+        requestedIntensity: intensity,
+        intensityGuide: {
+          low: '회복·모빌리티·존2·기술. 고중량/인터벌 금지. 20–40분.',
+          mid: '표준 자극. 핵심 1–2종 + 보조. 40–60분.',
+          high: '하드 데이. 무거운 복합 or 퀄리티 러닝. 워밍업 충분. 45–75분. 회복 낮으면 거절하고 mid/low로.'
+        },
+        coreLifts: core.map(c => ({
+          id: c.id, label: c.label, maxDays: c.maxDays,
+          status: c.status, daysSince: c.daysSince, daysLeft: c.daysLeft
+        })),
+        principles: [
+          '회복 > 영양 > 훈련',
+          '핵심: 러닝 4일 / 스쿼트 7일 / 데드리프트 7일',
+          '의학 진단 금지',
+          '한국어'
+        ]
+      };
+    }
+
+    function localTrainingPlan(intensity) {
+      const r = getRest();
+      const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
+      const core = (typeof analyzeCoreLifts === 'function') ? analyzeCoreLifts() : [];
+      const due = core.filter(c => c.status === 'emergency' || c.status === 'never' || c.status === 'warn');
+      // force downshift if recovery poor
+      let iv = intensity;
+      if (score != null && score < 50 && iv !== 'low') {
+        iv = 'low';
+      } else if (score != null && score < 60 && iv === 'high') {
+        iv = 'mid';
+      }
+
+      const pickCore = () => {
+        const order = ['deadlift', 'squat', 'run'];
+        for (const id of order) {
+          const c = due.find(x => x.id === id);
+          if (c) return c;
+        }
+        // rotate by day
+        const seed = daySeed ? daySeed(today()) : (today().charCodeAt(8) || 0);
+        const pool = core.length ? core : [
+          { id: 'squat', label: '스쿼트' },
+          { id: 'deadlift', label: '데드리프트' },
+          { id: 'run', label: '러닝' }
+        ];
+        return pool[Math.abs(seed) % pool.length];
+      };
+
+      const mainFocus = pickCore();
+      const labels = { low: '하', mid: '중', high: '상' };
+      let title = '', why = '', durationMin = 35;
+      let warmup = [], main = [], finisher = [], cues = [];
+
+      warmup = [
+        { name: '폼롤러·관절 돌리기', min: 5, note: '고관절·흉추' },
+        { name: '워밍업 세트 / 빠른 걷기', min: 5, note: '본세트 전 점진 부하' }
+      ];
+
+      if (iv === 'low') {
+        durationMin = 30;
+        title = `회복 세션 · ${mainFocus?.label || '전신'} 가볍게`;
+        why = score != null
+          ? `회복 ${score}점 기준 하 강도. 자극은 유지하되 신경계를 소모하지 않습니다.`
+          : '하 강도 회복 데이. 기록을 쌓되 무리하지 마세요.';
+        if (mainFocus?.id === 'run') {
+          main = [
+            { name: '존2 걷기·조깅', min: 20, note: '대화 가능 페이스' },
+            { name: '가볍게 스트레칭', min: 5, note: '종아리·힙' }
+          ];
+        } else if (mainFocus?.id === 'deadlift') {
+          main = [
+            { name: '루마니안 데드리프트', min: 12, sets: 3, reps: 8, load: null, note: '빈바~가볍게, 힙힌지 기술' },
+            { name: '글ute bridge / 힙쓰러스트', min: 8, sets: 3, reps: 12, note: '둔근 활성화' }
+          ];
+        } else {
+          main = [
+            { name: '고블릿스쿼트', min: 12, sets: 3, reps: 10, note: '가벼운 중량·깊은 가동' },
+            { name: '스플릿 스쿼트 바디웨이트', min: 8, sets: 2, reps: 8, note: '좌우' }
+          ];
+        }
+        finisher = [
+          { name: '호흡·쿨다운', min: 5, note: '코 호흡 4-6' }
+        ];
+        cues = ['오늘 PR 금지', '통증이 있으면 즉시 중단', '취침 시간을 훈련보다 우선'];
+      } else if (iv === 'high') {
+        durationMin = 55;
+        title = `하드 데이 · ${mainFocus?.label || '메인'} 중심`;
+        why = (due.length
+          ? `기한 임박/초과 핵심(${due.map(d => d.label).join(', ')})을 상 강도로 처리합니다. `
+          : '') + (score != null ? `회복 ${score}점.` : '');
+        if (mainFocus?.id === 'run') {
+          main = [
+            { name: '러닝 워밍업', min: 8, note: '쉬운 페이스' },
+            { name: '인터벌 러닝', min: 20, note: '1–2분 hard / 1–2분 easy × 6–8' },
+            { name: '쿨다운 조깅', min: 8, note: '심박 내리기' }
+          ];
+          cues = ['인터벌 중 폼 붕괴 시 페이스 다운', '수분 보충', '내일은 하·중으로 전환'];
+        } else if (mainFocus?.id === 'deadlift') {
+          main = [
+            { name: '컨벤셔널 데드리프트', min: 20, sets: 4, reps: 5, note: 'RPE 7–8, 워밍업 세트 필수' },
+            { name: '바벨로우 또는 덤벨로우', min: 12, sets: 3, reps: 8, note: '등 보조' },
+            { name: '플랭크', min: 5, sets: 3, reps: 40, note: '초' }
+          ];
+          cues = ['허리가 말리면 중량 다운', '세트 간 2–3분 휴식', '잠 7.5h+'];
+        } else {
+          main = [
+            { name: '백스쿼트', min: 20, sets: 4, reps: 5, note: 'RPE 7–8' },
+            { name: '루마니안 데드리프트', min: 12, sets: 3, reps: 6, note: '보조 힌지' },
+            { name: '워킹런지', min: 8, sets: 3, reps: 10, note: '다리당' }
+          ];
+          cues = ['깊이보다 중립 척추', '무릎 통증 시 고블릿으로 교체', '단백질·수면 챙기기'];
+        }
+        finisher = [
+          { name: '쿨다운 스트레칭', min: 6, note: '고관절·햄스트링' }
+        ];
+      } else {
+        // mid
+        durationMin = 45;
+        title = `표준 세션 · ${mainFocus?.label || '밸런스'}`;
+        why = (due.length
+          ? `오늘 우선순위: ${due.map(d => d.label).join(' · ')}. `
+          : '핵심 주기와 전신을 균형 있게. ') + (score != null ? `회복 ${score}점.` : '');
+        if (mainFocus?.id === 'run') {
+          main = [
+            { name: '러닝', min: 30, note: '존2–3, 대화 가능~약간 힘든 페이스' },
+            { name: '코어 플랭크', min: 5, sets: 3, reps: 30, note: '초' }
+          ];
+        } else if (mainFocus?.id === 'deadlift') {
+          main = [
+            { name: '루마니안 데드리프트', min: 15, sets: 4, reps: 6, note: 'RPE 6–7' },
+            { name: '랫풀다운 또는 풀업 보조', min: 10, sets: 3, reps: 8, note: '등' },
+            { name: '파머스 캐리 또는 플랭크', min: 6, sets: 3, reps: 40, note: '초/거리' }
+          ];
+        } else {
+          main = [
+            { name: '백스쿼트 또는 고블릿스쿼트', min: 15, sets: 4, reps: 6, note: 'RPE 6–7' },
+            { name: '레그프레스 또는 런지', min: 10, sets: 3, reps: 10, note: '하체 보조' },
+            { name: '카프레이즈', min: 5, sets: 3, reps: 12, note: '종아리' }
+          ];
+        }
+        finisher = [
+          { name: '스트레칭·쿨다운', min: 5, note: '호흡 정리' }
+        ];
+        cues = ['핵심 1종 품질 우선', '세트 간 여유 호흡', '기록 남기기'];
+      }
+
+      // if multiple due and mid/high, add short secondary
+      if (iv !== 'low' && due.length >= 2) {
+        const second = due.find(d => d.id !== mainFocus?.id);
+        if (second?.id === 'run') {
+          main.push({ name: '쉬운 조깅 또는 빠른 걷기', min: 12, note: '러닝 주기 관리' });
+        } else if (second?.id === 'squat' && mainFocus?.id !== 'squat') {
+          main.push({ name: '고블릿스쿼트', min: 8, sets: 2, reps: 8, note: '스쿼트 주기 관리' });
+        } else if (second?.id === 'deadlift' && mainFocus?.id !== 'deadlift') {
+          main.push({ name: '루마니안 데드리프트', min: 8, sets: 2, reps: 6, note: '데드 주기 관리' });
+        }
+      }
+
+      return {
+        intensity: iv,
+        intensityLabel: labels[iv],
+        title,
+        focus: mainFocus?.label || '전신',
+        durationMin,
+        why,
+        warmup,
+        main,
+        finisher,
+        cues,
+        source: 'local',
+        requestedIntensity: intensity,
+        adjusted: iv !== intensity
+      };
+    }
+
+    function normalizeAiPlan(j, intensity) {
+      const labels = { low: '하', mid: '중', high: '상' };
+      const mapItems = (arr) => (Array.isArray(arr) ? arr : []).map(it => ({
+        name: it.name || it.n || '동작',
+        min: it.min != null ? +it.min : (it.minutes != null ? +it.minutes : null),
+        sets: it.sets != null ? +it.sets : null,
+        reps: it.reps != null ? +it.reps : null,
+        load: it.load != null ? +it.load : null,
+        note: it.note || it.cue || ''
+      }));
+      let iv = j.intensity === 'low' || j.intensity === 'high' || j.intensity === 'mid' ? j.intensity : intensity;
+      return {
+        intensity: iv,
+        intensityLabel: labels[iv] || '중',
+        title: j.title || '오늘의 세션',
+        focus: j.focus || '',
+        durationMin: j.durationMin || j.duration || 40,
+        why: j.why || j.reason || '',
+        warmup: mapItems(j.warmup || j.warmUp),
+        main: mapItems(j.main || j.work),
+        finisher: mapItems(j.finisher || j.cooldown || j.coolDown),
+        cues: Array.isArray(j.cues) ? j.cues : [],
+        source: 'gemini',
+        requestedIntensity: intensity,
+        adjusted: iv !== intensity
+      };
+    }
+
+    function renderTrainPlan(plan) {
+      lastTrainPlan = plan;
+      const box = document.getElementById('trainPlanBox');
+      if (!box || !plan) return;
+      const block = (title, items) => {
+        if (!items || !items.length) return '';
+        return `<div class="tp-block"><h4>${esc(title)}</h4>${items.map(it => {
+          const bits = [];
+          if (it.sets) bits.push(it.sets + '세트');
+          if (it.reps) bits.push(it.reps + (/플랭크|초/.test(it.name || '') ? '초' : '회'));
+          if (it.load) bits.push(it.load + 'kg');
+          if (it.min) bits.push(it.min + '분');
+          if (it.note) bits.push(it.note);
+          return `<div class="tp-item"><strong>${esc(it.name)}</strong><div class="meta">${esc(bits.join(' · '))}</div></div>`;
+        }).join('')}</div>`;
+      };
+      const adj = plan.adjusted ? ' · 회복 보고 강도 조정됨' : '';
+      box.style.display = '';
+      box.innerHTML = `
+        <div class="train-plan">
+          <div class="tp-head">
+            <div class="tp-title">${esc(plan.title)}</div>
+            <span class="tp-badge">${esc(plan.intensityLabel)} 강도 · ${plan.durationMin || '—'}분</span>
+          </div>
+          <div class="tp-why">${esc(plan.why || '')}${plan.focus ? ` · 포커스: ${esc(plan.focus)}` : ''}${esc(adj)}</div>
+          ${block('① 워밍업', plan.warmup)}
+          ${block('② 메인', plan.main)}
+          ${block('③ 마무리', plan.finisher)}
+          ${(plan.cues && plan.cues.length) ? `<ul class="tp-cues">${plan.cues.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
+          <div class="tp-actions">
+            <button type="button" class="primary" onclick="applyTrainPlanToLog()">이 세션 기록에 넣기</button>
+            <button type="button" onclick="requestTrainingPlan()">다시 추천</button>
+          </div>
+          <div class="tp-source">${plan.source === 'gemini' ? '✨ Gemini · 강혁 S&C' : '📋 로컬 처방 엔진'} · ${esc(dayLabel())}</div>
+        </div>`;
+    }
+
+    async function requestTrainingPlan() {
+      const btn = document.getElementById('trainGoBtn');
+      const box = document.getElementById('trainPlanBox');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '처방 작성 중…';
+      }
+      if (box) {
+        box.style.display = '';
+        box.innerHTML = '<div class="train-plan"><div class="tp-why">강혁 코치가 보드에서 오늘 세션을 짜는 중…</div></div>';
+      }
+      const intensity = trainIntensity || 'mid';
+      try {
+        if (getGeminiKey && getGeminiKey()) {
+          const ctx = buildTrainContext(intensity);
+          const text = await callGemini({
+            system: `너는 FIT TRACKER의 S&C 코치 '강혁'이다.
+사용자가 선택한 강도(low=하, mid=중, high=상)로 오늘 하루 훈련 세션을 처방한다.
+원칙: 회복 > 영양 > 훈련. 회복 점수가 낮으면 요청 강도보다 낮춰도 된다 (intensity 필드에 실제 적용 강도 기입).
+핵심 주기: 러닝 4일 / 스쿼트 7일 / 데드리프트 7일 — emergency/never/warn 종목을 우선 배치.
+의학 진단 금지. 실행 가능한 구체 세트·횟수·분.
+
+반드시 JSON만 출력. 마크다운 금지.
+{
+  "intensity": "low|mid|high",
+  "title": "세션 제목",
+  "focus": "메인 포커스",
+  "durationMin": 45,
+  "why": "왜 이 세션인지 2문장",
+  "warmup": [{"name":"동작","min":5,"sets":null,"reps":null,"load":null,"note":""}],
+  "main": [{"name":"동작","min":10,"sets":3,"reps":8,"load":null,"note":"RPE 등"}],
+  "finisher": [{"name":"동작","min":5,"sets":null,"reps":null,"load":null,"note":""}],
+  "cues": ["큐 1","큐 2"]
+}
+한국어.`,
+            prompt: `선택 강도: ${intensity}\n\n데이터:\n${JSON.stringify(ctx, null, 2)}`,
+            temperature: 0.5
+          });
+          const m = text.match(/\{[\s\S]*\}/);
+          if (!m) throw new Error('JSON 파싱 실패');
+          const j = JSON.parse(m[0]);
+          const plan = normalizeAiPlan(j, intensity);
+          if (!plan.main.length && !plan.warmup.length) throw new Error('빈 플랜');
+          renderTrainPlan(plan);
+          toast('AI 훈련 추천 완료');
+        } else {
+          const plan = localTrainingPlan(intensity);
+          renderTrainPlan(plan);
+          toast('로컬 훈련 추천 · Gemini 키면 AI 상세 처방');
+        }
+      } catch (e) {
+        console.error(e);
+        const plan = localTrainingPlan(intensity);
+        renderTrainPlan(plan);
+        toast('AI 실패 · 로컬 처방으로 대체');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '이 강도로 추천 받기';
+        }
+      }
+    }
+
+    function applyTrainPlanToLog() {
+      const plan = lastTrainPlan;
+      if (!plan) return toast('먼저 추천을 받아 주세요');
+      const all = []
+        .concat(plan.warmup || [])
+        .concat(plan.main || [])
+        .concat(plan.finisher || []);
+      if (!all.length) return toast('넣을 동작이 없어요');
+      const ok = confirm(`추천 세션 ${all.length}개 동작을 오늘 운동 기록에 추가할까요?`);
+      if (!ok) return;
+      all.forEach(it => {
+        const isStrength = !!(it.sets || it.reps);
+        let min = it.min != null ? +it.min : 0;
+        if (!min && isStrength) min = Math.max(5, (+it.sets || 3) * 3);
+        let cal = 0;
+        if (isStrength) cal = estimateStrengthCal(it.sets, it.reps, it.load, min);
+        else cal = estimateCardioCal(min, 0);
+        const entry = {
+          id: uid(),
+          name: it.name,
+          min: min || 0,
+          cal: cal || 0,
+          type: isStrength ? 'strength' : (plan.focus === '러닝' || /런|조깅|걷기|인터벌/.test(it.name) ? 'cardio' : 'mobility'),
+          note: [it.note, 'AI추천'].filter(Boolean).join(' · '),
+          source: 'train-plan'
+        };
+        if (it.sets != null) entry.sets = +it.sets;
+        if (it.reps != null) entry.reps = +it.reps;
+        if (it.load != null) entry.load = +it.load;
+        day().workouts.unshift(entry);
+      });
+      save();
+      render();
+      toast('세션이 오늘 기록에 추가됐어요');
+      try { tickCoreAlerts(true); } catch (e) {}
+    }
+
+function openWoModal(presetMode) {
       const modal = document.getElementById('woModal');
       if (!modal) return;
       modal.classList.add('open');
@@ -5476,6 +5989,7 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       if (typeof renderWoChips === 'function') renderWoChips();
       if (typeof renderWoRecent === 'function') renderWoRecent();
       if (typeof renderWoWeek === 'function') renderWoWeek();
+      try { updateTrainSuggestHint(); setTrainIntensity(trainIntensity); } catch (e) {}
 
       const wo = woTot();
       const list = day().workouts || [];
@@ -6159,7 +6673,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.3,
+        version: 3.4,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
