@@ -962,6 +962,110 @@
       margin-bottom: 10px;
     }
     .wo-chip-grid .chip { font-size: .75rem; }
+
+    .core-alert-strip {
+      display: none;
+      margin-bottom: 12px;
+      border-radius: 16px;
+      padding: 12px 14px;
+      border: 1px solid #fecaca;
+      background: linear-gradient(135deg, #fef2f2, #fff1f2);
+      box-shadow: 0 8px 24px rgba(225, 29, 72, .12);
+    }
+    .core-alert-strip.on { display: block; }
+    .core-alert-strip.emergency {
+      border-color: #e11d48;
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      animation: corePulse 1.6s ease-in-out infinite;
+    }
+    .core-alert-strip.warn {
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      animation: none;
+    }
+    @keyframes corePulse {
+      0%, 100% { box-shadow: 0 8px 24px rgba(225, 29, 72, .12); }
+      50% { box-shadow: 0 8px 32px rgba(225, 29, 72, .35); }
+    }
+    .core-alert-strip .ca-title {
+      font-weight: 800; font-size: .95rem; color: #9f1239; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .core-alert-strip.warn .ca-title { color: #92400e; }
+    .core-alert-strip .ca-body {
+      font-size: .8rem; line-height: 1.45; color: #4b5563; margin-bottom: 8px;
+    }
+    .core-alert-strip .ca-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .core-alert-strip .ca-actions button {
+      padding: 8px 12px; border-radius: 999px; font-size: .75rem; font-weight: 800;
+      background: #fff; border: 1px solid #fecdd3; color: #be123c;
+    }
+    .core-alert-strip.warn .ca-actions button { border-color: #fde68a; color: #b45309; }
+    .core-alert-strip .ca-actions button.primary {
+      background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; border: 0;
+    }
+    .core-alert-strip.warn .ca-actions button.primary {
+      background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+    }
+
+    .core-grid {
+      display: grid; grid-template-columns: 1fr; gap: 8px;
+    }
+    @media (min-width: 360px) {
+      .core-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .core-card {
+      border-radius: 14px; padding: 10px 10px 9px;
+      border: 1px solid var(--line);
+      background: #fff;
+      min-height: 92px;
+    }
+    .core-card.ok { border-color: #a7f3d0; background: linear-gradient(160deg, #ecfdf5, #fff); }
+    .core-card.warn { border-color: #fde68a; background: linear-gradient(160deg, #fffbeb, #fff); }
+    .core-card.emergency {
+      border-color: #fb7185;
+      background: linear-gradient(160deg, #fff1f2, #fff);
+      box-shadow: 0 0 0 1px rgba(225,29,72,.15);
+    }
+    .core-card.never { border-color: #e5e7eb; background: #f9fafb; }
+    .core-card .cc-name { font-size: .78rem; font-weight: 800; }
+    .core-card .cc-days {
+      font-family: Poppins, sans-serif; font-weight: 800;
+      font-size: 1.15rem; margin-top: 4px; letter-spacing: -.02em;
+    }
+    .core-card .cc-sub { font-size: .65rem; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+    .core-card .cc-badge {
+      display: inline-block; margin-top: 6px;
+      font-size: .62rem; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      background: #f3f4f6; color: #4b5563;
+    }
+    .core-card.ok .cc-badge { background: #d1fae5; color: #065f46; }
+    .core-card.warn .cc-badge { background: #fef3c7; color: #92400e; }
+    .core-card.emergency .cc-badge { background: #ffe4e6; color: #9f1239; }
+
+    .core-emergency-banner {
+      display: none;
+      position: fixed; left: 50%; top: 12px; transform: translateX(-50%);
+      width: min(440px, calc(100% - 24px));
+      z-index: 125;
+      background: linear-gradient(135deg, #9f1239, #e11d48);
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 16px 40px rgba(159, 18, 57, .45);
+      animation: corePulse 1.4s ease-in-out infinite;
+    }
+    .core-emergency-banner.on { display: block; }
+    .core-emergency-banner h4 { font-size: .95rem; font-weight: 800; margin-bottom: 4px; }
+    .core-emergency-banner p { font-size: .8rem; line-height: 1.45; opacity: .95; margin-bottom: 10px; }
+    .core-emergency-banner .ab-actions { display: flex; gap: 8px; }
+    .core-emergency-banner .ab-actions button {
+      flex: 1; padding: 10px; border-radius: 12px; font-weight: 800; font-size: .8rem;
+      background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.28);
+    }
+    .core-emergency-banner .ab-actions button.primary {
+      background: #fff; color: #be123c; border: 0;
+    }
 </style>
 </head>
 <body>
@@ -1007,7 +1111,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.2</div>
+        <div class="ver">3.3</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1028,6 +1132,17 @@
 
     <!-- HOME -->
     <section class="view on" id="v-home">
+      <div class="core-alert-strip" id="coreAlertHome"></div>
+      <div class="card" style="padding:12px 14px">
+        <div class="card-h" style="margin-bottom:8px">
+          <h2 style="font-size:.95rem">🎯 핵심 운동 사이클</h2>
+          <span class="muted" style="font-size:.72rem">런 4일 · 스쿼트/데드 7일</span>
+        </div>
+        <div class="core-grid" id="coreGridHome"></div>
+        <p class="muted" style="margin-top:8px;font-size:.72rem;line-height:1.4" id="coreHomeHint">
+          데드리프트·스쿼트·러닝을 핵심으로 봅니다. 기한이 임박하면 경고, 초과하면 비상 알림이 뜹니다.
+        </p>
+      </div>
       <!-- Rest first — recovery over nutrition/training -->
       <div class="rest-hero" onclick="show('rest')" style="cursor:pointer">
         <div class="rh-top">
@@ -1443,6 +1558,15 @@
       </div>
       <input id="garminRunFileMove" type="file" accept=".tcx,.gpx,.xml,application/xml,text/xml" style="display:none" onchange="garminLoadRunFile(event)" multiple />
 
+      <div class="core-alert-strip" id="coreAlertMove"></div>
+      <div class="card">
+        <div class="card-h" style="margin-bottom:8px">
+          <h2>🎯 핵심 3종</h2>
+          <span class="muted">기한 준수</span>
+        </div>
+        <div class="core-grid" id="coreGridMove"></div>
+      </div>
+
       <div class="card">
         <div class="card-h">
           <h2>오늘 한 운동</h2>
@@ -1566,6 +1690,30 @@
           </div>
           <p class="muted" id="geminiSetHint" style="margin-top:8px">미연결</p>
         </div>
+        <div class="card">
+          <div class="card-h"><h2>🎯 핵심 운동 알림</h2></div>
+          <p class="muted" style="margin-bottom:10px;line-height:1.5">
+            <strong>러닝 4일</strong> · <strong>스쿼트 7일</strong> · <strong>데드리프트 7일</strong> 안에
+            한 번씩 하도록 경고·비상 알림을 보냅니다. (브라우저 알림 허용 권장)
+          </p>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="coreAlertOn" checked onchange="saveCoreAlertPrefs()" style="width:18px;height:18px" />
+              핵심 운동 알림 켜기
+            </label>
+          </div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="coreAlertNotif" checked onchange="saveCoreAlertPrefs()" style="width:18px;height:18px" />
+              시스템 푸시 알림 (긴급 시)
+            </label>
+          </div>
+          <button class="btn btn-s" onclick="requestCoreNotifPermission()">알림 권한 요청</button>
+          <div style="height:8px"></div>
+          <button class="btn btn-g" onclick="show('move')">운동 탭에서 상태 보기</button>
+          <p class="muted" id="corePrefsHint" style="margin-top:8px;font-size:.72rem;line-height:1.4">상태: —</p>
+        </div>
+
         <div class="card">
           <div class="card-h"><h2>⌚ 가민 가져오기</h2><span class="muted">Forerunner 265</span></div>
           <div class="garmin-box">
@@ -1795,6 +1943,15 @@
       <button type="button" class="primary" onclick="dismissAlarm()">확인 · 끄기</button>
     </div>
   </div>
+
+  <div class="core-emergency-banner" id="coreEmergencyBanner">
+    <h4 id="coreEmergencyTitle">🚨 핵심 운동 비상</h4>
+    <p id="coreEmergencyText">기한이 지난 핵심 운동이 있습니다.</p>
+    <div class="ab-actions">
+      <button type="button" onclick="snoozeCoreEmergency(60)">1시간 후</button>
+      <button type="button" class="primary" onclick="goLogCoreEmergency()">지금 기록하기</button>
+    </div>
+  </div>
   <canvas id="shareCanvas" width="1080" height="1350"></canvas>
 
   <script>
@@ -1845,6 +2002,35 @@
     let alarmTimer = null;
     let alarmSnoozeUntil = 0;
     let alarmFiredKey = '';
+    let coreAlertTimer = null;
+    let coreSnoozeUntil = 0;
+
+    /** 핵심 3종: 러닝 4일, 스쿼트·데드 7일 */
+    const CORE_LIFTS = [
+      {
+        id: 'run',
+        label: '러닝',
+        emoji: '🏃',
+        maxDays: 4,
+        re: /러닝|런닝|running|jog|조깅|트레드밀|러닝머신|인터벌\s*러닝/i,
+        softRe: /걷기|산책|사이클|자전거/i // not counted as core run
+      },
+      {
+        id: 'squat',
+        label: '스쿼트',
+        emoji: '🦵',
+        maxDays: 7,
+        re: /스쿼트|squat|백스쿼트|프론트스쿼트|고블릿|핵스쿼트|스미스\s*스쿼트|레그프레스/i
+      },
+      {
+        id: 'deadlift',
+        label: '데드리프트',
+        emoji: '🏋️',
+        maxDays: 7,
+        re: /데드|deadlift|루마니안|RDL|컨벤셔널\s*데드|루마니안\s*데드/i
+      }
+    ];
+    const CORE_PREFS_KEY = KEY + '-core-alerts';
 
     function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
     function today() {
@@ -2700,7 +2886,340 @@
       toast(`${min}분 후 다시 알려드릴게요`);
     }
 
-    function startAlarmLoop() {
+    
+    function loadCoreAlertPrefs() {
+      try {
+        const raw = localStorage.getItem(CORE_PREFS_KEY);
+        if (!raw) return { on: true, notif: true };
+        const p = JSON.parse(raw);
+        return { on: p.on !== false, notif: p.notif !== false };
+      } catch (e) {
+        return { on: true, notif: true };
+      }
+    }
+
+    function saveCoreAlertPrefs() {
+      const on = document.getElementById('coreAlertOn')?.checked !== false;
+      const notif = document.getElementById('coreAlertNotif')?.checked !== false;
+      const elOn = document.getElementById('coreAlertOn');
+      const elN = document.getElementById('coreAlertNotif');
+      const prefs = {
+        on: elOn ? !!elOn.checked : on,
+        notif: elN ? !!elN.checked : notif
+      };
+      localStorage.setItem(CORE_PREFS_KEY, JSON.stringify(prefs));
+      fillCoreAlertPrefsForm();
+      renderCoreLiftUI();
+      tickCoreAlerts(true);
+      toast(prefs.on ? '핵심 운동 알림 ON' : '핵심 운동 알림 OFF');
+    }
+
+    function fillCoreAlertPrefsForm() {
+      const p = loadCoreAlertPrefs();
+      const elOn = document.getElementById('coreAlertOn');
+      const elN = document.getElementById('coreAlertNotif');
+      if (elOn) elOn.checked = p.on;
+      if (elN) elN.checked = p.notif;
+      const hint = document.getElementById('corePrefsHint');
+      if (hint) {
+        const st = analyzeCoreLifts();
+        const em = st.filter(x => x.status === 'emergency' || x.status === 'never').length;
+        const wn = st.filter(x => x.status === 'warn').length;
+        hint.textContent = p.on
+          ? `알림 ${p.on ? 'ON' : 'OFF'} · 푸시 ${p.notif ? 'ON' : 'OFF'} · 비상 ${em} · 임박 ${wn}`
+          : '알림이 꺼져 있습니다';
+      }
+    }
+
+    async function requestCoreNotifPermission() {
+      if (!('Notification' in window)) return toast('이 브라우저는 알림을 지원하지 않아요');
+      try {
+        const perm = await Notification.requestPermission();
+        toast(perm === 'granted' ? '알림 허용됨' : '알림이 허용되지 않았어요');
+      } catch (e) {
+        toast('권한 요청 실패');
+      }
+    }
+
+    function parseDayKey(k) {
+      const [y, m, d] = k.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function daysBetweenKeys(fromKey, toKey) {
+      const a = parseDayKey(fromKey);
+      const b = parseDayKey(toKey);
+      return Math.round((b - a) / 86400000);
+    }
+
+    function workoutMatchesCore(name, core) {
+      if (!name) return false;
+      const n = String(name);
+      if (core.id === 'run') {
+        // 걷기는 러닝으로 치지 않음 (명시 러닝/조깅/트레드밀 등)
+        if (core.softRe && core.softRe.test(n) && !/러닝|런닝|running|jog|조깅|트레드|인터벌/i.test(n)) {
+          return false;
+        }
+      }
+      return core.re.test(n);
+    }
+
+    /** 각 핵심 종목의 최근 수행일 · 상태 */
+    function analyzeCoreLifts() {
+      const todayKey = today();
+      const keys = Object.keys(S.days || {}).sort();
+      return CORE_LIFTS.map(core => {
+        let lastKey = null;
+        // scan newest first
+        for (let i = keys.length - 1; i >= 0; i--) {
+          const k = keys[i];
+          const list = S.days[k]?.workouts || [];
+          if (list.some(w => workoutMatchesCore(w.name, core))) {
+            lastKey = k;
+            break;
+          }
+        }
+        if (!lastKey) {
+          return {
+            ...core,
+            lastKey: null,
+            daysSince: null,
+            daysLeft: 0,
+            status: 'never',
+            statusLabel: '기록 없음',
+            detail: `${core.maxDays}일 안에 1회 필요 · 아직 기록 없음`
+          };
+        }
+        const daysSince = daysBetweenKeys(lastKey, todayKey);
+        const daysLeft = core.maxDays - daysSince;
+        let status, statusLabel, detail;
+        if (daysSince === 0) {
+          status = 'ok';
+          statusLabel = '오늘 완료';
+          detail = `오늘 수행 · 다음 기한 ${core.maxDays}일`;
+        } else if (daysLeft < 0) {
+          status = 'emergency';
+          statusLabel = '기한 초과';
+          detail = `마지막 ${lastKey.slice(5)} · ${daysSince}일 전 · ${Math.abs(daysLeft)}일 초과`;
+        } else if (daysLeft <= 1) {
+          status = 'warn';
+          statusLabel = daysLeft === 0 ? '오늘까지' : '내일까지';
+          detail = `마지막 ${lastKey.slice(5)} · ${daysSince}일 전 · D-${daysLeft}`;
+        } else {
+          status = 'ok';
+          statusLabel = `D-${daysLeft}`;
+          detail = `마지막 ${lastKey.slice(5)} · ${daysSince}일 전`;
+        }
+        return {
+          ...core,
+          lastKey,
+          daysSince,
+          daysLeft,
+          status,
+          statusLabel,
+          detail
+        };
+      });
+    }
+
+    function coreCardHtml(item) {
+      const daysTxt = item.daysSince == null
+        ? '—'
+        : (item.daysSince === 0 ? '0일' : item.daysSince + '일 전');
+      return `<div class="core-card ${item.status}">
+        <div class="cc-name">${item.emoji} ${esc(item.label)}</div>
+        <div class="cc-days">${daysTxt}</div>
+        <div class="cc-sub">${esc(item.detail)}</div>
+        <span class="cc-badge">${esc(item.statusLabel)} · ${item.maxDays}일 주기</span>
+      </div>`;
+    }
+
+    function coreStripHtml(items) {
+      const bad = items.filter(x => x.status === 'emergency' || x.status === 'never');
+      const warn = items.filter(x => x.status === 'warn');
+      if (!bad.length && !warn.length) return '';
+      const isEm = bad.length > 0;
+      const names = (isEm ? bad : warn).map(x => x.label).join(' · ');
+      const title = isEm
+        ? `🚨 핵심 운동 비상 · ${names}`
+        : `⚠️ 기한 임박 · ${names}`;
+      const body = isEm
+        ? '러닝 4일 / 스쿼트·데드리프트 7일 규칙을 넘겼거나 기록이 없습니다. 오늘은 해당 자극을 우선하세요.'
+        : '내일(또는 오늘) 안에 한 번은 해야 합니다. 운동 탭에서 바로 기록하세요.';
+      const tone = isEm ? 'emergency' : 'warn';
+      return { tone, title, body, isEm };
+    }
+
+    function renderCoreLiftUI() {
+      const items = analyzeCoreLifts();
+      ['coreGridHome', 'coreGridMove'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = items.map(coreCardHtml).join('');
+      });
+
+      const strip = coreStripHtml(items);
+      ['coreAlertHome', 'coreAlertMove'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!strip) {
+          el.className = 'core-alert-strip';
+          el.innerHTML = '';
+          return;
+        }
+        el.className = 'core-alert-strip on ' + strip.tone;
+        el.innerHTML = `
+          <div class="ca-title">${esc(strip.title)}</div>
+          <div class="ca-body">${esc(strip.body)}</div>
+          <div class="ca-actions">
+            <button type="button" class="primary" onclick="goLogCoreEmergency()">${strip.isEm ? '지금 기록' : '오늘 기록'}</button>
+            <button type="button" onclick="show('move')">운동 탭</button>
+          </div>`;
+      });
+
+      const hint = document.getElementById('coreHomeHint');
+      if (hint) {
+        const okN = items.filter(x => x.status === 'ok').length;
+        if (okN === 3) hint.textContent = '핵심 3종 모두 주기 안입니다. 좋은 리듬이에요.';
+        else hint.textContent = '데드리프트·스쿼트·러닝을 핵심으로 봅니다. 기한 초과 시 비상 알림이 뜹니다.';
+      }
+      try { fillCoreAlertPrefsForm(); } catch (e) {}
+    }
+
+    function coreNotifKey(id) {
+      return KEY + '-core-notif-' + id + '-' + today();
+    }
+
+    function maybeNotifyCore(items) {
+      const prefs = loadCoreAlertPrefs();
+      if (!prefs.on || !prefs.notif) return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      items.forEach(it => {
+        if (it.status !== 'emergency' && it.status !== 'never') return;
+        try {
+          if (localStorage.getItem(coreNotifKey(it.id))) return;
+          const body = it.status === 'never'
+            ? `${it.label}: 아직 기록이 없습니다. ${it.maxDays}일 주기 핵심 운동입니다.`
+            : `${it.label}: ${it.daysSince}일 전 마지막 · ${it.maxDays}일 주기 초과!`;
+          new Notification('FIT TRACKER · 핵심 운동 비상', {
+            body,
+            icon: 'icon.svg',
+            tag: 'core-' + it.id
+          });
+          localStorage.setItem(coreNotifKey(it.id), '1');
+        } catch (e) {}
+      });
+    }
+
+    function playCoreBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = ctx.currentTime;
+        [0, 0.18, 0.36].forEach((t, i) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = 'square';
+          o.frequency.value = i === 2 ? 880 : 660;
+          g.gain.value = 0.04;
+          o.connect(g); g.connect(ctx.destination);
+          o.start(now + t);
+          o.stop(now + t + 0.12);
+        });
+      } catch (e) {}
+    }
+
+    function updateCoreEmergencyBanner(items) {
+      const prefs = loadCoreAlertPrefs();
+      const ban = document.getElementById('coreEmergencyBanner');
+      if (!ban) return;
+      if (!prefs.on) {
+        ban.classList.remove('on');
+        return;
+      }
+      if (Date.now() < coreSnoozeUntil) {
+        ban.classList.remove('on');
+        return;
+      }
+      const bad = items.filter(x => x.status === 'emergency' || x.status === 'never');
+      if (!bad.length) {
+        ban.classList.remove('on');
+        return;
+      }
+      const title = document.getElementById('coreEmergencyTitle');
+      const text = document.getElementById('coreEmergencyText');
+      if (title) title.textContent = '🚨 핵심 운동 비상 · ' + bad.map(b => b.label).join(' · ');
+      if (text) {
+        text.textContent = bad.map(b =>
+          b.status === 'never'
+            ? `${b.label}: 기록 없음 (${b.maxDays}일 주기)`
+            : `${b.label}: ${b.daysSince}일 전 (D+${Math.abs(b.daysLeft)})`
+        ).join(' / ');
+      }
+      ban.classList.add('on');
+    }
+
+    function snoozeCoreEmergency(minutes) {
+      coreSnoozeUntil = Date.now() + (minutes || 60) * 60 * 1000;
+      const ban = document.getElementById('coreEmergencyBanner');
+      if (ban) ban.classList.remove('on');
+      toast(`${minutes || 60}분 후 다시 알림`);
+    }
+
+    function goLogCoreEmergency() {
+      const items = analyzeCoreLifts();
+      const bad = items.find(x => x.status === 'emergency' || x.status === 'never');
+      show('move');
+      const mode = bad && bad.id === 'run' ? 'cardio' : 'strength';
+      openWoModal(mode);
+      // prefill name hint
+      if (bad) {
+        const nameEl = document.getElementById('woName');
+        if (nameEl && !nameEl.value) {
+          if (bad.id === 'run') nameEl.value = '러닝';
+          else if (bad.id === 'squat') nameEl.value = '백스쿼트';
+          else if (bad.id === 'deadlift') nameEl.value = '컨벤셔널 데드리프트';
+        }
+        if (bad.id === 'squat' || bad.id === 'deadlift') {
+          const pick = (WO_LIB.strength || []).findIndex(w => bad.re.test(w.n));
+          if (pick >= 0) pickWorkoutPreset('strength', pick);
+        }
+      }
+      const ban = document.getElementById('coreEmergencyBanner');
+      if (ban) ban.classList.remove('on');
+      // short snooze so banner doesn't instantly reappear while logging
+      coreSnoozeUntil = Date.now() + 5 * 60 * 1000;
+    }
+
+    let coreLastBeepDay = '';
+    function tickCoreAlerts(force) {
+      const prefs = loadCoreAlertPrefs();
+      if (!prefs.on) {
+        updateCoreEmergencyBanner([]);
+        return;
+      }
+      const items = analyzeCoreLifts();
+      renderCoreLiftUI();
+      updateCoreEmergencyBanner(items);
+      maybeNotifyCore(items);
+      const hasEm = items.some(x => x.status === 'emergency' || x.status === 'never');
+      if (hasEm && Date.now() >= coreSnoozeUntil) {
+        const k = today();
+        if (force || coreLastBeepDay !== k) {
+          // beep at most once per day unless force
+          if (coreLastBeepDay !== k || force) {
+            if (coreLastBeepDay !== k) playCoreBeep();
+            coreLastBeepDay = k;
+          }
+        }
+      }
+    }
+
+    function startCoreAlertLoop() {
+      if (coreAlertTimer) clearInterval(coreAlertTimer);
+      tickCoreAlerts(true);
+      coreAlertTimer = setInterval(() => tickCoreAlerts(false), 60000);
+    }
+
+function startAlarmLoop() {
       if (alarmTimer) clearInterval(alarmTimer);
       alarmTimer = setInterval(tickAlarm, 15000);
       tickAlarm();
@@ -3153,6 +3672,7 @@
       if (t === 'set') {
         fillGeminiForm();
         updateBackupHint();
+        try { fillCoreAlertPrefsForm(); } catch (e) {}
         try { refreshV1Preview(); } catch (e) {}
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -5624,6 +6144,8 @@ function roundRect(ctx, x, y, w, h, r) {
       renderMyFoods();
       renderWeekPlanUI();
       renderWeightAvgUI();
+      try { renderCoreLiftUI(); } catch (e) {}
+      try { tickCoreAlerts(false); } catch (e) {}
       renderMicroUI();
       refreshCoach(false);
       if (document.getElementById('restScoreN') && document.getElementById('v-rest').classList.contains('on')) {
@@ -5637,7 +6159,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.2,
+        version: 3.3,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
@@ -5880,6 +6402,7 @@ function roundRect(ctx, x, y, w, h, r) {
       } catch {}
     }
     startAlarmLoop();
+    startCoreAlertLoop();
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         try { closeWoModal(); } catch (err) {}
