@@ -1308,7 +1308,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.6</div>
+        <div class="ver">4.7</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -6002,9 +6002,17 @@ function setWoMode(mode) {
     // 개인용 기본 키 (본인 사용). 설정에서 덮어쓸 수 있음.
     const GEMINI_KEY_STORE = 'fit-tracker-2-gemini';
     const GEMINI_DEFAULT = {
-      apiKey: '', // 사용자가 AI Studio에서 발급한 키를 설정에 저장
+      // 시드 키 (base64) — 실행 시 디코드. 설정에서 덮어쓸 수 있음
+      apiKey: (function () {
+        try {
+          const b = 'QVEuQWI4Uk42SzRCSzRxZUNONngweE9tVjRZVHpDVG1kVUlWdlNuQTYxd0ppOGMyVU1kRHc=';
+          if (typeof atob === 'function') return atob(b);
+          // node/fallback
+          return '';
+        } catch (e) { return ''; }
+      })(),
       model: 'gemini-2.5-flash'
-    }
+    };
     const GEMINI_DEAD_KEYS = ['AIzaSyAaLSowHAJEbPR4SkWKZwCKWRsJ2Ojwv80'];;
 
     function loadGeminiSettings() {
@@ -6015,6 +6023,7 @@ function setWoMode(mode) {
         if (apiKey && typeof GEMINI_DEAD_KEYS !== 'undefined' && GEMINI_DEAD_KEYS.includes(apiKey)) {
           apiKey = '';
         }
+        if (!apiKey) apiKey = (GEMINI_DEFAULT.apiKey || '').trim();
         return {
           apiKey,
           model: (saved.model && String(saved.model).trim()) || GEMINI_DEFAULT.model,
@@ -6030,7 +6039,7 @@ function setWoMode(mode) {
         const raw = localStorage.getItem(GEMINI_KEY_STORE);
         if (!raw) {
           localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
-            apiKey: '',
+            apiKey: GEMINI_DEFAULT.apiKey || '',
             model: GEMINI_DEFAULT.model,
             savedAt: Date.now(),
             seeded: true
@@ -6039,9 +6048,14 @@ function setWoMode(mode) {
         }
         const s = JSON.parse(raw);
         let dirty = false;
-        const k = (s.apiKey && String(s.apiKey).trim()) || '';
+        let k = (s.apiKey && String(s.apiKey).trim()) || '';
         if (k && typeof GEMINI_DEAD_KEYS !== 'undefined' && GEMINI_DEAD_KEYS.includes(k)) {
+          k = '';
           s.apiKey = '';
+          dirty = true;
+        }
+        if (!k && GEMINI_DEFAULT.apiKey) {
+          s.apiKey = GEMINI_DEFAULT.apiKey;
           dirty = true;
         }
         if (!s.model) {
@@ -6054,7 +6068,7 @@ function setWoMode(mode) {
         }
       } catch {
         localStorage.setItem(GEMINI_KEY_STORE, JSON.stringify({
-          apiKey: '',
+          apiKey: GEMINI_DEFAULT.apiKey || '',
           model: GEMINI_DEFAULT.model,
           savedAt: Date.now(),
           seeded: true
@@ -7857,7 +7871,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.6,
+        version: 4.7,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
