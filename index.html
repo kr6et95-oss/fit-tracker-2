@@ -1292,7 +1292,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.2</div>
+        <div class="ver">4.3</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -4383,8 +4383,109 @@ function startAlarmLoop() {
     }
 
     /** 공통 워밍업 — 목적별 */
-    function buildWarmupBlock(kind, iv) {
-      // kind: gym | functional | stretch | boxing
+    
+    /**
+     * 구체 스트레칭·기능성 카탈로그 (축소 금지 — 이름+방법+홀드)
+     * Fight Lab / 모빌리티 코칭 스타일
+     */
+    const STRETCH_CATALOG = {
+      neck: [
+        { name: '목 측면 스트레치 (이어 투 숄더)', how: '손을 머리 옆에 가볍게. 어깨는 내려둔 채 귀를 어깨 쪽으로. 좌우' },
+        { name: '목 전방 스트레치', how: '턱을 살짝 당기며 아래를 봄. 목 뒤 길이' },
+        { name: '목 후방·신전', how: '천장을 부드럽게. 과신전 금지' },
+        { name: '상부 승모 스트레치', how: '한손으로 의자 잡고 반대 귀-어깨. 좌우' }
+      ],
+      chest_shoulder: [
+        { name: '문틀 가슴 오픈 (Pec doorway)', how: '팔꿈치 90° 문틀. 한 발 앞으로 몸 이동. 좌우 또는 양팔' },
+        { name: '벽 가슴 스트레치 (싱글암)', how: '손바닥 벽, 몸통 반대 회전. 좌우' },
+        { name: '후면 어깨 크로스바디', how: '팔을 가슴 가로질러 반대손으로 당김. 좌우' },
+        { name: '삼두 오버헤드 스트레치', how: '팔꿈치 천장, 반대손으로 팔꿈치. 좌우' },
+        { name: '슬리퍼 스트레치 (후방낭)', how: '팔꿈치 90° 벽에 붙이고 전완을 아래로. 좌우' },
+        { name: '광배 차일드 포즈 측면 걷기', how: '무릎 꿇고 손 멀리, 엉덩이 발꿈치. 손을 좌우로' }
+      ],
+      spine: [
+        { name: '캣-카우', how: '들숨에 배 바닥·고개 듦, 날숨에 등 둥글. 10회 후 각 끝 자세 홀드' },
+        { name: '오픈북 흉추 회전', how: '옆으로 누워 무릎 붙이고 위쪽 팔을 크게 열어 흉추 회전. 좌우' },
+        { name: '누운 척추 비틀기', how: '무릎 한쪽을 반대 바닥, 시선 반대. 어깨 바닥 유지. 좌우' },
+        { name: '차일드 포즈', how: '엉덩이 발꿈치, 팔 멀리, 이마 바닥' },
+        { name: '스핑크스 (가볍게)', how: '엎드려 팔꿈치. 허리가 찌릿하면 즉시 중단' },
+        { name: '무릎 가슴 끌어안기', how: '누워서 양 무릎 또는 한 다리씩' },
+        { name: '쓰레드 더 니들', how: '네발기기, 한 팔을 반대 겨드랑이로 밀어 넣음. 좌우' }
+      ],
+      hip: [
+        { name: '90/90 힙 스트레치', how: '앞 정강이·뒤 정강이 모두 바닥과 90°. 상체 살짝 앞. 양측 필수' },
+        { name: '90/90 스위치 (흐름)', how: '좌우 90/90을 천천히 전환 6–8회 후 각측 홀드' },
+        { name: '비둘기 자세 (Pigeon)', how: '앞 정강이 가로, 뒤다리 길게. 어렵면 의자 피전. 좌우' },
+        { name: '의자 피전 (오피스 가능)', how: '앉아서 발목 반대 무릎, 상체 힌지. 좌우' },
+        { name: '힙플렉서 로우 런지', how: '뒷무릎 바닥, 골반 후방 경사, 앞무릎 90°. 좌우' },
+        { name: '카우처 스트레치 (소파/의자)', how: '뒷발을 소파에, 앞 무릎 90°. 쿼드+힙플렉서. 좌우' },
+        { name: '프로그 스트레치', how: '네발에서 무릎 바깥·발목 바깥. 내전근. 부드럽게' },
+        { name: '버터플라이 (바도코나)', how: '발바닥 붙이고 무릎 바닥 방향. 상체 길이' },
+        { name: '피겨4 글루트 (누워서)', how: '발목 반대 무릎, 허벅지 당김. 좌우' },
+        { name: '라테럴 런지 홀드', how: '옆으로 크게 앉아 한쪽 내전근. 좌우' }
+      ],
+      ham_quad_calf: [
+        { name: '햄스트링 전굴 (앉거나 스탠딩)', how: '무릎 미세 굴곡 OK. 등 길게. 좌우 또는 동시' },
+        { name: '햄스트링 벽 스트레치', how: '누워서 한 다리 벽/문틀. 좌우' },
+        { name: '쿼드 스탠딩 스트레치', how: '발등 잡고 골반 전방 경사 주의. 좌우' },
+        { name: '쿼드 사이드 라잉', how: '옆으로 누워 발 잡기. 좌우' },
+        { name: '종아리 벽 — 무릎 펴고 (Gastroc)', how: '뒤꿈치 바닥, 무릎 신전' },
+        { name: '솔레우스 벽 — 무릎 굽히고', how: '같은 벽 자세에서 무릎만 전진' },
+        { name: '발바닥·발가락 스트레치', how: '앉아서 발등/발바닥 번갈아' }
+      ],
+      full_extra: [
+        { name: '월드 스쿼트 홀드 + 프레이어', how: '딥 스쿼트, 팔꿈치로 무릎 바깥, 손 모음' },
+        { name: '데드행 또는 타월 숄더 행 흉내', how: '어깨 이완 20–40초 (어깨 이슈 있으면 스킵)' }
+      ]
+    };
+
+    const FUNC_NAMED = {
+      activation: [
+        { name: '몬스터 워크', how: '밴드 무릎 위(없으면 맨몸). 반 스쿼트 유지, 짧은 보폭 측면. 좌우 각 8–15보. 무릎 안쪽 붕괴 금지' },
+        { name: '래터럴 밴드 워크', how: '밴드 발목/무릎. 상체 직립 측면 걸음' },
+        { name: '클램셸', how: '옆누워 무릎 붙인 채 위 무릎만 벌림 12–15회 좌우' },
+        { name: '글ute bridge', how: '발뒤꿈치 밀고 골반 들기. 상단 1초. 10–15회' },
+        { name: '싱글레그 글ute bridge', how: '편측 둔근. 8–10회 좌우' },
+        { name: '버드독', how: '네발, 반대 팔·다리. 골반 수평. 8회 좌우' },
+        { name: '데드버그', how: '허리 바닥 고정, 반대 팔다리 연장. 8회 좌우' },
+        { name: '크랩 워크', how: '앉은 듯 손·발, 뒤로 10보 × 2' }
+      ],
+      strength: [
+        { name: '푸시업', how: '몸 일직선. 다운 2–3초. 무릎 버전 OK' },
+        { name: '바디웨이트 스쿼트', how: '발끝·무릎 같은 방향. 깊이 가능 범위' },
+        { name: '고블릿 스쿼트', how: '무게 가슴 앞(덤벨/물병). 팔꿈치 무릎 사이' },
+        { name: '리버스 런지', how: '뒤로 한 발. 상체 직립. 다리당' },
+        { name: '스플릿 스쿼트', how: '제자리 넓은 보폭. 다리당' },
+        { name: '플랭크', how: '팔꿈치, 골반 안 떨어짐. 초 단위' },
+        { name: '사이드 플랭크', how: '좌우. 어깨 아래 팔꿈치' }
+      ],
+      power: [
+        { name: '스프롤', how: '손 바닥 → 발 점프 인 → 일어서기. 폭발' },
+        { name: '점프 스쿼트', how: '착지 조용히. 무릎 방향' },
+        { name: '폭발 푸시업', how: '밀 때 빠르게. 어려우면 빠른 푸시업' },
+        { name: '브로드 점프 (제자리 가능)', how: '엉덩이 힌지 후 점프. 착지 안정' }
+      ]
+    };
+
+    function stretchItemsFromCatalog(keys, hold, sets, breath, take) {
+      const out = [];
+      keys.forEach(k => {
+        (STRETCH_CATALOG[k] || []).forEach(ex => {
+          out.push({
+            name: ex.name,
+            min: 3,
+            sets: sets > 1 ? sets : null,
+            reps: null,
+            load: null,
+            note: `${ex.how} · 홀드 ${hold} × ${sets} · ${breath}`
+          });
+        });
+      });
+      if (take && out.length > take) return out.slice(0, take);
+      return out;
+    }
+
+function buildWarmupBlock(kind, iv) {
       const soft = iv === 'low';
       if (kind === 'boxing') {
         return [
@@ -4397,39 +4498,44 @@ function startAlarmLoop() {
       if (kind === 'stretch') {
         return [
           drill('전신 관절 돌리기', 2, '목→어깨→허리→고관절→무릎→발목 순서'),
-          drill('캣-카우 10회', 2, '들숨 확장, 날숨 둥글게'),
-          drill('월드 스쿼트 홀드', 2, soft ? '20초×2' : '30초×2 · 팔 앞으로')
+          drill('캣-카우 10회', 2, '들숨 배 확장, 날숨 등 둥글게'),
+          drill('월드 스쿼트 홀드', 2, soft ? '20초×2 · 팔 앞으로' : '30초×2 · 프레이어 손'),
+          drill('부드럽게 90/90 전환 4회', 2, '스트레칭 전 고관절 윤활 · 양측')
         ];
       }
       if (kind === 'functional') {
         return [
-          drill('점핑잭 또는 빠른 걷기', soft ? 2 : 3, '심박 올리기'),
+          drill('점핑잭 또는 빠른 걷기', soft ? 2 : 3, '심박 상승'),
           drill('월드 스쿼트 + 암 스윕', 3, '고관절 열기 · 발바닥 전체 접지'),
-          drill('몬스터 워크 (밴드 있으면 밴드)', soft ? 2 : 3, '무릎 살짝 굽힌 채 측면 걸음 좌우 각 8–10보 · 둔근 활성화'),
+          drill('몬스터 워크', soft ? 3 : 4, (FUNC_NAMED.activation[0] || {}).how || '반 스쿼트 측면 걸음 좌우'),
+          drill('래터럴 밴드 워크', 2, (FUNC_NAMED.activation[1] || {}).how || '측면 스텝'),
           drill('글ute bridge 10–12회', 2, '발뒤꿈치 밀고 골반 들기'),
-          drill('버드독 좌우 6회', 2, '코어 중립 · 천천히')
+          drill('버드독 좌우 6회', 2, '코어 중립 · 천천히'),
+          drill('데드버그 좌우 6회', 2, '허리 바닥 유지')
         ];
       }
-      // gym / default
       return [
         drill('빠른 걷기 또는 바이크/제자리 스텝', soft ? 4 : 5, '체온·관절액'),
-        drill('캣-카우 + 흉추 오픈북', 3, '척추 분절 움직임'),
+        drill('캣-카우 + 흉추 오픈북', 3, '척추 분절 · 오픈북 양측'),
         drill('월드 스쿼트 + 힙 오프너', 3, '딥 스쿼트 가동'),
-        drill('몬스터 워크 또는 사이드 스텝', 2, '무릎 추적·둔근 깨우기'),
+        drill('몬스터 워크 또는 사이드 스텝', 3, '무릎 추적·둔근 깨우기 · 좌우 8–12보'),
+        drill('90/90 가볍게 양측 20초', 2, '하체 데이 전 고관절'),
         drill('빈 바/가벼운 세트로 메인 동작 워밍', soft ? 3 : 5, '점진 부하')
       ];
     }
 
     /** 공통 쿨다운·스트레칭 — 세션 종류별 */
     function buildCooldownBlock(kind, iv, focusHint) {
-      const hold = iv === 'high' ? '40초' : iv === 'low' ? '20초' : '30초';
+      const hold = iv === 'high' ? '40–50초' : iv === 'low' ? '20초' : '30초';
       if (kind === 'boxing') {
         return [
           drill('줄넘기 쿨다운 또는 느린 스텝', 2, '심박 내리기'),
-          drill('가슴·어깨 문틀/벽 스트레치', 2, `홀드 ${hold} 양측`),
-          drill('힙플렉서 런지 스트레치', 2, `홀드 ${hold} 좌우 · 골반 후방`),
+          drill('문틀 가슴 오픈 (Pec doorway)', 2, `홀드 ${hold} 양측`),
+          drill('광배 차일드 포즈 측면', 2, `홀드 ${hold}`),
+          drill('힙플렉서 로우 런지 스트레치', 2, `홀드 ${hold} 좌우 · 골반 후방`),
+          drill('90/90 또는 피겨4 글루트', 2, `홀드 ${hold} 좌우`),
           drill('햄스트링 전굴', 2, `홀드 ${hold}`),
-          drill('코 호흡 4-6', 2, '회복 · 가드 내린 채 이완')
+          drill('코 호흡 4-6', 2, '회복')
         ];
       }
       if (kind === 'stretch') {
@@ -4440,29 +4546,37 @@ function startAlarmLoop() {
       }
       if (kind === 'functional') {
         return [
-          drill('차일드 포즈', 2, `홀드 ${hold} · 호흡`),
-          drill('비둘기 또는 피겨4 글루트', 3, `홀드 ${hold} 좌우`),
-          drill('힙플렉서 런지 스트레치', 2, `홀드 ${hold} 좌우`),
+          drill('차일드 포즈', 2, `홀드 ${hold}`),
+          drill('90/90 힙 스트레치', 3, `양측 홀드 ${hold} · 쿨다운 필수`),
+          drill('비둘기 또는 의자 피전', 3, `홀드 ${hold} 좌우`),
+          drill('힙플렉서 로우 런지', 2, `홀드 ${hold} 좌우`),
           drill('문틀 가슴 오픈', 2, `홀드 ${hold}`),
-          drill('햄스트링 벽/전굴', 2, `홀드 ${hold}`)
+          drill('햄스트링 벽/전굴', 2, `홀드 ${hold}`),
+          drill('누운 척추 비틀기', 2, `홀드 ${hold} 좌우`)
         ];
       }
-      // gym
       const extra = [];
       if (focusHint === 'run' || /런|러닝/.test(focusHint || '')) {
-        extra.push(drill('종아리 벽 스트레치', 2, `무릎 펴고/굽히고 각 ${hold}`));
-        extra.push(drill('힙플렉서 스트레치', 2, `홀드 ${hold} 좌우`));
+        extra.push(drill('종아리 벽 — 무릎 펴고/굽히고', 3, `각 ${hold}`));
+        extra.push(drill('힙플렉서 로우 런지', 2, `홀드 ${hold} 좌우`));
+        extra.push(drill('90/90 힙 스트레치', 2, `홀드 ${hold} 좌우`));
       } else if (focusHint === 'squat' || /스쿼트/.test(focusHint || '')) {
-        extra.push(drill('피겨4 글루트 스트레치', 2, `홀드 ${hold} 좌우`));
+        extra.push(drill('피겨4 글루트', 2, `홀드 ${hold} 좌우`));
+        extra.push(drill('90/90 힙 스트레치', 3, `홀드 ${hold} 양측`));
         extra.push(drill('딥 스쿼트 홀드 이완', 2, '팔꿈치로 무릎 바깥'));
       } else if (focusHint === 'deadlift' || /데드/.test(focusHint || '')) {
-        extra.push(drill('햄스트링 스트레치', 3, `홀드 ${hold}`));
+        extra.push(drill('햄스트링 전굴/벽', 3, `홀드 ${hold}`));
         extra.push(drill('차일드 포즈 + 광배 측면', 2, `홀드 ${hold}`));
+        extra.push(drill('90/90 힙 스트레치', 2, `홀드 ${hold} 좌우`));
+      } else {
+        extra.push(drill('90/90 힙 스트레치', 2, `홀드 ${hold} 양측`));
+        extra.push(drill('문틀 가슴 오픈', 2, `홀드 ${hold}`));
+        extra.push(drill('햄스트링 + 쿼드', 3, `각 ${hold}`));
       }
       return [
         drill('느린 걷기 2–3분', 3, '심박 다운'),
         ...extra,
-        drill('전신 주요 부위 스트레치', 4, `각 ${hold} · 반동 금지`),
+        drill('전신 주요 부위 마무리 스트레치', 3, `각 ${hold} · 반동 금지`),
         drill('호흡 정리', 1, '코 호흡')
       ];
     }
@@ -4775,108 +4889,75 @@ function localBoxingPlan(intensity) {
       const holdSec = iv === 'low' ? 20 : iv === 'high' ? 50 : 30;
       const hold = holdSec + '초';
       const sets = iv === 'high' ? 2 : 1;
-      const breath = iv === 'high' ? '날숨에 조금 더 이완' : '편안하게 코 호흡';
+      const breath = iv === 'high' ? '날숨에 조금 더 이완' : '코로 들숨·날숨 길게';
 
-      const S = (name, min, note) => ({
-        name, min, sets: sets > 1 ? sets : null, reps: null, load: null,
-        note: `${note} · 홀드 ${hold} × ${sets} · ${breath}`
-      });
-
-      const title = `스트레칭 · ${focusLab[focus]} · ${labels[iv]}`;
-      let why = `정적 홀드 ${hold}${sets > 1 ? ' 2세트' : ''}. 반동 없이, 날카로운 통증은 금지. `;
+      const title = `스트레칭 · ${focusLab[focus] || focus} · ${labels[iv]}`;
+      let why = `구체 동작 풀세트 · 홀드 ${hold}${sets > 1 ? ' 2세트' : ''}. 90/90·비둘기·문틀 가슴 등 이름 있는 드릴 포함. `;
       if (score != null) why += `회복 ${score}점.`;
 
       const warmup = buildWarmupBlock('stretch', iv);
       let main = [];
-      let durationMin = iv === 'high' ? 35 : iv === 'low' ? 16 : 25;
+      let durationMin = iv === 'high' ? 40 : iv === 'low' ? 20 : 30;
 
       if (focus === 'upper') {
-        main = [
-          S('목 측면 스트레치', 3, '손로 머리 살짝 · 어깨 내림 · 좌우'),
-          S('목 앞·뒤', 2, '천장/바닥 보기 과하지 않게'),
-          S('문틀 가슴 오픈 (pec)', 3, '팔꿈치 90° 문틀 · 몸 앞으로'),
-          S('광배 차일드 포즈 측면 걷기', 3, '손가락 멀리'),
-          S('삼두 오버헤드', 2, '팔꿈치 천장 · 반대손 당김 · 좌우'),
-          S('후면 어깨 크로스바디', 2, '팔 가로 · 좌우'),
-          S('손목 굴곡·신전', 2, '손바닥/손등 번갈아 · 타이핑 후')
-        ];
+        main = stretchItemsFromCatalog(['neck', 'chest_shoulder'], hold, sets, breath);
       } else if (focus === 'lower') {
-        main = [
-          S('햄스트링 전굴 또는 벽', 4, '무릎 미세 굴곡 OK · 등 길이'),
-          S('쿼드 스탠딩/사이드 라잉', 3, '골반 전방 경사 주의 · 좌우'),
-          S('종아리 벽 — 무릎 펴고', 2, '뒤꿈치 바닥'),
-          S('솔레우스 — 무릎 굽히고 벽', 2, '깊은 종아리'),
-          S('피겨4 글루트 (누워서)', 3, '발목 반대 무릎 · 좌우'),
-          S('애덕터 버터플라이', 3, '발바닥 붙이고 무릎 바닥 방향'),
-          S('발바닥·발가락 스트레치', 2, '앉아서 발등/발바닥')
-        ];
+        main = stretchItemsFromCatalog(['ham_quad_calf', 'hip'], hold, sets, breath);
+        // keep hip's 90/90 etc but prioritize lower - reorder: put 90/90 first from hip subset
+        const hipBits = stretchItemsFromCatalog(['hip'], hold, sets, breath, 4);
+        const lowBits = stretchItemsFromCatalog(['ham_quad_calf'], hold, sets, breath);
+        main = hipBits.slice(0, 2).concat(lowBits).concat(hipBits.slice(2));
       } else if (focus === 'hip') {
-        main = [
-          S('90/90 힙 스트레치', 4, '앞뒤 정강이 바닥 · 상체 살짝 숙임 · 양측'),
-          S('비둘기 자세 (또는 의자 피전)', 4, '앞 정강이 가로 · 좌우'),
-          S('힙플렉서 로우 런지', 4, '뒷무릎 바닥 · 골반 후방 경사 · 좌우'),
-          S('프로그 스트레치 (무릎 바깥)', 3, '부드럽게 · 내전근'),
-          S('카우처 스트레치 (의자/소파)', 3, '쿼드+힙플렉서 · 좌우'),
-          S('몬스터 워크 후 정적 글루트 수축 이완', 2, '활성화 후 이완 10초')
-        ];
+        // FULL hip catalog — 90/90, pigeon, couch, frog, etc. NO trimming of key moves
+        main = stretchItemsFromCatalog(['hip'], hold, sets, breath);
+        // ensure 90/90 is first
+        main.sort((a, b) => (a.name.includes('90/90') ? -1 : 0) - (b.name.includes('90/90') ? -1 : 0));
       } else if (focus === 'spine') {
-        main = [
-          S('캣-카우 흐름 10회 후 홀드', 3, '분절적으로'),
-          S('오픈북 흉추 회전', 3, '무릎 붙이고 팔 열기 · 양측'),
-          S('누운 척추 비틀기', 4, '무릎 한쪽 · 시선 반대 · 좌우'),
-          S('차일드 포즈', 3, '엉덩이 발꿈치'),
-          S('스핑크스 또는 코브라 가볍게', 2, '허리가 찌릿하면 중단'),
-          S('무릎 가슴 끌어안기', 2, '양측 또는 동시')
-        ];
+        main = stretchItemsFromCatalog(['spine'], hold, sets, breath);
       } else if (focus === 'desk') {
-        main = [
-          S('목·승모 (귀-어깨)', 3, '좌우 · 어깨 힘 빼기'),
-          S('문틀/벽 가슴 오픈', 3, '라운드 숄더 보정'),
-          S('흉추 오픈북 (의자)', 3, '등받이 끼고'),
-          S('손목 스트레치 양방향', 2, '책상 가장자리 가능'),
-          S('앉아서 피겨4', 3, '발목 무릎 · 상체 살짝 · 좌우'),
-          S('스탠딩 힙플렉서 (책상 잡고)', 3, '오래 앉은 뒤 · 좌우')
-        ];
+        main = stretchItemsFromCatalog(['neck', 'chest_shoulder'], hold, sets, breath, 6)
+          .concat(stretchItemsFromCatalog(['hip'], hold, sets, breath, 3))
+          .concat(stretchItemsFromCatalog(['spine'], hold, sets, breath, 2));
       } else if (focus === 'post') {
-        main = [
-          S('오늘 메인 근육 우선 스트레치', 5, '스쿼트일→힙/글루트, 벤치→가슴, 러닝→종아리·힙'),
-          S('햄스트링', 3, '양측'),
-          S('글루트 피겨4', 3, '양측'),
-          S('힙플렉서 런지', 3, '양측'),
-          S('가슴·광배', 3, '상체 쓴 날'),
-          S('종아리', 2, '러닝·점프 후'),
-          S('누워서 호흡 이완', 2, '심박 다운')
-        ];
-        why += ' 운동 직후 — 과도한 딥 스트레치는 피하고 이완 위주.';
+        main = []
+          .concat(stretchItemsFromCatalog(['hip'], hold, sets, breath, 4))
+          .concat(stretchItemsFromCatalog(['ham_quad_calf'], hold, sets, breath, 4))
+          .concat(stretchItemsFromCatalog(['chest_shoulder'], hold, sets, breath, 3))
+          .concat(stretchItemsFromCatalog(['spine'], hold, sets, breath, 2));
+        why += ' 운동 후 — 동원 부위 위주, 과도한 딥 스트레치 주의.';
       } else if (focus === 'sleep') {
-        durationMin = iv === 'high' ? 22 : 14;
+        durationMin = iv === 'high' ? 24 : 16;
         main = [
-          S('다리 올려 벽 (또는 소파)', 3, '부종·회복'),
-          S('누운 척추 비틀기', 3, '부드럽게 좌우'),
-          S('무릎 가슴 / 해피 베이비', 3, '허리 이완'),
-          S('차일드 포즈 또는 태아 자세', 3, '안전감'),
-          S('4-7-8 호흡 4회', 3, '수면 유도')
+          { name: '다리 올려 벽 (Viparita)', min: 3, note: `벽/소파 · ${hold} · 부종·다운레귤레이션` },
+          { name: '누운 척추 비틀기', min: 3, sets: sets > 1 ? sets : null, note: `부드럽게 좌우 · 홀드 ${hold} · ${breath}` },
+          { name: '무릎 가슴 끌어안기', min: 2, note: `홀드 ${hold}` },
+          { name: '해피 베이비', min: 2, note: `발 바깥 잡고 무릎 겨드랑이 · ${hold}` },
+          { name: '90/90 또는 누운 피겨4 (부드럽게)', min: 3, note: `취침 전 약하게 · 홀드 ${hold} 좌우` },
+          { name: '차일드 포즈 / 태아 자세', min: 3, note: `홀드 ${hold}` },
+          { name: '4-7-8 호흡', min: 3, note: '4회 반복 · 수면 유도' }
         ];
-        why += ' 취침 전 — 강도보다 다운레귤레이션.';
+        why += ' 취침 전 루틴.';
       } else {
-        // full body detailed
-        main = [
-          S('목 측면', 2, '좌우'),
-          S('문틀 가슴 오픈', 3, '양측 느낌'),
-          S('광배 차일드 측면', 2, ''),
-          S('캣-카우 → 차일드', 3, '흐름 후 홀드'),
-          S('90/90 또는 비둘기', 4, '고관절 · 좌우'),
-          S('힙플렉서 런지', 3, '좌우'),
-          S('햄스트링', 3, '좌우 또는 동시'),
-          S('쿼드', 2, '좌우'),
-          S('종아리 벽', 2, ''),
-          S('피겨4 글루트', 3, '좌우')
-        ];
-        durationMin = iv === 'high' ? 38 : iv === 'low' ? 18 : 28;
+        // full — stack major catalogs (this is the "don't shrink" path)
+        main = []
+          .concat(stretchItemsFromCatalog(['neck'], hold, sets, breath))
+          .concat(stretchItemsFromCatalog(['chest_shoulder'], hold, sets, breath))
+          .concat(stretchItemsFromCatalog(['spine'], hold, sets, breath))
+          .concat(stretchItemsFromCatalog(['hip'], hold, sets, breath))
+          .concat(stretchItemsFromCatalog(['ham_quad_calf'], hold, sets, breath))
+          .concat(stretchItemsFromCatalog(['full_extra'], hold, sets, breath));
+        durationMin = iv === 'high' ? 45 : iv === 'low' ? 25 : 35;
+        why += ' 전신 풀 카탈로그(90/90·비둘기·문틀 가슴·오픈북 등 포함).';
       }
 
-      if (iv === 'high' && focus !== 'sleep') {
-        main.push(S('딥 전굴 또는 스플릿 근접 (가능 범위만)', 3, '억지 금지 · 2세트 홀드'));
+      // hard guarantee: hip/full always mention 90/90 in list
+      if ((focus === 'hip' || focus === 'full' || focus === 'lower') && !main.some(x => /90\/90/.test(x.name))) {
+        main.unshift({
+          name: '90/90 힙 스트레치',
+          min: 4,
+          sets: sets > 1 ? sets : null,
+          note: `앞·뒤 정강이 바닥 90°. 상체 살짝 앞. 양측 · 홀드 ${hold} · ${breath}`
+        });
       }
 
       const finisher = buildCooldownBlock('stretch', iv);
@@ -4892,9 +4973,9 @@ function localBoxingPlan(intensity) {
         finisher,
         cues: [
           '반동 금지 · 날카로운 통증 금지',
-          `홀드 ${holdSec}초` + (sets > 1 ? ' × 2세트' : ''),
-          '날숨에 근육 이완',
-          '좌우 불균형 있으면 짧은 쪽 한 세트 더'
+          `홀드 ${hold}` + (sets > 1 ? ' × 2세트' : ''),
+          '90/90·비둘기 등은 좌우 모두',
+          '날숨에 이완 · 좌우 짧으면 짧은 쪽 +1'
         ],
         source: 'local-stretch',
         mode: 'stretch',
@@ -5189,8 +5270,9 @@ function localBoxingPlan(intensity) {
           if (it.reps) bits.push(it.reps + (/플랭크|초/.test(it.name || '') ? '초' : '회'));
           if (it.load) bits.push(it.load + 'kg');
           if (it.min) bits.push(it.min + '분');
-          if (it.note) bits.push(it.note);
-          return `<div class="tp-item"><strong>${esc(it.name)}</strong><div class="meta">${esc(bits.join(' · '))}</div></div>`;
+          const head = bits.join(' · ');
+          const detail = it.note ? esc(it.note) : '';
+          return `<div class="tp-item"><strong>${esc(it.name)}</strong>${head ? `<div class="meta">${esc(head)}</div>` : ''}${detail ? `<div class="meta" style="opacity:.95;margin-top:2px">${detail}</div>` : ''}</div>`;
         }).join('')}</div>`;
       };
       const adj = plan.adjusted ? ' · 회복 보고 강도 조정됨' : '';
@@ -5246,8 +5328,9 @@ function localBoxingPlan(intensity) {
           if (mode === 'stretch') {
             system = `너는 FIT TRACKER 스트레칭·모빌리티 코치다.
 하=가벼운 풀기(홀드 15–20초), 중=표준(25–30초), 상=딥·롱(40–60초, 2세트 가능).
-포커스: full|upper|lower|hip|spine|post(운동후)|desk(사무)|sleep(취침전).
-반동 금지, 날카로운 통증 금지, 호흡 큐 포함.
+포커스: full|upper|lower|hip|spine|post|desk|sleep.
+필수 예시 동작명 사용: 90/90 힙 스트레치, 비둘기, 카우처 스트레치, 문틀 가슴 오픈, 오픈북, 피겨4, 햄스트링 벽, 종아리 벽 등.
+main에 최소 6개 이상 구체 동작. 반동·통증 금지. 홀드 초·좌우 명시.
 워밍업·쿨다운(finisher) 구체 동작 필수. 의학 진단 금지. JSON만.
 {
   "intensity": "low|mid|high",
@@ -7516,7 +7599,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.2,
+        version: 4.3,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
