@@ -1247,6 +1247,22 @@
     .stretch-focus-row button.on {
       background: rgba(221, 214, 254, .95); color: #4c1d95; border-color: transparent;
     }
+
+    .train-mode-row button { position: relative; }
+    .train-mode-row button.on::after {
+      content: "✓";
+      position: absolute; top: 4px; right: 6px;
+      font-size: .7rem; font-weight: 800; opacity: .9;
+    }
+    .train-mode-hint {
+      font-size: .72rem; opacity: .88; margin: -4px 0 10px;
+      position: relative; z-index: 1;
+    }
+    .train-plan .tp-section-tag {
+      display: inline-block; font-size: .68rem; font-weight: 800;
+      padding: 2px 8px; border-radius: 999px; margin-bottom: 6px;
+      background: rgba(255,255,255,.18);
+    }
 </style>
 </head>
 <body>
@@ -1292,7 +1308,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.3</div>
+        <div class="ver">4.4</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1753,11 +1769,12 @@
         <div class="ta-title" id="trainAiTitle">오늘의 훈련 추천</div>
         <div class="ta-sub" id="trainAiSub">회복·핵심 3종·최근 볼륨을 보고, 선택한 강도에 맞춰 세션을 짜 줍니다. (Gemini 연결 시 AI, 없으면 로컬 처방)</div>
 
+        <div class="train-mode-hint" id="trainModeHint">여러 종목을 <strong>동시에</strong> 고를 수 있어요 (조합 추천)</div>
         <div class="train-mode-row" id="trainModeRow">
-          <button type="button" class="on" data-tm="gym" onclick="setTrainMode('gym')">🏋️ 헬스·러닝<span class="sm">스쿼트·데드·러닝</span></button>
-          <button type="button" data-tm="functional" onclick="setTrainMode('functional')">⚡ 기능성<span class="sm">서킷·가동</span></button>
-          <button type="button" data-tm="stretch" onclick="setTrainMode('stretch')">🧘 스트레칭<span class="sm">전신·부위·회복</span></button>
-          <button type="button" data-tm="boxing" onclick="setTrainMode('boxing')">🥊 복싱<span class="sm">백·미트·셰도우</span></button>
+          <button type="button" class="on" data-tm="gym" onclick="toggleTrainMode('gym')">🏋️ 헬스·러닝<span class="sm">스쿼트·데드·러닝</span></button>
+          <button type="button" data-tm="functional" onclick="toggleTrainMode('functional')">⚡ 기능성<span class="sm">서킷·가동</span></button>
+          <button type="button" data-tm="stretch" onclick="toggleTrainMode('stretch')">🧘 스트레칭<span class="sm">전신·부위·회복</span></button>
+          <button type="button" data-tm="boxing" onclick="toggleTrainMode('boxing')">🥊 복싱<span class="sm">백·미트·셰도우</span></button>
         </div>
 
         <div class="stretch-focus-row" id="stretchFocusRow" style="display:none">
@@ -2238,7 +2255,8 @@
     let coreAlertTimer = null;
     let coreSnoozeUntil = 0;
     let trainIntensity = 'mid'; // low | mid | high
-    let trainMode = 'gym'; // gym | functional | stretch | boxing
+    let trainModes = ['gym']; // multi-select: gym | functional | stretch | boxing
+    let trainMode = 'gym'; // primary (last toggled) for focus chips UI
     let boxFocus = 'striking';
     let funcFocus = 'full';
     let stretchFocus = 'full'; // full|upper|lower|hip|spine|post|desk|sleep // full|strength|power|endurance|cardio|mobility|agility // mixed | shadow | bag | mitt | conditioning
@@ -4280,28 +4298,72 @@ function startAlarmLoop() {
       updateTrainSuggestHint();
     }
 
-    function setTrainMode(mode) {
-      if (mode === 'boxing') trainMode = 'boxing';
-      else if (mode === 'functional') trainMode = 'functional';
-      else if (mode === 'stretch') trainMode = 'stretch';
-      else trainMode = 'gym';
+    function getTrainModes() {
+      if (!Array.isArray(trainModes) || !trainModes.length) trainModes = ['gym'];
+      return trainModes.slice();
+    }
 
+    function toggleTrainMode(mode) {
+      const ok = ['gym', 'functional', 'stretch', 'boxing'];
+      if (!ok.includes(mode)) return;
+      if (!Array.isArray(trainModes)) trainModes = ['gym'];
+      const i = trainModes.indexOf(mode);
+      if (i >= 0) {
+        if (trainModes.length === 1) {
+          toast('최소 1개 종목은 선택돼야 해요');
+          return;
+        }
+        trainModes.splice(i, 1);
+      } else {
+        trainModes.push(mode);
+      }
+      // primary for focus chips = last selected or first
+      trainMode = trainModes.includes(mode) ? mode : trainModes[trainModes.length - 1];
+      syncTrainModeUI();
+      updateTrainSuggestHint();
+      const box = document.getElementById('trainPlanBox');
+      if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+      lastTrainPlan = null;
+    }
+
+    function setTrainMode(mode) {
+      // force single (legacy) — also used when applying plan presets
+      const ok = ['gym', 'functional', 'stretch', 'boxing'];
+      if (!ok.includes(mode)) mode = 'gym';
+      trainModes = [mode];
+      trainMode = mode;
+      syncTrainModeUI();
+      updateTrainSuggestHint();
+      const box = document.getElementById('trainPlanBox');
+      if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+      lastTrainPlan = null;
+    }
+
+    function syncTrainModeUI() {
+      const modes = getTrainModes();
       const row = document.getElementById('trainModeRow');
       if (row) {
-        row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.tm === trainMode));
+        row.querySelectorAll('button').forEach(b => {
+          b.classList.toggle('on', modes.includes(b.dataset.tm));
+        });
       }
       const card = document.getElementById('trainAiCard');
       if (card) {
-        card.classList.toggle('boxing-skin', trainMode === 'boxing');
-        card.classList.toggle('func-skin', trainMode === 'functional');
-        card.classList.toggle('stretch-skin', trainMode === 'stretch');
+        card.classList.toggle('boxing-skin', modes.length === 1 && modes[0] === 'boxing');
+        card.classList.toggle('func-skin', modes.length === 1 && modes[0] === 'functional');
+        card.classList.toggle('stretch-skin', modes.length === 1 && modes[0] === 'stretch');
+        if (modes.length > 1) {
+          card.classList.remove('boxing-skin', 'func-skin', 'stretch-skin');
+        }
       }
+      const primary = trainMode || modes[0];
       const bf = document.getElementById('boxFocusRow');
       const ff = document.getElementById('funcFocusRow');
       const sf = document.getElementById('stretchFocusRow');
-      if (bf) bf.style.display = trainMode === 'boxing' ? '' : 'none';
-      if (ff) ff.style.display = trainMode === 'functional' ? '' : 'none';
-      if (sf) sf.style.display = trainMode === 'stretch' ? '' : 'none';
+      // show focus chips if that mode is selected
+      if (bf) bf.style.display = modes.includes('boxing') ? '' : 'none';
+      if (ff) ff.style.display = modes.includes('functional') ? '' : 'none';
+      if (sf) sf.style.display = modes.includes('stretch') ? '' : 'none';
 
       const k = document.getElementById('trainAiKicker');
       const t = document.getElementById('trainAiTitle');
@@ -4309,41 +4371,51 @@ function startAlarmLoop() {
       const ilL = document.getElementById('ilLow');
       const ilM = document.getElementById('ilMid');
       const ilH = document.getElementById('ilHigh');
-
-      if (trainMode === 'boxing') {
+      const names = { gym: '헬스', functional: '기능성', stretch: '스트레칭', boxing: '복싱' };
+      if (modes.length > 1) {
+        if (k) k.textContent = 'AI COMBO · 조합 훈련';
+        if (t) t.textContent = '오늘의 조합 세션';
+        if (s) s.textContent = '선택: ' + modes.map(m => names[m]).join(' + ') + ' · 한 세션으로 이어서 처방합니다.';
+        if (ilL) ilL.textContent = '가볍게 조합';
+        if (ilM) ilM.textContent = '표준 조합';
+        if (ilH) ilH.textContent = '하드 조합';
+      } else if (primary === 'boxing') {
         if (k) k.textContent = 'AI BOXING · 훈련 제안';
         if (t) t.textContent = '오늘의 복싱 세션';
-        if (s) s.textContent = '하·중·상 강도와 타격/백/미트/셰도우 포커스를 고르면 AI(또는 로컬)가 오늘 세션을 제안합니다.';
+        if (s) s.textContent = '하·중·상 + 타격/백/미트/셰도우. 여러 종목도 함께 고를 수 있어요.';
         if (ilL) ilL.textContent = 'FOUNDATION · 3분R';
         if (ilM) ilM.textContent = 'BUILD · 4분R';
         if (ilH) ilH.textContent = 'PEAK · 5분R';
-      } else if (trainMode === 'functional') {
-        if (k) k.textContent = 'AI FUNCTIONAL · 기능성 훈련';
+      } else if (primary === 'functional') {
+        if (k) k.textContent = 'AI FUNCTIONAL · 기능성';
         if (t) t.textContent = '오늘의 기능성 세션';
-        if (s) s.textContent = '장비 최소·전신 서킷. 근력·파워·근지구력·카디오·가동·어질리티를 하/중/상으로 제안합니다.';
+        if (s) s.textContent = '몬스터 워크·서킷 등. 다른 종목과 조합 가능.';
         if (ilL) ilL.textContent = '가동·기술·존2';
         if (ilM) ilM.textContent = '표준 서킷';
         if (ilH) ilH.textContent = '고강도 번아웃';
-      } else if (trainMode === 'stretch') {
+      } else if (primary === 'stretch') {
         if (k) k.textContent = 'AI MOBILITY · 스트레칭';
         if (t) t.textContent = '오늘의 스트레칭';
-        if (s) s.textContent = '전신·부위·운동 후·취침 전. 하=부드럽게 풀기, 중=표준 홀드, 상=딥 스트레치·긴 세션.';
+        if (s) s.textContent = '90/90·비둘기 등 구체 동작. 워밍업/쿨다운용으로 다른 종목과 조합하세요.';
         if (ilL) ilL.textContent = '가볍게 풀기';
         if (ilM) ilM.textContent = '표준 홀드';
         if (ilH) ilH.textContent = '딥·롱 세션';
       } else {
         if (k) k.textContent = 'AI S&C · 강혁 데스크';
         if (t) t.textContent = '오늘의 훈련 추천';
-        if (s) s.textContent = '회복·핵심 3종·최근 볼륨을 보고, 선택한 강도에 맞춰 세션을 짜 줍니다. (Gemini 연결 시 AI, 없으면 로컬 처방)';
+        if (s) s.textContent = '여러 종목을 동시에 선택하면 조합 세션으로 짜 줍니다.';
         if (ilL) ilL.textContent = '회복·기술';
         if (ilM) ilM.textContent = '표준 자극';
         if (ilH) ilH.textContent = '하드 데이';
       }
-      updateTrainSuggestHint();
-      const box = document.getElementById('trainPlanBox');
-      if (box) { box.style.display = 'none'; box.innerHTML = ''; }
-      lastTrainPlan = null;
+      const hint = document.getElementById('trainModeHint');
+      if (hint) {
+        hint.innerHTML = modes.length > 1
+          ? `선택됨: <strong>${modes.map(m => names[m]).join(' + ')}</strong> · 탭해서 켜고 끄기`
+          : '여러 종목을 <strong>동시에</strong> 고를 수 있어요 (조합 추천)';
+      }
     }
+
 
     function setStretchFocus(f) {
       const ok = ['full', 'upper', 'lower', 'hip', 'spine', 'post', 'desk', 'sleep'];
@@ -5011,14 +5083,16 @@ function localBoxingPlan(intensity) {
       if (!el) return;
       const s = suggestedTrainIntensity();
       const labels = { low: '하', mid: '중', high: '상' };
-      if (trainMode === 'boxing') {
-        el.innerHTML = `🥊 복싱 · 추천 강도 <strong>${labels[s.iv]}</strong> — ${esc(s.reason)}`;
-      } else if (trainMode === 'functional') {
+      const names = { gym: '헬스', functional: '기능성', stretch: '스트레칭', boxing: '복싱' };
+      const modes = typeof getTrainModes === 'function' ? getTrainModes() : [trainMode || 'gym'];
+      if (modes.length > 1) {
+        el.innerHTML = `🧩 조합 <strong>${modes.map(m => names[m]).join(' + ')}</strong> · 추천 강도 <strong>${labels[s.iv]}</strong> — ${esc(s.reason)}`;
+      } else if (modes[0] === 'stretch') {
+        el.innerHTML = `🧘 스트레칭 · 추천 강도 <strong>${labels[s.iv === 'high' ? 'mid' : s.iv]}</strong> — 회복이 낮을수록 스트레칭이 좋은 선택`;
+      } else if (modes[0] === 'functional') {
         el.innerHTML = `⚡ 기능성 · 추천 강도 <strong>${labels[s.iv]}</strong> — ${esc(s.reason)}`;
-      } else if (trainMode === 'stretch') {
-        // stretching: often good when recovery low
-        const pref = (s.iv === 'high') ? 'mid' : s.iv;
-        el.innerHTML = `🧘 스트레칭 · 추천 강도 <strong>${labels[pref]}</strong> — 회복이 낮을수록 스트레칭·가동이 좋은 선택이에요`;
+      } else if (modes[0] === 'boxing') {
+        el.innerHTML = `🥊 복싱 · 추천 강도 <strong>${labels[s.iv]}</strong> — ${esc(s.reason)}`;
       } else {
         el.innerHTML = `💡 추천 강도 <strong>${labels[s.iv]}</strong> — ${esc(s.reason)}`;
       }
@@ -5249,6 +5323,8 @@ function localBoxingPlan(intensity) {
       if (!plan) return '처방';
       const s = String(plan.source || '');
       const gem = s.indexOf('gemini') === 0;
+      if (plan.mode === 'combo' || s === 'local-combo' || s === 'gemini-combo')
+        return gem ? '✨ Gemini · 조합 세션' : '🧩 로컬 조합 처방';
       if (plan.mode === 'stretch' || s === 'local-stretch' || s === 'gemini-stretch')
         return gem ? '✨ Gemini · 스트레칭' : '🧘 스트레칭 로컬';
       if (plan.mode === 'functional' || s === 'local-functional' || s === 'gemini-functional')
@@ -5296,106 +5372,204 @@ function localBoxingPlan(intensity) {
         </div>`;
     }
 
-    async function requestTrainingPlan() {
+    
+    function planForMode(mode, intensity) {
+      if (mode === 'boxing') return localBoxingPlan(intensity);
+      if (mode === 'functional') return localFunctionalPlan(intensity);
+      if (mode === 'stretch') return localStretchPlan(intensity);
+      return localTrainingPlan(intensity);
+    }
+
+    function combineLocalPlans(modes, intensity) {
+      const labels = { low: '하', mid: '중', high: '상', gym: '헬스', functional: '기능성', stretch: '스트레칭', boxing: '복싱' };
+      // order session: warm shared → each main block → stretch/cooldown last
+      const order = ['gym', 'functional', 'boxing', 'stretch'];
+      const selected = order.filter(m => modes.includes(m));
+      if (!selected.length) selected.push('gym');
+
+      const parts = selected.map(m => planForMode(m, intensity));
+      // intensity may be adjusted differently — use first plan's iv
+      let iv = intensity;
+      parts.forEach(p => { if (p.adjusted && p.intensity === 'low') iv = 'low'; });
+
+      const tag = (mode, items) => (items || []).map(it => ({
+        ...it,
+        note: [it.note, labels[mode] || mode].filter(Boolean).join(' · ')
+      }));
+
+      // Warmup: merge unique-ish from first non-stretch, plus short joint if multi
+      const warmup = [];
+      const seenW = new Set();
+      selected.forEach(m => {
+        if (m === 'stretch') return;
+        (planForMode(m, iv).warmup || []).forEach(it => {
+          const k = it.name;
+          if (seenW.has(k)) return;
+          seenW.add(k);
+          warmup.push({ ...it, note: [it.note, labels[m]].filter(Boolean).join(' · ') });
+        });
+      });
+      if (!warmup.length) {
+        warmup.push(...(buildWarmupBlock('gym', iv) || []));
+      }
+      // cap warmup length for combo
+      const warmupOut = warmup.slice(0, selected.length > 2 ? 6 : 8);
+
+      // Main: sequential blocks per mode (stretch main can be mid-session mobility or end)
+      let main = [];
+      selected.forEach(m => {
+        if (m === 'stretch') return; // stretch handled as finisher-heavy
+        const p = planForMode(m, iv);
+        // section marker as zero-min item? use note prefix on first
+        const items = tag(m, p.main || []);
+        if (items.length) {
+          items[0] = { ...items[0], note: `【${labels[m]}】 ` + (items[0].note || '') };
+          // for combo, trim each block to avoid huge sessions
+          const cap = selected.length >= 3 ? 4 : selected.length === 2 ? 5 : 8;
+          main = main.concat(items.slice(0, cap));
+        }
+      });
+
+      // Stretch: if selected, put detailed stretch as finisher; else standard cooldown
+      let finisher = [];
+      if (selected.includes('stretch')) {
+        const sp = planForMode('stretch', iv === 'high' ? 'mid' : iv);
+        const items = tag('stretch', (sp.main || []).slice(0, selected.length >= 3 ? 6 : 10));
+        if (items.length) items[0] = { ...items[0], note: '【스트레칭】 ' + (items[0].note || '') };
+        finisher = items.concat(tag('stretch', (sp.finisher || []).slice(0, 2)));
+      } else {
+        // cooldown from last hard mode
+        const last = selected.filter(m => m !== 'stretch').slice(-1)[0] || 'gym';
+        finisher = buildCooldownBlock(last === 'boxing' ? 'boxing' : last === 'functional' ? 'functional' : 'gym', iv);
+      }
+
+      const durationMin = Math.round(
+        [...warmupOut, ...main, ...finisher].reduce((a, it) => a + (+it.min || 3), 0)
+      );
+
+      const cues = [];
+      parts.forEach(p => (p.cues || []).slice(0, 2).forEach(c => { if (!cues.includes(c)) cues.push(c); }));
+      cues.push('조합 세션: 블록 사이 1–2분 쉬기', '회복 낮으면 강도 하 권장');
+
+      return {
+        intensity: iv,
+        intensityLabel: labels[iv] || '중',
+        title: `조합 · ${selected.map(m => labels[m]).join(' + ')}`,
+        focus: selected.map(m => labels[m]).join(' + '),
+        durationMin: Math.min(durationMin, iv === 'low' ? 55 : 90),
+        why: `선택 종목(${selected.map(m => labels[m]).join(' + ')})을 한 세션 흐름으로 이었습니다. 워밍업 → 메인 블록 → 스트레칭/쿨다운.`,
+        warmup: warmupOut,
+        main,
+        finisher,
+        cues: cues.slice(0, 6),
+        source: 'local-combo',
+        mode: 'combo',
+        modes: selected.slice(),
+        requestedIntensity: intensity,
+        adjusted: iv !== intensity
+      };
+    }
+
+async function requestTrainingPlan() {
       const btn = document.getElementById('trainGoBtn');
       const box = document.getElementById('trainPlanBox');
-      const mode = trainMode || 'gym';
-      const labels = { gym: '처방 작성 중…', functional: '기능성 서킷 구성 중…', stretch: '스트레칭 루틴 구성 중…', boxing: '라운드 구성 중…' };
+      const modes = typeof getTrainModes === 'function' ? getTrainModes() : [trainMode || 'gym'];
+      const intensity = trainIntensity || 'mid';
+      const multi = modes.length > 1;
+      const names = { gym: '헬스', functional: '기능성', stretch: '스트레칭', boxing: '복싱' };
+
       if (btn) {
         btn.disabled = true;
-        btn.textContent = labels[mode] || '처방 작성 중…';
+        btn.textContent = multi ? '조합 세션 구성 중…' : '처방 작성 중…';
       }
       if (box) {
         box.style.display = '';
-        const msgs = {
-          boxing: '복싱 데스크가 라운드를 짜는 중…',
-          functional: '기능성 코치가 서킷을 짜는 중…',
-          stretch: '모빌리티 코치가 스트레칭을 짜는 중…',
-          gym: '강혁 코치가 오늘 세션을 짜는 중…'
-        };
-        box.innerHTML = `<div class="train-plan"><div class="tp-why">${msgs[mode] || msgs.gym}</div></div>`;
+        box.innerHTML = `<div class="train-plan"><div class="tp-why">${multi ? modes.map(m => names[m]).join(' + ') + ' 조합을 짜는 중…' : '세션을 짜는 중…'}</div></div>`;
       }
-      const intensity = trainIntensity || 'mid';
-      const pickLocal = () => mode === 'boxing' ? localBoxingPlan(intensity)
-        : mode === 'functional' ? localFunctionalPlan(intensity)
-        : mode === 'stretch' ? localStretchPlan(intensity)
-        : localTrainingPlan(intensity);
+
+      const pickLocal = () => multi ? combineLocalPlans(modes, intensity) : planForMode(modes[0], intensity);
 
       try {
-        if (getGeminiKey && getGeminiKey()) {
+        const key = getGeminiKey && getGeminiKey();
+        if (key) {
           const ctx = buildTrainContext(intensity);
-          let system;
-          if (mode === 'stretch') {
-            system = `너는 FIT TRACKER 스트레칭·모빌리티 코치다.
-하=가벼운 풀기(홀드 15–20초), 중=표준(25–30초), 상=딥·롱(40–60초, 2세트 가능).
-포커스: full|upper|lower|hip|spine|post|desk|sleep.
-필수 예시 동작명 사용: 90/90 힙 스트레치, 비둘기, 카우처 스트레치, 문틀 가슴 오픈, 오픈북, 피겨4, 햄스트링 벽, 종아리 벽 등.
-main에 최소 6개 이상 구체 동작. 반동·통증 금지. 홀드 초·좌우 명시.
-워밍업·쿨다운(finisher) 구체 동작 필수. 의학 진단 금지. JSON만.
+          ctx.selectedModes = modes;
+          ctx.combo = multi;
+          const system = multi
+            ? `너는 FIT TRACKER 수석 코치다. 사용자가 여러 훈련 유형을 동시에 선택했다: ${modes.join(', ')}.
+한 세션으로 이어서 처방하라. 순서 권장: warmup 공통 → 각 모드 메인 블록(짧게) → finisher에 스트레칭/쿨다운.
+각 동작은 name, min, sets, reps, load, note(구체 방법). 90/90·몬스터 워크 등 구체 명칭 사용.
+회복 낮으면 intensity를 low로 낮출 수 있다.
+의학 진단 금지. JSON만 출력.
 {
   "intensity": "low|mid|high",
-  "title": "세션 제목",
-  "focus": "스트레칭 부위",
-  "durationMin": 20,
+  "title": "조합 세션 제목",
+  "focus": "선택된 모드 요약",
+  "durationMin": 60,
   "why": "2문장",
-  "warmup": [{"name":"동작","min":2,"sets":null,"reps":null,"load":null,"note":"홀드/호흡"}],
-  "main": [{"name":"동작","min":3,"sets":1,"reps":null,"load":null,"note":"25초 홀드"}],
-  "finisher": [{"name":"호흡 이완","min":2,"sets":null,"reps":null,"load":null,"note":""}],
-  "cues": ["반동 금지","호흡"]
+  "warmup": [{"name":"","min":3,"sets":null,"reps":null,"load":null,"note":""}],
+  "main": [{"name":"【헬스】…","min":8,"sets":3,"reps":8,"load":null,"note":""}],
+  "finisher": [{"name":"90/90 힙 스트레치","min":3,"sets":null,"reps":null,"load":null,"note":"홀드 30초 양측"}],
+  "cues": ["",""]
 }
-한국어.`;
-          } else if (mode === 'boxing') {
-            system = `너는 FIT TRACKER 복싱 코치다. 하=3분R 폼, 중=4분R, 상=5분R full gas.
-JSON만 출력. warmup/main/finisher/cues. 한국어.`;
-          } else if (mode === 'functional') {
-            system = `너는 FIT TRACKER 기능성 코치다. 맨몸 서킷. 포커스 full|strength|power|endurance|cardio|mobility|agility.
-JSON만. warmup/main/finisher/cues. 한국어.`;
-          } else {
-            system = `너는 FIT TRACKER S&C 코치 강혁이다. 하/중/상 세션. 핵심 러닝4일 스쿼트7일 데드7일 우선.
-JSON만. warmup/main/finisher/cues. 한국어.`;
-          }
-          // fuller gym/boxing/functional prompts kept shorter is ok - local fallback solid
-          if (mode === 'gym') {
-            system = `너는 FIT TRACKER의 S&C 코치 '강혁'이다.
-강도 low/mid/high. 회복 낮으면 하향. 핵심: 러닝 4일 / 스쿼트 7일 / 데드 7일 우선.
-JSON만 출력.
-{"intensity":"low|mid|high","title":"","focus":"","durationMin":45,"why":"","warmup":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"main":[{"name":"","min":10,"sets":3,"reps":8,"load":null,"note":""}],"finisher":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"cues":[""]}
-한국어.`;
-          } else if (mode === 'boxing') {
-            system = `너는 FIT TRACKER 복싱 코치다.
-하=FOUNDATION 3분R, 중=BUILD 4분R, 상=PEAK 5분R. 포커스 striking/shadow/bag/mitt/conditioning/full.
-JSON만.
-{"intensity":"low|mid|high","title":"","focus":"","durationMin":45,"why":"","warmup":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"main":[{"name":"","min":12,"sets":null,"reps":null,"load":null,"note":"3분/1분"}],"finisher":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"cues":[""]}
-한국어.`;
-          } else if (mode === 'functional') {
-            system = `너는 FIT TRACKER 기능성 코치다. 맨몸. 포커스 full|strength|power|endurance|cardio|mobility|agility.
-푸시업·스쿼트·런지·플랭크·스프롤·점프스쿼트 등.
-JSON만.
-{"intensity":"low|mid|high","title":"","focus":"","durationMin":40,"why":"","warmup":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"main":[{"name":"","min":8,"sets":3,"reps":12,"load":null,"note":""}],"finisher":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"cues":[""]}
-한국어.`;
-          }
-          const extra = mode === 'boxing' ? `\n복싱 포커스: ${boxFocus}`
-            : mode === 'functional' ? `\n기능성 포커스: ${funcFocus}`
-            : mode === 'stretch' ? `\n스트레칭 포커스: ${stretchFocus}` : '';
+한국어.`
+            : (modes[0] === 'stretch'
+              ? `스트레칭 코치. 90/90·비둘기·문틀가슴 등 구체 동작 6개+. 홀드 초 명시. JSON만. warmup/main/finisher/cues. 한국어.`
+              : modes[0] === 'functional'
+              ? `기능성 코치. 몬스터 워크·푸시업·스쿼트·런지·플랭크·스프롤 등. JSON만. warmup/main/finisher/cues. 한국어.`
+              : modes[0] === 'boxing'
+              ? `복싱 코치. 라운드 분 명시. JSON만. warmup/main/finisher/cues. 한국어.`
+              : `S&C 코치 강혁. 핵심 러닝4일 스쿼트7일 데드7일. JSON만. warmup/main/finisher/cues. 한국어.`);
+
+          const extra = [];
+          if (modes.includes('boxing')) extra.push('복싱 포커스: ' + (boxFocus || 'striking'));
+          if (modes.includes('functional')) extra.push('기능성 포커스: ' + (funcFocus || 'full'));
+          if (modes.includes('stretch')) extra.push('스트레칭 포커스: ' + (stretchFocus || 'full'));
+
           const text = await callGemini({
-            system,
-            prompt: `선택 강도: ${intensity}${extra}\n\n데이터:\n${JSON.stringify(ctx, null, 2)}`,
-            temperature: 0.45
+            system: system + (multi ? '' : '\nJSON 스키마: {"intensity":"low|mid|high","title":"","focus":"","durationMin":40,"why":"","warmup":[{"name":"","min":3,"sets":null,"reps":null,"load":null,"note":""}],"main":[{"name":"","min":5,"sets":null,"reps":null,"load":null,"note":""}],"finisher":[{"name":"","min":3,"sets":null,"reps":null,"load":null,"note":""}],"cues":[""]}'),
+            prompt: `선택 강도: ${intensity}\n선택 모드: ${modes.join(', ')}\n${extra.join('\n')}\n\n데이터:\n${JSON.stringify(ctx, null, 2)}`,
+            temperature: 0.45,
+            maxOutputTokens: 8192
           });
           const m = text.match(/\{[\s\S]*\}/);
-          if (!m) throw new Error('JSON 파싱 실패');
-          const plan = normalizeAiPlan(JSON.parse(m[0]), intensity);
+          if (!m) throw new Error('JSON 파싱 실패 — 응답 형식 오류');
+          let j;
+          try { j = JSON.parse(m[0]); } catch (pe) {
+            throw new Error('JSON 파싱 실패: ' + (pe.message || pe));
+          }
+          // temporarily set trainMode for normalize labels
+          const prev = trainMode;
+          trainMode = multi ? 'gym' : modes[0];
+          const plan = normalizeAiPlan(j, intensity);
+          trainMode = prev;
+          if (multi) {
+            plan.mode = 'combo';
+            plan.modes = modes.slice();
+            plan.title = plan.title || `조합 · ${modes.map(x => names[x]).join(' + ')}`;
+            plan.source = plan.source && String(plan.source).indexOf('gemini') === 0 ? 'gemini-combo' : plan.source;
+          }
           if (!plan.main.length && !plan.warmup.length) throw new Error('빈 플랜');
           renderTrainPlan(plan);
-          toast(mode === 'stretch' ? '스트레칭 추천 완료' : mode === 'functional' ? '기능성 추천 완료' : mode === 'boxing' ? '복싱 추천 완료' : 'AI 훈련 추천 완료');
+          toast(multi ? '조합 AI 추천 완료' : 'AI 추천 완료');
         } else {
           renderTrainPlan(pickLocal());
-          toast(mode === 'stretch' ? '로컬 스트레칭 루틴' : '로컬 처방 · Gemini 키면 AI 상세');
+          toast('API 키 없음 · 로컬 처방 사용 (설정에서 Gemini 키 입력)');
         }
       } catch (e) {
-        console.error(e);
+        console.error('requestTrainingPlan', e);
+        const msg = (e && e.message) ? String(e.message) : String(e);
         renderTrainPlan(pickLocal());
-        toast('AI 실패 · 로컬 처방으로 대체');
+        // show real reason
+        const box2 = document.getElementById('trainPlanBox');
+        if (box2) {
+          box2.insertAdjacentHTML('afterbegin',
+            `<div style="background:rgba(254,226,226,.95);color:#9f1239;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:.78rem;line-height:1.45;position:relative;z-index:2">
+              <strong>AI 호출 실패 → 로컬 처방으로 대체</strong><br>${esc(msg.slice(0, 280))}
+              <br><span style="opacity:.9">설정(더보기)에서 API 키·모델을 확인하세요. AI Studio 키 + Generative Language API 활성화 필요.</span>
+            </div>`);
+        }
+        toast('AI 실패 · 로컬 처방 적용');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -5913,47 +6087,68 @@ function setWoMode(mode) {
       return parts.map(p => p.text || '').join('').trim();
     }
 
-    async function callGemini({ prompt, imageDataUrl, system, temperature = 0.6 }) {
+    async function callGemini({ prompt, imageDataUrl, system, temperature = 0.6, maxOutputTokens = 4096 }) {
       const key = getGeminiKey();
       if (!key) throw new Error('NO_KEY');
-      const model = getGeminiModel();
+      let model = getGeminiModel() || 'gemini-2.0-flash';
+      // strip models/ prefix if user pasted full path
+      model = String(model).replace(/^models\//, '').trim();
+
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
 
-      const parts = [];
-      if (system) parts.push({ text: system + '\n\n' + prompt });
-      else parts.push({ text: prompt });
-
+      const userParts = [];
+      userParts.push({ text: prompt });
       if (imageDataUrl) {
         const m = String(imageDataUrl).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
         if (m) {
-          parts.push({
-            inline_data: { mime_type: m[1], data: m[2] }
-          });
+          userParts.push({ inline_data: { mime_type: m[1], data: m[2] } });
         }
       }
 
       const body = {
-        contents: [{ role: 'user', parts }],
+        contents: [{ role: 'user', parts: userParts }],
         generationConfig: {
           temperature,
-          maxOutputTokens: 1024
+          maxOutputTokens: maxOutputTokens || 4096
         }
       };
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const raw = await res.text();
-      let data;
-      try { data = JSON.parse(raw); } catch { data = null; }
-      if (!res.ok) {
-        const msg = data?.error?.message || raw.slice(0, 200) || res.statusText;
-        throw new Error(msg || `HTTP ${res.status}`);
+      if (system) {
+        body.systemInstruction = { parts: [{ text: system }] };
       }
+
+      let res, raw, data;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        raw = await res.text();
+      } catch (netErr) {
+        throw new Error('네트워크 오류: ' + (netErr.message || netErr));
+      }
+      try { data = JSON.parse(raw); } catch { data = null; }
+
+      if (!res.ok) {
+        const apiMsg = data?.error?.message || raw.slice(0, 280) || res.statusText;
+        let hint = apiMsg;
+        if (res.status === 403 || /not been used|disabled|PERMISSION|API key/i.test(apiMsg)) {
+          hint = 'Gemini API가 이 키 프로젝트에서 비활성/미사용입니다. Google AI Studio에서 새 키를 발급하거나, 콘솔에서 Generative Language API를 활성화하세요. · ' + apiMsg.slice(0, 120);
+        } else if (res.status === 400 && /model|not found/i.test(apiMsg)) {
+          hint = '모델 이름 오류. 설정에서 gemini-2.0-flash 등으로 바꿔 보세요. · ' + apiMsg.slice(0, 120);
+        } else if (res.status === 429) {
+          hint = '할당량 초과(잠시 후 재시도). · ' + apiMsg.slice(0, 100);
+        }
+        throw new Error(hint || `HTTP ${res.status}`);
+      }
+
+      // blocked / safety
+      const block = data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason;
       const text = extractGeminiText(data);
-      if (!text) throw new Error('응답이 비어 있습니다');
+      if (!text) {
+        if (block && block !== 'STOP') throw new Error('응답 차단: ' + block);
+        throw new Error('응답이 비어 있습니다 (토큰 부족·필터 가능)');
+      }
       return text;
     }
 
@@ -6915,7 +7110,7 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       if (typeof renderWoChips === 'function') renderWoChips();
       if (typeof renderWoRecent === 'function') renderWoRecent();
       if (typeof renderWoWeek === 'function') renderWoWeek();
-      try { updateTrainSuggestHint(); setTrainIntensity(trainIntensity); setTrainMode(trainMode); setBoxFocus(boxFocus); if (typeof setFuncFocus === 'function') setFuncFocus(funcFocus); if (typeof setStretchFocus === 'function') setStretchFocus(stretchFocus); } catch (e) {}
+      try { if (typeof syncTrainModeUI === 'function') syncTrainModeUI(); else setTrainMode(trainMode); setTrainIntensity(trainIntensity); setBoxFocus(boxFocus); if (typeof setFuncFocus === 'function') setFuncFocus(funcFocus); if (typeof setStretchFocus === 'function') setStretchFocus(stretchFocus); updateTrainSuggestHint(); } catch (e) {}
 
       const wo = woTot();
       const list = day().workouts || [];
@@ -7599,7 +7794,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.3,
+        version: 4.4,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
