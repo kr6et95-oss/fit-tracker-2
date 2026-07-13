@@ -1255,7 +1255,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">3.5</div>
+        <div class="ver">3.6</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1722,11 +1722,12 @@
         </div>
 
         <div class="box-focus-row" id="boxFocusRow" style="display:none">
-          <button type="button" class="on" data-bf="mixed" onclick="setBoxFocus('mixed')">혼합</button>
+          <button type="button" class="on" data-bf="striking" onclick="setBoxFocus('striking')">타격</button>
           <button type="button" data-bf="shadow" onclick="setBoxFocus('shadow')">셰도우</button>
           <button type="button" data-bf="bag" onclick="setBoxFocus('bag')">샌드백</button>
           <button type="button" data-bf="mitt" onclick="setBoxFocus('mitt')">미트</button>
           <button type="button" data-bf="conditioning" onclick="setBoxFocus('conditioning')">컨디셔닝</button>
+          <button type="button" data-bf="full" onclick="setBoxFocus('full')">FULL</button>
         </div>
 
         <div class="ta-suggest" id="trainSuggestHint">추천 강도 계산 중…</div>
@@ -2178,7 +2179,7 @@
     let coreSnoozeUntil = 0;
     let trainIntensity = 'mid'; // low | mid | high
     let trainMode = 'gym'; // gym | boxing
-    let boxFocus = 'mixed'; // mixed | shadow | bag | mitt | conditioning
+    let boxFocus = 'striking'; // mixed | shadow | bag | mitt | conditioning
     let lastTrainPlan = null;
 
     /** 핵심 3종: 러닝 4일, 스쿼트·데드 7일 */
@@ -4224,15 +4225,15 @@ function startAlarmLoop() {
       const t = document.getElementById('trainAiTitle');
       const s = document.getElementById('trainAiSub');
       if (trainMode === 'boxing') {
-        if (k) k.textContent = 'AI BOXING DESK · 라운드 처방';
+        if (k) k.textContent = 'FIGHT//LAB · BOXING DESK';
         if (t) t.textContent = '오늘의 복싱 세션';
-        if (s) s.textContent = '하·중·상 강도와 백/미트/셰도우 포커스를 고르면, 라운드 구성으로 오늘 훈련을 짜 줍니다. (Gemini 또는 로컬)';
+        if (s) s.textContent = 'FIGHT//LAB 스타일: 하=FOUNDATION(3분R) · 중=BUILD(4분R) · 상=PEAK(5분R). 포커스·강도 선택 후 추천.';
         const ilL = document.getElementById('ilLow');
         const ilM = document.getElementById('ilMid');
         const ilH = document.getElementById('ilHigh');
-        if (ilL) ilL.textContent = '기술·풋워크';
-        if (ilM) ilM.textContent = '라운드 표준';
-        if (ilH) ilH.textContent = '스파 페이스';
+        if (ilL) ilL.textContent = 'FOUNDATION · 3분R';
+        if (ilM) ilM.textContent = 'BUILD · 4분R';
+        if (ilH) ilH.textContent = 'PEAK · 5분R';
       } else {
         if (k) k.textContent = 'AI S&C · 강혁 데스크';
         if (t) t.textContent = '오늘의 훈련 추천';
@@ -4252,8 +4253,8 @@ function startAlarmLoop() {
     }
 
     function setBoxFocus(f) {
-      const ok = ['mixed', 'shadow', 'bag', 'mitt', 'conditioning'];
-      boxFocus = ok.includes(f) ? f : 'mixed';
+      const ok = ['striking', 'shadow', 'bag', 'mitt', 'conditioning', 'full', 'mixed'];
+      boxFocus = ok.includes(f) ? f : 'striking';
       const row = document.getElementById('boxFocusRow');
       if (row) {
         row.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.bf === boxFocus));
@@ -4261,6 +4262,8 @@ function startAlarmLoop() {
     }
 
     function localBoxingPlan(intensity) {
+      // FIGHT//LAB inspired: phases map to 하/중/상
+      // FOUNDATION = 3 min rounds · BUILD = 4 min · PEAK = 5 min
       const r = getRest();
       const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
       let iv = intensity;
@@ -4268,156 +4271,118 @@ function startAlarmLoop() {
       else if (score != null && score < 60 && iv === 'high') iv = 'mid';
 
       const labels = { low: '하', mid: '중', high: '상' };
-      const focusLabels = {
-        mixed: '혼합', shadow: '셰도우', bag: '샌드백', mitt: '미트', conditioning: '컨디셔닝'
+      const phaseMeta = {
+        low:  { phase: 'FOUNDATION', work: 3, rest: 1, rounds: 3, color: '#3b82f6' },
+        mid:  { phase: 'BUILD',      work: 4, rest: 1, rounds: 4, color: '#f97316' },
+        high: { phase: 'PEAK',       work: 5, rest: 1, rounds: 5, color: '#ef4444' }
       };
-      const focus = boxFocus || 'mixed';
+      const ph = phaseMeta[iv] || phaseMeta.mid;
+      const focus = boxFocus || 'striking';
+      const focusLabels = {
+        striking: 'STRIKING', shadow: 'SHADOW', bag: 'BAG',
+        mitt: 'MITT', conditioning: 'CONDITIONING', full: 'FULL MMA', mixed: 'MIXED'
+      };
+      const fLab = focusLabels[focus] || 'STRIKING';
+      const roundBlockMin = (n) => n * (ph.work + ph.rest);
 
-      // round structures by intensity
-      let rounds = 4, work = 2, rest = 1, title = '', why = '', durationMin = 40;
+      let title = `FIGHT//LAB · ${ph.phase} · ${fLab}`;
+      let why = '';
+      let durationMin = 35;
       let warmup = [], main = [], finisher = [], cues = [];
 
-      if (iv === 'low') {
-        rounds = 3; work = 2; rest = 1; durationMin = 30;
-        title = `복싱 기술 데이 · ${focusLabels[focus]}`;
-        why = score != null
-          ? `회복 ${score}점 — 하 강도. 파워보다 가드·풋워크·콤비네이션 정확도.`
-          : '하 강도 복싱. 타격 세기보다 폼과 호흡.';
-        warmup = [
-          { name: '줄넘기 또는 가벼운 스텝', min: 5, note: '심박 올리기' },
-          { name: '어깨·손목·힙 가동', min: 4, note: '회전 준비' }
+      why = `페이즈 ${ph.phase}: 라운드 ${ph.work}분 / 휴식 ${ph.rest}분. `;
+      if (score != null) why += `오늘 회복 ${score}점. `;
+      if (iv === 'low') why += '폼이 전부. 천천히, 정확하게.';
+      else if (iv === 'high') why += 'Full gas. 개선을 수치로 남겨.';
+      else why += '강도 올리되 기술 유지.';
+
+      // Warmup shared (Fight Lab style)
+      warmup = [
+        { name: '풋워크 드릴', min: 10, note: '인-아웃, 래터럴, 피벗, 콤비 후 각도' },
+        { name: '기술 스터디 (1개 스트라이크)', min: iv === 'low' ? 12 : 8, note: '느리게·정확하게. 서두르지 말 것' }
+      ];
+
+      if (focus === 'conditioning') {
+        durationMin = iv === 'high' ? 55 : iv === 'low' ? 35 : 45;
+        main = [
+          { name: '카디오 (런/제자리 인터벌)', min: iv === 'high' ? 20 : 15, note: '스테디 + 스프린트 믹스' },
+          { name: '파워 서킷', min: 15, note: '스프롤, 점프스쿼트, 폭발 푸시업, 빠른 셰도우 버스트' },
+          { name: '머슬 엔듀런스', min: iv === 'low' ? 10 : 15, note: '하이렙 번아웃 3세트 · 편안함 넘기기' }
         ];
-        if (focus === 'bag') {
-          main = [
-            { name: `샌드백 기술 라운드 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 work / ${rest}분 rest · 가볍게` },
-            { name: '잽-크로스 정확도', min: 6, note: '힘 60% 이하' }
-          ];
-        } else if (focus === 'mitt') {
-          main = [
-            { name: `미트 기술 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 · 콤비 정확도` },
-            { name: '디펜스 드릴 (롤·슬립)', min: 6, note: '파트너/거울' }
-          ];
-        } else if (focus === 'conditioning') {
-          main = [
-            { name: '존2 섀도 + 스텝', min: 15, note: '대화 가능 페이스' },
-            { name: '코어 플랭크', min: 5, sets: 3, reps: 30, note: '초' }
-          ];
-        } else if (focus === 'shadow') {
-          main = [
-            { name: `셰도우복싱 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 · 거울 보며 폼` },
-            { name: '풋워크 사각 이동', min: 6, note: '전후좌우' }
-          ];
-        } else {
-          main = [
-            { name: `셰도우 ${Math.max(2, rounds - 1)}R`, min: (rounds - 1) * (work + rest), note: `${work}분` },
-            { name: '샌드백 라이트 2R', min: 2 * (work + rest), note: '기술 위주' }
-          ];
-        }
-        finisher = [
-          { name: '쿨다운 스트레칭', min: 5, note: '어깨·엉덩이·종아리' }
+        cues = ['컨디셔닝 날도 가드 습관', '호흡이 무너지면 페이스 다운', `${ph.phase} 페이즈`];
+      } else if (focus === 'shadow') {
+        const n = ph.rounds;
+        durationMin = 10 + roundBlockMin(n) + 10;
+        main = [
+          { name: `셰도우복싱 ${n} × ${ph.work}분`, min: roundBlockMin(n), note: `라운드 사이 ${ph.rest}분 · 이동·호흡·콤비 변화` },
+          { name: '콤비 드릴', min: 10, note: '잽-크로스-레그킥 / 잽-크로스-더블엔트리' }
         ];
-        cues = ['힘 빼기', '가드 내리지 않기', '라운드 사이 코 호흡'];
-      } else if (iv === 'high') {
-        rounds = 8; work = 3; rest = 1; durationMin = 60;
-        title = `스파 페이스 · ${focusLabels[focus]} 하드`;
-        why = (score != null ? `회복 ${score}점. ` : '') + '상 강도 — 라운드 퀄리티와 페이스 유지. 워밍업 생략 금지.';
-        warmup = [
-          { name: '줄넘기', min: 8, note: '점진 가속' },
-          { name: '다이내믹 워밍업 + 셰도우 1R', min: 7, note: '본라운드 전' }
+        cues = ['목적 없는 랜덤 움직임 금지', '풋워크와 콤비 연결', `${ph.work}분 라운드 완주`];
+      } else if (focus === 'bag') {
+        const n = ph.rounds + (iv === 'high' ? 1 : 0);
+        durationMin = 10 + roundBlockMin(n) + 8;
+        main = [
+          { name: `샌드백 ${n} × ${ph.work}분`, min: roundBlockMin(n), note: `rest ${ph.rest}분 · ${iv === 'low' ? '힘 60%' : iv === 'high' ? 'RPE 8' : 'RPE 6–7'}` },
+          { name: '바디-헤드 콤비', min: 8, note: '3–4발 콤비 정확도' }
         ];
-        if (focus === 'bag') {
-          main = [
-            { name: `샌드백 하드 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 work / ${rest}분 rest · RPE 8` },
-            { name: '파워 콤비 (후크·어퍼)', min: 8, note: '짧은 버스트' }
-          ];
-          cues = ['마지막 라운드 가드 유지', '수분', '내일 하·중'];
-        } else if (focus === 'mitt') {
-          main = [
-            { name: `미트 하드 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 · 빠른 콤비` },
-            { name: '카운터 드릴', min: 8, note: '슬립 후 카운터' }
-          ];
-          cues = ['파트너 신호에 반응', '과호흡 시 페이스 다운'];
-        } else if (focus === 'conditioning') {
-          main = [
-            { name: '버피 + 셰도우 인터벌', min: 16, note: '40초 on / 20초 off × 12' },
-            { name: '샌드백 피니시 3R', min: 3 * (work + rest), note: '올아웃' }
-          ];
-          cues = ['폼 붕괴 시 중단', '어지러우면 즉시 휴식'];
-        } else if (focus === 'shadow') {
-          main = [
-            { name: `셰도우 하드 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 · 스파 이미지` },
-            { name: '풋워크 + 헤드무브', min: 8, note: '각도 만들기' }
-          ];
-          cues = ['실제 상대를 상상', '라운드 종료 벨까지 가드'];
-        } else {
-          main = [
-            { name: '셰도우 2R', min: 2 * (work + rest), note: '워밍 라운드' },
-            { name: `샌드백 ${rounds - 3}R`, min: (rounds - 3) * (work + rest), note: '하드' },
-            { name: '미트 또는 디펜스 2R', min: 2 * (work + rest), note: '반응' }
-          ];
-          cues = ['라운드 구성 섞어 실전 감각', '쿨다운 필수'];
-        }
-        finisher = [
-          { name: '줄넘기 쿨다운', min: 3, note: '쉽게' },
-          { name: '스트레칭·호흡', min: 5, note: '코 호흡' }
+        cues = ['마지막 라운드 가드 유지', '힙 회전', `${ph.phase}`];
+      } else if (focus === 'mitt') {
+        const n = ph.rounds;
+        durationMin = 10 + roundBlockMin(n) + 8;
+        main = [
+          { name: `미트 ${n} × ${ph.work}분`, min: roundBlockMin(n), note: `rest ${ph.rest}분 · 콤비 콜 반응` },
+          { name: '디펜스 드릴 (롤·슬립·카운터)', min: 8, note: '타격 후 가드 리셋' }
         ];
+        cues = ['파트너 신호에 반응', '과호흡 시 다운시프트'];
+      } else if (focus === 'full') {
+        // FULL MMA style Friday from Fight Lab
+        durationMin = iv === 'high' ? 60 : 50;
+        main = [
+          { name: '기술 플로우 (타격+그라운드 연결)', min: 15, note: '스트라이킹 후 엔트리 상상' },
+          { name: `셰도우 ${ph.rounds} × ${ph.work}분`, min: roundBlockMin(ph.rounds), note: '이번 주 기술 전부 투입' },
+          { name: '솔로 그라운드 무브먼트', min: 10, note: '슈림프, 힙 이스케이프, 가드 리텐션' },
+          { name: '어질리티/스피드', min: 12, note: '반응·래터럴·폭발 스타트' }
+        ];
+        cues = ['FULL 데이는 퀄리티 유지', 'REST 데이를 캘린더에'];
       } else {
-        // mid
-        rounds = 6; work = 3; rest = 1; durationMin = 45;
-        title = `복싱 표준 세션 · ${focusLabels[focus]}`;
-        why = (score != null ? `회복 ${score}점. ` : '') + '중 강도 — 라운드 수와 콤비 밀도를 균형 있게.';
-        warmup = [
-          { name: '줄넘기', min: 6, note: '리듬' },
-          { name: '셰도우 워밍 1R', min: work + rest, note: `${work}분` }
+        // striking (default) — Mon/Thu Fight Lab
+        durationMin = 10 + 10 + roundBlockMin(ph.rounds) + 10;
+        main = [
+          { name: `셰도우복싱 ${ph.rounds} × ${ph.work}분`, min: roundBlockMin(ph.rounds), note: `rest ${ph.rest}분 · 풋워크 적용` },
+          { name: '콤비 드릴링', min: 10, note: '2–3 콤비 속도. 잽-크로스-킥' }
         ];
-        if (focus === 'bag') {
-          main = [
-            { name: `샌드백 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 / rest ${rest}분 · RPE 6–7` },
-            { name: '바디-헤드 콤비 연습', min: 6, note: '3–4발 콤비' }
-          ];
-        } else if (focus === 'mitt') {
-          main = [
-            { name: `미트 ${rounds}R`, min: rounds * (work + rest), note: `${work}분 · 콤비 콜` },
-            { name: '가드 리셋 드릴', min: 5, note: '타격 후 가드' }
-          ];
-        } else if (focus === 'conditioning') {
-          main = [
-            { name: '서킷 (버피·마운틴·셰도우)', min: 15, note: '45/15 × 10' },
-            { name: '샌드백 3R', min: 3 * (work + rest), note: '중간 강도' }
-          ];
-        } else if (focus === 'shadow') {
-          main = [
-            { name: `셰도우 ${rounds}R`, min: rounds * (work + rest), note: `${work}분` },
-            { name: '미러 콤비 교정', min: 6, note: '거울' }
-          ];
-        } else {
-          main = [
-            { name: '셰도우 2R', min: 2 * (work + rest), note: '기술' },
-            { name: `샌드백 ${rounds - 3}R`, min: (rounds - 3) * (work + rest), note: '파워·페이스' },
-            { name: '미트 또는 디펜스 1–2R', min: 2 * (work + rest), note: '반응' }
-          ];
+        if (iv !== 'low') {
+          main.push({ name: '샌드백 또는 미트 2R', min: 2 * (ph.work + ph.rest), note: `${ph.work}분 라운드` });
         }
-        finisher = [
-          { name: '코어 + 쿨다운', min: 6, note: '플랭크 30초 × 3 + 스트레칭' }
+        cues = [
+          iv === 'low' ? 'Form over everything' : iv === 'high' ? 'Full gas · 개선 측정' : 'Drill faster · 기술 유지',
+          `라운드 ${ph.work}분 (FIGHT//LAB ${ph.phase})`,
+          'REST 토·일은 진짜 쉬기'
         ];
-        cues = ['라운드 벨을 기준으로', '힘 70%에서 정확도', '기록에 라운드 수 남기기'];
       }
+
+      finisher = [
+        { name: '쿨다운 스트레칭', min: 5, note: '어깨·힙·종아리 · 호흡' }
+      ];
 
       return {
         intensity: iv,
         intensityLabel: labels[iv],
         title,
-        focus: '복싱 · ' + focusLabels[focus],
+        focus: 'FIGHT//LAB · ' + fLab,
         durationMin,
         why,
         warmup,
         main,
         finisher,
         cues,
-        source: 'local-boxing',
+        source: 'local-fightlab',
         mode: 'boxing',
         boxFocus: focus,
-        rounds, work, rest,
+        phase: ph.phase,
+        rounds: ph.rounds,
+        work: ph.work,
+        rest: ph.rest,
         requestedIntensity: intensity,
         adjusted: iv !== intensity
       };
@@ -4690,7 +4655,7 @@ function startAlarmLoop() {
         <div class="train-plan">
           <div class="tp-head">
             <div class="tp-title">${esc(plan.title)}</div>
-            <span class="tp-badge">${esc(plan.intensityLabel)} 강도 · ${plan.durationMin || '—'}분</span>
+            <span class="tp-badge">${esc(plan.intensityLabel)}${plan.phase ? ' · ' + esc(plan.phase) : ''} · ${plan.durationMin || '—'}분${plan.work ? ' · ' + plan.work + '분R' : ''}</span>
           </div>
           <div class="tp-why">${esc(plan.why || '')}${plan.focus ? ` · 포커스: ${esc(plan.focus)}` : ''}${esc(adj)}</div>
           ${block('① 워밍업', plan.warmup)}
@@ -4701,7 +4666,7 @@ function startAlarmLoop() {
             <button type="button" class="primary" onclick="applyTrainPlanToLog()">이 세션 기록에 넣기</button>
             <button type="button" onclick="requestTrainingPlan()">다시 추천</button>
           </div>
-          <div class="tp-source">${plan.source === 'gemini' || plan.source === 'gemini-boxing' ? (plan.mode === 'boxing' ? '✨ Gemini · 복싱 데스크' : '✨ Gemini · 강혁 S&C') : (plan.mode === 'boxing' || plan.source === 'local-boxing' ? '🥊 로컬 복싱 처방' : '📋 로컬 처방 엔진')} · ${esc(dayLabel())}</div>
+          <div class="tp-source">${plan.source === 'gemini' || plan.source === 'gemini-boxing' ? (plan.mode === 'boxing' ? '✨ Gemini · 복싱 데스크' : '✨ Gemini · 강혁 S&C') : (plan.mode === 'boxing' || plan.source === 'local-boxing' || plan.source === 'local-fightlab' ? '🥊 FIGHT//LAB 로컬 처방' : '📋 로컬 처방 엔진')} · ${esc(dayLabel())}</div>
         </div>`;
     }
 
@@ -4724,9 +4689,14 @@ function startAlarmLoop() {
           const ctx = buildTrainContext(intensity);
           const isBox = trainMode === 'boxing';
           const system = isBox
-            ? `너는 FIT TRACKER 복싱 코치다. 예전에 쓰이던 복싱 트레이닝 앱처럼 하/중/상 강도와 포커스(셰도우·샌드백·미트·컨디셔닝·혼합)로 오늘 세션을 라운드 단위로 처방한다.
-원칙: 회복 > 기술 > 파워. 회복 점수가 낮으면 intensity를 낮출 수 있다.
-각 블록은 실행 가능한 분·라운드·휴식 표기.
+            ? `너는 FIT TRACKER 안의 FIGHT//LAB 복싱·MMA 데스크다.
+사용자가 만든 Fight//Lab 앱 철학을 따른다:
+- 하(low)=FOUNDATION: 폼 최우선, 3분 라운드, 느리게·정확하게
+- 중(mid)=BUILD: 강도 상승, 4분 라운드, 더 빠르게 드릴
+- 상(high)=PEAK: Full gas, 5분 라운드, 개선 측정
+세션 타입: STRIKING / SHADOW / BAG / MITT / CONDITIONING / FULL
+구성 예: Footwork → Technique study → Shadow/Bag rounds → Combo → Cooldown
+원칙: 회복 > 기술 > 파워. 회복 낮으면 intensity 하향.
 의학 진단 금지. JSON만 출력.
 {
   "intensity": "low|mid|high",
@@ -6969,7 +6939,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 3.5,
+        version: 3.6,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
