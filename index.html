@@ -1631,7 +1631,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.15</div>
+        <div class="ver">4.16</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1969,7 +1969,7 @@
       <div class="card">
         <div class="card-h"><h2>🛏️ 수면 기록</h2><span class="muted">가장 큰 회복 레버</span></div>
         <div class="grid2">
-          <div class="field"><label>수면 시간 (시간)</label><input id="sleepHrs" type="number" min="0" max="16" step="0.5" placeholder="7.5" /></div>
+          <div class="field"><label>밤 수면 (시간)</label><input id="sleepHrs" type="number" min="0" max="16" step="0.5" placeholder="7.5" /></div>
           <div class="field"><label>취침 시각 (선택)</label><input id="bedTime" type="time" /></div>
         </div>
         <p class="muted" style="margin:0 0 10px;font-size:.72rem;line-height:1.4">
@@ -1978,6 +1978,31 @@
         <div class="field">
           <label>수면 질 (1 나쁨 → 5 최고)</label>
           <div class="scale-row" id="sleepQualScale"></div>
+        </div>
+
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+          <div class="card-h" style="margin-bottom:8px">
+            <h2 style="font-size:.95rem">😴 낮잠</h2>
+            <span class="muted">밤 수면과 별도 · 보정 반영</span>
+          </div>
+          <p class="muted" style="margin-bottom:8px;font-size:.72rem;line-height:1.45">
+            낮잠은 밤 수면과 <strong>1:1로 더하지 않습니다</strong>.
+            20–30분 짧은 낮잠은 가산, 90분 이상은 수면 관성 위험으로 가산이 줄고 팁을 줍니다.
+          </p>
+          <div class="grid2">
+            <div class="field"><label>낮잠 (분)</label><input id="napMins" type="number" min="0" max="180" step="5" placeholder="0" oninput="updateNapPreview()" /></div>
+            <div class="field"><label>낮잠 시작 (선택)</label><input id="napTime" type="time" /></div>
+          </div>
+          <div class="chips" id="napPresets" style="margin-bottom:8px">
+            <button type="button" class="chip" onclick="setNapMins(15)">15분</button>
+            <button type="button" class="chip" onclick="setNapMins(20)">20분</button>
+            <button type="button" class="chip" onclick="setNapMins(30)">30분</button>
+            <button type="button" class="chip" onclick="setNapMins(45)">45분</button>
+            <button type="button" class="chip" onclick="setNapMins(60)">60분</button>
+            <button type="button" class="chip" onclick="setNapMins(90)">90분</button>
+            <button type="button" class="chip" onclick="setNapMins(0)">없음</button>
+          </div>
+          <p class="muted" id="napPreview" style="font-size:.75rem;line-height:1.45;color:var(--p2);font-weight:700">낮잠 없음 · 밤 수면만 반영</p>
         </div>
       </div>
 
@@ -5297,7 +5322,88 @@
       return S.sleepPrefs;
     }
 
-    /** Sleep debt (hours) over last n days: sum of max(0, target - actual) */
+    /**
+     * 낮잠 → 밤 수면 환산 시간 (부채·총 회복용)
+     * 밤 수면 1h ≠ 낮잠 1h. 짧은 낮잠 효율 높고, 길수록 체감 회복 효율 감소 + 상한.
+     */
+    function napCreditHours(napHrs) {
+      const n = Math.min(3, Math.max(0, +napHrs || 0));
+      if (n <= 0) return 0;
+      let credit = 0;
+      // 0–20분: 효율 0.55 (각성·부채 소액 상환)
+      // 20–60분: 0.40
+      // 60–90분: 0.25 (수면 관성 구간)
+      // 90분+: 0.12 (과다 낮잠)
+      const seg = (from, to, mult) => {
+        const len = Math.max(0, Math.min(n, to) - from);
+        return len * mult;
+      };
+      credit += seg(0, 20 / 60, 0.55);
+      credit += seg(20 / 60, 1, 0.4);
+      credit += seg(1, 1.5, 0.25);
+      credit += seg(1.5, 3, 0.12);
+      return Math.min(1.25, Math.round(credit * 100) / 100); // 하루 낮잠 환산 상한 ~1.25h
+    }
+
+    /** 회복 점수용 낮잠 가산점 0–6 (밤 수면 점수와 분리) */
+    function napScoreBonus(napHrs, nightHrs) {
+      const mins = Math.round((+napHrs || 0) * 60);
+      if (mins <= 0) return { bonus: 0, label: '없음', tip: null };
+      const nightOk = nightHrs != null && nightHrs >= 7;
+      // ideal 15–35 min
+      let bonus = 0;
+      let label = '';
+      let tip = null;
+      if (mins < 10) {
+        bonus = 1; label = '아주 짧음';
+      } else if (mins <= 35) {
+        bonus = nightOk ? 4 : 6; label = '이상적 (15–35분)';
+        tip = nightOk ? '밤 수면이 충분해 낮잠 가산을 조금 낮춥니다.' : null;
+      } else if (mins <= 60) {
+        bonus = nightOk ? 2 : 3; label = '보통 (36–60분)';
+        tip = '30분 전후가 수행력·각성에 더 유리한 경우가 많아요.';
+      } else if (mins <= 90) {
+        bonus = 1; label = '김 (수면 관성 주의)';
+        tip = '60–90분은 깨고 나서 멍할 수 있어요. 밤 취침이 밀리지 않게 조심.';
+      } else {
+        bonus = 0; label = '과다';
+        tip = '90분 이상 낮잠은 밤 수면 리듬을 흔들 수 있어요. 가산 없음.';
+      }
+      // late evening nap (if time known) soft penalty handled in tip only at save
+      return { bonus, label, tip, mins, creditH: napCreditHours(mins / 60) };
+    }
+
+    function effectiveSleepHrs(r) {
+      if (!r || r.sleepHrs == null) return null;
+      return Math.round((+r.sleepHrs + napCreditHours(r.napHrs || 0)) * 10) / 10;
+    }
+
+    function setNapMins(m) {
+      const el = document.getElementById('napMins');
+      if (el) el.value = m > 0 ? m : '';
+      updateNapPreview();
+    }
+
+    function updateNapPreview() {
+      const night = +document.getElementById('sleepHrs')?.value;
+      const mins = +document.getElementById('napMins')?.value || 0;
+      const napH = mins / 60;
+      const nb = napScoreBonus(napH, isNaN(night) ? null : night);
+      const credit = nb.creditH;
+      const el = document.getElementById('napPreview');
+      if (!el) return;
+      if (mins <= 0) {
+        el.textContent = '낮잠 없음 · 밤 수면만 반영';
+        return;
+      }
+      const effNight = !isNaN(night) ? Math.round((night + credit) * 10) / 10 : null;
+      el.innerHTML = `낮잠 ${mins}분 (${nb.label}) · 회복 가산 <strong>+${nb.bonus}점</strong>`
+        + ` · 부채 환산 <strong>+${credit}h</strong>`
+        + (effNight != null ? ` · 실효 수면 ≈ <strong>${effNight}h</strong>` : '')
+        + (nb.tip ? `<br><span style="font-weight:500;color:var(--muted)">${esc(nb.tip)}</span>` : '');
+    }
+
+    /** Sleep debt (hours) over last n days — night + nap credit (discounted) */
     function calcSleepDebt(n = 7) {
       const target = +(sleepPrefs().targetSleep || 7.5);
       const keys = dateKeys(n);
@@ -5308,7 +5414,8 @@
         const r = getRest(k);
         if (!r || r.sleepHrs == null) return;
         logged++;
-        const diff = target - (+r.sleepHrs);
+        const actual = effectiveSleepHrs(r);
+        const diff = target - actual;
         if (diff > 0) debt += diff;
         else surplus += -diff;
       });
@@ -5858,11 +5965,11 @@ function startAlarmLoop() {
       return keys;
     }
 
-    /** Recovery score 0–100 — rest-first philosophy */
+    /** Recovery score 0–100 — rest-first philosophy (night sleep primary, nap discounted) */
     function calcRestScore(r, woMin = 0) {
       if (!r || r.sleepHrs == null) return null;
       let score = 0;
-      // Sleep duration (0–35)
+      // Night sleep duration (0–35) — naps do NOT fully fill this band
       const h = +r.sleepHrs;
       if (h >= 7 && h <= 9) score += 35;
       else if (h >= 6.5 && h < 7) score += 28;
@@ -5871,6 +5978,12 @@ function startAlarmLoop() {
       else if (h > 10) score += 18;
       else if (h >= 5) score += 12;
       else score += 5;
+      // Nap bonus (0–6), separate from night duration band
+      const napH = +r.napHrs || 0;
+      const nb = napScoreBonus(napH, h);
+      score += nb.bonus;
+      // tiny help if night short but nap present (never exceeds night-band intent)
+      if (h < 6.5 && napH > 0 && nb.bonus > 0) score += 1;
       // Sleep quality 1–5 (0–20)
       score += ((+r.sleepQ || 3) - 1) * 5;
       // Energy 1–5 (0–15)
@@ -5881,8 +5994,10 @@ function startAlarmLoop() {
       score += (5 - (+r.stress || 2)) * 3.75;
       // Rest day bonus when fatigued
       if (r.restDay && (+r.soreness >= 3 || +r.sleepHrs < 6.5)) score += 5;
-      // Hard training without rest penalty
+      // Hard training without rest penalty (night sleep only for short-sleep flag)
       if (!r.restDay && woMin >= 60 && (+r.soreness >= 4 || +r.sleepHrs < 6)) score -= 8;
+      // very long nap after already good night: no extra, mild damp if >2h
+      if (h >= 7.5 && napH >= 2) score -= 2;
       return Math.max(0, Math.min(100, Math.round(score)));
     }
 
@@ -6005,7 +6120,9 @@ function startAlarmLoop() {
       const sleep = calcStreak(k => {
         const r = getRest(k);
         if (!r || r.sleepHrs == null) return false;
-        return +r.sleepHrs >= targetSleep - 0.5;
+        // 실효 수면(밤 + 낮잠 환산)으로 스트릭 — 낮잠만으로 채우기는 상한 때문에 어려움
+        const eff = effectiveSleepHrs(r);
+        return eff != null && eff >= targetSleep - 0.5;
       });
       return { workout, water, sleep, targetSleep, waterGoal };
     }
@@ -6344,10 +6461,22 @@ function startAlarmLoop() {
 
     function saveRest() {
       const sleepHrs = +document.getElementById('sleepHrs').value;
-      if (!sleepHrs && sleepHrs !== 0) return toast('수면 시간을 입력하세요');
+      if (!sleepHrs && sleepHrs !== 0) return toast('밤 수면 시간을 입력하세요');
+      const napMins = +document.getElementById('napMins')?.value || 0;
+      const napHrs = napMins > 0 ? Math.round((napMins / 60) * 100) / 100 : 0;
+      const napTime = document.getElementById('napTime')?.value || '';
+      // late nap warning soft: after 16:00 longer naps
+      let lateNote = '';
+      if (napTime && napMins >= 45) {
+        const hh = +napTime.split(':')[0];
+        if (hh >= 16) lateNote = ' (늦은 긴 낮잠 — 취침이 밀릴 수 있어요)';
+      }
       const r = {
         sleepHrs,
         bedTime: document.getElementById('bedTime').value || '',
+        napHrs,
+        napMins: napMins || 0,
+        napTime,
         sleepQ: restForm.sleepQ,
         energy: restForm.energy,
         soreness: restForm.soreness,
@@ -6356,10 +6485,15 @@ function startAlarmLoop() {
         memo: document.getElementById('restMemo').value.trim(),
         at: Date.now()
       };
+      r.napCredit = napCreditHours(napHrs);
+      r.effectiveSleep = effectiveSleepHrs(r);
       r.score = calcRestScore(r, woTot().min);
       day().rest = r;
       save();
-      toast('휴식 기록 저장! 😴');
+      const nb = napScoreBonus(napHrs, sleepHrs);
+      toast(napMins > 0
+        ? `휴식 저장 · 낮잠 ${napMins}분 보정 +${nb.bonus}점${lateNote}`
+        : '휴식 기록 저장! 😴');
       render();
       show('rest');
     }
@@ -6370,17 +6504,31 @@ function startAlarmLoop() {
         document.getElementById('sleepHrs').value = r.sleepHrs ?? '';
         document.getElementById('bedTime').value = r.bedTime || '';
         document.getElementById('restMemo').value = r.memo || '';
+        const napEl = document.getElementById('napMins');
+        if (napEl) {
+          if (r.napMins != null && r.napMins > 0) napEl.value = r.napMins;
+          else if (r.napHrs) napEl.value = Math.round(+r.napHrs * 60);
+          else napEl.value = '';
+        }
+        const nt = document.getElementById('napTime');
+        if (nt) nt.value = r.napTime || '';
         restForm.sleepQ = r.sleepQ || 3;
         restForm.energy = r.energy || 3;
         restForm.soreness = r.soreness || 2;
         restForm.stress = r.stress || 2;
         restForm.restDay = !!r.restDay;
+      } else {
+        const napEl = document.getElementById('napMins');
+        if (napEl) napEl.value = '';
+        const nt = document.getElementById('napTime');
+        if (nt) nt.value = '';
       }
       buildScale('sleepQualScale', 'sleepQ', restForm.sleepQ);
       buildScale('energyScale', 'energy', restForm.energy);
       buildScale('sorenessScale', 'soreness', restForm.soreness);
       buildScale('stressScale', 'stress', restForm.stress);
       setRestDay(restForm.restDay);
+      try { updateNapPreview(); } catch (e) {}
     }
 
     function restInsightsFor(r, woMin, consecutiveHard) {
@@ -6389,10 +6537,34 @@ function startAlarmLoop() {
         tips.push({ t: 'warn', m: '오늘 휴식 데이터가 없어요. 수면만이라도 기록하면 회복 점수를 볼 수 있어요.' });
         return tips;
       }
-      if (r.sleepHrs < 6) tips.push({ t: 'bad', m: `수면 ${r.sleepHrs}시간 — 회복의 최우선 과제입니다. 오늘 고강도 훈련은 피하고, 취침을 30–60분 앞당기세요.` });
-      else if (r.sleepHrs < 7) tips.push({ t: 'warn', m: `수면 ${r.sleepHrs}시간 — 약간 부족합니다. 낮잠 15–20분 또는 오늘 밤 7.5시간 목표를 추천해요.` });
-      else if (r.sleepHrs >= 7 && r.sleepHrs <= 9) tips.push({ t: 'good', m: `수면 ${r.sleepHrs}시간 — 회복 윈도우가 좋습니다. 이 리듬을 지키세요.` });
-      else tips.push({ t: 'warn', m: `수면 ${r.sleepHrs}시간 — 너무 긴 수면도 컨디션을 떨어뜨릴 수 있어요. 질을 확인해 보세요.` });
+      if (r.sleepHrs < 6) tips.push({ t: 'bad', m: `밤 수면 ${r.sleepHrs}시간 — 회복의 최우선 과제입니다. 오늘 고강도 훈련은 피하고, 취침을 30–60분 앞당기세요.` });
+      else if (r.sleepHrs < 7) tips.push({ t: 'warn', m: `밤 수면 ${r.sleepHrs}시간 — 약간 부족합니다. 낮잠 15–30분(보정 가산) 또는 오늘 밤 7.5시간 목표를 추천해요.` });
+      else if (r.sleepHrs >= 7 && r.sleepHrs <= 9) tips.push({ t: 'good', m: `밤 수면 ${r.sleepHrs}시간 — 회복 윈도우가 좋습니다. 이 리듬을 지키세요.` });
+      else tips.push({ t: 'warn', m: `밤 수면 ${r.sleepHrs}시간 — 너무 긴 수면도 컨디션을 떨어뜨릴 수 있어요. 질을 확인해 보세요.` });
+
+      // Nap insights (discounted vs night sleep)
+      const napH = +r.napHrs || 0;
+      if (napH > 0) {
+        const nb = napScoreBonus(napH, +r.sleepHrs);
+        const mins = Math.round(napH * 60);
+        if (nb.bonus >= 4) {
+          tips.push({ t: 'good', m: `낮잠 ${mins}분 — 이상적 구간에 가깝습니다. 회복 가산 +${nb.bonus}점 · 부채 환산 +${nb.creditH}h (밤 수면 1:1 아님).` });
+        } else if (mins > 90) {
+          tips.push({ t: 'warn', m: `낮잠 ${mins}분 — 과다 구간. 밤 리듬이 흔들릴 수 있어 회복 가산이 거의 없습니다. 다음엔 20–30분을 목표로.` });
+        } else if (nb.tip) {
+          tips.push({ t: 'warn', m: `낮잠 ${mins}분 — ${nb.tip} (가산 +${nb.bonus} · 환산 +${nb.creditH}h)` });
+        } else {
+          tips.push({ t: 'good', m: `낮잠 ${mins}분 반영 · 가산 +${nb.bonus}점 · 환산 +${nb.creditH}h.` });
+        }
+        if (r.napTime) {
+          const hh = +String(r.napTime).split(':')[0];
+          if (!isNaN(hh) && hh >= 16 && mins >= 40) {
+            tips.push({ t: 'warn', m: `늦은 시간(${r.napTime}) 긴 낮잠은 취침을 밀 수 있어요. 가능하면 오후 3시 전·짧게.` });
+          }
+        }
+      } else if (r.sleepHrs < 6.5) {
+        tips.push({ t: 'warn', m: '밤 수면이 짧다면 오늘 20–30분 낮잠을 기록해 보세요. (완전 대체는 아니고 보정 가산)' });
+      }
 
       if (r.sleepQ <= 2) tips.push({ t: 'bad', m: '수면 질이 낮아요. 카페인 오후 2시 이후 제한, 침실 암막·온도(18–20°C), 스크린 종료를 점검하세요.' });
       if (r.soreness >= 4) tips.push({ t: 'bad', m: '근육 피로가 높습니다. 오늘은 스트레칭·산책·폼롤링 위주. 단백질과 수분을 챙기세요.' });
@@ -10273,9 +10445,14 @@ JSON만. 마크다운 금지.
       const gr = restGrade(score);
       document.getElementById('restRing').style.setProperty('--pct', score || 0);
       document.getElementById('restScoreN').textContent = score == null ? '—' : score;
+      const napMins = r && (r.napMins != null ? r.napMins : Math.round((+r.napHrs || 0) * 60));
+      const napBit = napMins > 0 ? ` · 낮잠 ${napMins}분` : '';
+      const eff = r ? (r.effectiveSleep != null ? r.effectiveSleep : effectiveSleepHrs(r)) : null;
       document.getElementById('restGradeLine').innerHTML = score == null
-        ? '수면·컨디션을 입력하고 저장하세요.'
-        : `<span class="grade ${gr.g}">${gr.g}</span> ${gr.label} · 수면 ${r.sleepHrs}h · 에너지 ${r.energy}/5`;
+        ? '수면·컨디션을 입력하고 저장하세요. 낮잠도 기록할 수 있어요.'
+        : `<span class="grade ${gr.g}">${gr.g}</span> ${gr.label} · 밤 ${r.sleepHrs}h${napBit}`
+          + (eff != null && napMins > 0 ? ` · 실효≈${eff}h` : '')
+          + ` · 에너지 ${r.energy}/5`;
 
       const hard = countConsecutiveHard();
       const tips = restInsightsFor(r, wo.min, hard);
@@ -11335,7 +11512,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.15,
+        version: 4.16,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
