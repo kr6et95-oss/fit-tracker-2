@@ -1292,7 +1292,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.1</div>
+        <div class="ver">4.2</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -4374,7 +4374,100 @@ function startAlarmLoop() {
       }
     }
 
-    function localBoxingPlan(intensity) {
+    
+    /* ===== Concrete drill library (Fight Lab style: name + time + detail) ===== */
+    function drill(name, min, note, extra) {
+      const o = { name, min: min || null, note: note || '' };
+      if (extra) Object.assign(o, extra);
+      return o;
+    }
+
+    /** 공통 워밍업 — 목적별 */
+    function buildWarmupBlock(kind, iv) {
+      // kind: gym | functional | stretch | boxing
+      const soft = iv === 'low';
+      if (kind === 'boxing') {
+        return [
+          drill('줄넘기 또는 스텝 인-플레이스', soft ? 4 : 6, '리듬 먼저, 점차 템포 ↑'),
+          drill('풋워크 드릴', 8, '인-아웃, 래터럴, 피벗, 콤비 후 각도 만들기'),
+          drill('어깨·손목·힙 가동', 3, '회전·큰 원 · 타격 전 필수'),
+          drill('셰도우 워밍 1라운드', soft ? 2 : 3, '가볍게 가드·호흡만 깨우기')
+        ];
+      }
+      if (kind === 'stretch') {
+        return [
+          drill('전신 관절 돌리기', 2, '목→어깨→허리→고관절→무릎→발목 순서'),
+          drill('캣-카우 10회', 2, '들숨 확장, 날숨 둥글게'),
+          drill('월드 스쿼트 홀드', 2, soft ? '20초×2' : '30초×2 · 팔 앞으로')
+        ];
+      }
+      if (kind === 'functional') {
+        return [
+          drill('점핑잭 또는 빠른 걷기', soft ? 2 : 3, '심박 올리기'),
+          drill('월드 스쿼트 + 암 스윕', 3, '고관절 열기 · 발바닥 전체 접지'),
+          drill('몬스터 워크 (밴드 있으면 밴드)', soft ? 2 : 3, '무릎 살짝 굽힌 채 측면 걸음 좌우 각 8–10보 · 둔근 활성화'),
+          drill('글ute bridge 10–12회', 2, '발뒤꿈치 밀고 골반 들기'),
+          drill('버드독 좌우 6회', 2, '코어 중립 · 천천히')
+        ];
+      }
+      // gym / default
+      return [
+        drill('빠른 걷기 또는 바이크/제자리 스텝', soft ? 4 : 5, '체온·관절액'),
+        drill('캣-카우 + 흉추 오픈북', 3, '척추 분절 움직임'),
+        drill('월드 스쿼트 + 힙 오프너', 3, '딥 스쿼트 가동'),
+        drill('몬스터 워크 또는 사이드 스텝', 2, '무릎 추적·둔근 깨우기'),
+        drill('빈 바/가벼운 세트로 메인 동작 워밍', soft ? 3 : 5, '점진 부하')
+      ];
+    }
+
+    /** 공통 쿨다운·스트레칭 — 세션 종류별 */
+    function buildCooldownBlock(kind, iv, focusHint) {
+      const hold = iv === 'high' ? '40초' : iv === 'low' ? '20초' : '30초';
+      if (kind === 'boxing') {
+        return [
+          drill('줄넘기 쿨다운 또는 느린 스텝', 2, '심박 내리기'),
+          drill('가슴·어깨 문틀/벽 스트레치', 2, `홀드 ${hold} 양측`),
+          drill('힙플렉서 런지 스트레치', 2, `홀드 ${hold} 좌우 · 골반 후방`),
+          drill('햄스트링 전굴', 2, `홀드 ${hold}`),
+          drill('코 호흡 4-6', 2, '회복 · 가드 내린 채 이완')
+        ];
+      }
+      if (kind === 'stretch') {
+        return [
+          drill('전신 셰이크 아웃', 1, '털어내기'),
+          drill('심호흡 이완 (누우면 더 좋음)', 2, '들숨 4 · 날숨 6–8')
+        ];
+      }
+      if (kind === 'functional') {
+        return [
+          drill('차일드 포즈', 2, `홀드 ${hold} · 호흡`),
+          drill('비둘기 또는 피겨4 글루트', 3, `홀드 ${hold} 좌우`),
+          drill('힙플렉서 런지 스트레치', 2, `홀드 ${hold} 좌우`),
+          drill('문틀 가슴 오픈', 2, `홀드 ${hold}`),
+          drill('햄스트링 벽/전굴', 2, `홀드 ${hold}`)
+        ];
+      }
+      // gym
+      const extra = [];
+      if (focusHint === 'run' || /런|러닝/.test(focusHint || '')) {
+        extra.push(drill('종아리 벽 스트레치', 2, `무릎 펴고/굽히고 각 ${hold}`));
+        extra.push(drill('힙플렉서 스트레치', 2, `홀드 ${hold} 좌우`));
+      } else if (focusHint === 'squat' || /스쿼트/.test(focusHint || '')) {
+        extra.push(drill('피겨4 글루트 스트레치', 2, `홀드 ${hold} 좌우`));
+        extra.push(drill('딥 스쿼트 홀드 이완', 2, '팔꿈치로 무릎 바깥'));
+      } else if (focusHint === 'deadlift' || /데드/.test(focusHint || '')) {
+        extra.push(drill('햄스트링 스트레치', 3, `홀드 ${hold}`));
+        extra.push(drill('차일드 포즈 + 광배 측면', 2, `홀드 ${hold}`));
+      }
+      return [
+        drill('느린 걷기 2–3분', 3, '심박 다운'),
+        ...extra,
+        drill('전신 주요 부위 스트레치', 4, `각 ${hold} · 반동 금지`),
+        drill('호흡 정리', 1, '코 호흡')
+      ];
+    }
+
+function localBoxingPlan(intensity) {
       // FIGHT//LAB inspired: phases map to 하/중/상
       // FOUNDATION = 3 min rounds · BUILD = 4 min · PEAK = 5 min
       const r = getRest();
@@ -4478,6 +4571,8 @@ function startAlarmLoop() {
         { name: '쿨다운 스트레칭', min: 5, note: '어깨·힙·종아리 · 호흡' }
       ];
 
+      warmup = buildWarmupBlock('boxing', iv);
+      finisher = buildCooldownBlock('boxing', iv);
       return {
         intensity: iv,
         intensityLabel: labels[iv],
@@ -4502,7 +4597,7 @@ function startAlarmLoop() {
     }
 
     function localFunctionalPlan(intensity) {
-      // Functional / conditioning design inspired by Fight Lab Tue–Wed–Fri blocks
+      // Concrete functional: monster walk, strength/power circuits, Fight Lab style details
       const r = getRest();
       const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
       let iv = intensity;
@@ -4516,142 +4611,139 @@ function startAlarmLoop() {
         endurance: '근지구력', cardio: '카디오', mobility: '가동·회복', agility: '어질리티'
       };
 
-      let title = `기능성 · ${focusLab[focus] || '풀'} · ${labels[iv]}`;
+      const title = `기능성 · ${focusLab[focus] || '풀'} · ${labels[iv]}`;
       let why = score != null
-        ? `회복 ${score}점 기준 ${labels[iv]} 강도. 맨몸·최소 장비 전신 자극.`
-        : `${labels[iv]} 강도 기능성 세션. 맨몸 중심으로 설계.`;
+        ? `회복 ${score}점 · ${labels[iv]} 강도. 몬스터 워크·맨몸 서킷 중심.`
+        : `${labels[iv]} 기능성. 장비 최소(밴드 있으면 베스트).`;
       let durationMin = 40;
-      let warmup = [], main = [], finisher = [], cues = [];
+      const warmup = buildWarmupBlock('functional', iv);
+      let main = [];
+      let cues = [];
 
-      warmup = [
-        { name: '관절 가동 + 월드 스쿼트', min: 5, note: '고관절·발목·흉추' },
-        { name: '빠른 걷기 또는 점핑잭', min: 3, note: '심박 상승' }
-      ];
-
-      // Building blocks
-      const strengthCircuit = (iv) => {
-        if (iv === 'low') return [
-          { name: '푸시업 (무릎 가능)', min: 8, sets: 3, reps: 8, note: '천천히' },
-          { name: '바디웨이트 스쿼트', min: 8, sets: 3, reps: 12, note: '깊이·무릎 추적' },
-          { name: '런지', min: 6, sets: 2, reps: 8, note: '다리당' },
-          { name: '플랭크', min: 4, sets: 3, reps: 25, note: '초' }
-        ];
-        if (iv === 'high') return [
-          { name: '푸시업 (딥/디클라인)', min: 10, sets: 4, reps: 12, note: 'RPE 8' },
-          { name: '점프 스쿼트 또는 고블릿', min: 10, sets: 4, reps: 10, note: '폭발' },
-          { name: '워킹런지', min: 8, sets: 3, reps: 12, note: '다리당' },
-          { name: '플랭크 + 숄더탭', min: 6, sets: 3, reps: 40, note: '초' }
-        ];
-        return [
-          { name: '푸시업', min: 8, sets: 3, reps: 12, note: '통제된 템포' },
-          { name: '스쿼트', min: 8, sets: 3, reps: 15, note: '맨몸 또는 고블릿' },
-          { name: '런지', min: 8, sets: 3, reps: 10, note: '다리당' },
-          { name: '플랭크', min: 5, sets: 3, reps: 35, note: '초 · No rest mentality' }
-        ];
-      };
-
-      const powerCircuit = (iv) => {
-        if (iv === 'low') return [
-          { name: '스프롤 가볍게', min: 6, sets: 3, reps: 6, note: '부드럽게' },
-          { name: '미니 점프 스쿼트', min: 6, sets: 3, reps: 8, note: '착지 조용히' },
-          { name: '폭발 푸시업 준비 (일반 푸시업)', min: 6, sets: 3, reps: 6, note: '템포' }
-        ];
-        if (iv === 'high') return [
-          { name: '스프롤', min: 8, sets: 4, reps: 10, note: '폭발' },
-          { name: '점프 스쿼트', min: 8, sets: 4, reps: 12, note: '최대 높이' },
-          { name: '폭발 푸시업', min: 8, sets: 4, reps: 8, note: '손 떨어지기' },
-          { name: '빠른 셰도우 콤비 버스트', min: 6, sets: 4, reps: 30, note: '초 올아웃' }
-        ];
-        return [
-          { name: '스프롤', min: 8, sets: 3, reps: 8, note: '파워' },
-          { name: '점프 스쿼트', min: 8, sets: 3, reps: 10, note: '착지 안정' },
-          { name: '폭발 푸시업 또는 클래핑 준비', min: 8, sets: 3, reps: 6, note: '품질' },
-          { name: '빠른 셰도우 콤비 버스트', min: 5, sets: 3, reps: 20, note: '초' }
-        ];
-      };
-
-      const endurance = (iv) => {
-        const sets = iv === 'high' ? 4 : 3;
-        return [
-          { name: '하이렙 서킷 (스쿼트-푸시업-런지-플랭크)', min: iv === 'high' ? 20 : 15, sets, reps: 15, note: '세트 간 최소 휴식 · 번아웃' },
-          { name: '마운틴 클라이머', min: 5, sets: 3, reps: 30, note: '초 또는 횟수' }
-        ];
-      };
-
-      const cardio = (iv) => {
-        if (iv === 'low') return [
-          { name: '존2 걷기/조깅', min: 20, note: '대화 가능 페이스' }
-        ];
-        if (iv === 'high') return [
-          { name: '인터벌 러닝/제자리', min: 20, note: '1분 hard / 1분 easy × 8–10' },
-          { name: '피니시 스프린트', min: 5, note: '짧게 3–4회' }
-        ];
-        return [
-          { name: '카디오 (런 또는 제자리 인터벌)', min: 20, note: '스테디 + 스프린트 믹스' }
-        ];
-      };
-
-      const mobility = () => [
-        { name: '고관절·흉추 모빌리티 플로우', min: 12, note: '90/90, 오픈북, 캣카우' },
-        { name: '햄스트링·힙플렉서 스트레칭', min: 8, note: '호흡과 함께' },
-        { name: '호흡 리셋 (4-6)', min: 5, note: '회복 우선' }
-      ];
-
-      const agility = (iv) => [
-        { name: '래터럴 셔플 + 컷', min: iv === 'high' ? 12 : 10, note: '반응·방향 전환' },
-        { name: '인-아웃 풋워크 / 사다리 대체', min: 8, note: '빠른 발' },
-        { name: '폭발 스타트 (3–5m)', min: iv === 'low' ? 5 : 8, sets: 4, reps: 4, note: '전력 스타트' }
-      ];
+      const sets = iv === 'high' ? 4 : iv === 'low' ? 2 : 3;
+      const monster = (lvl) => drill(
+        '몬스터 워크',
+        lvl === 'high' ? 4 : 3,
+        lvl === 'low'
+          ? '밴드 무릎 위(또는 맨몸). 반 스쿼트 자세 유지 · 좌우 각 8보 × 2 · 무릎이 안쪽으로 무너지지 않게'
+          : lvl === 'high'
+            ? '밴드 발목 또는 무릎. 좌우 각 12–15보 × 3 · 상체 직립 · 짧은 보폭'
+            : '밴드 무릎 위. 좌우 각 10보 × 3 · 둔근에 긴장 유지'
+      );
+      const lateral = () => drill('래터럴 밴드 워크 (사이드 스텝)', 2, '같은 높이 유지 · 발끝 전방');
+      const clam = () => ({ name: '클램셸', min: 3, sets: 2, reps: 12, note: '옆누운 자세 · 발 붙이고 무릎만 · 좌우' });
+      const crab = () => drill('크랩 워크', 2, '앉은 듯 뒤로 걷기 10보 × 2 · 삼두·코어');
+      const deadBug = () => ({ name: '데드버그', min: 3, sets: 2, reps: 8, note: '반대 팔다리 · 허리가 바닥에 붙게' });
+      const bird = () => ({ name: '버드독', min: 3, sets: 2, reps: 8, note: '팔·다리 길게 · 골반 수평' });
+      const bridge = () => ({ name: '글ute bridge / 싱글레그 브릿지', min: 3, sets: sets, reps: iv === 'high' ? 12 : 10, note: iv === 'high' ? '편측 가능' : '양발 · 둔근 수축 1초' });
 
       if (focus === 'strength') {
-        durationMin = iv === 'high' ? 45 : 35;
-        main = strengthCircuit(iv);
-        cues = ['템포 통제', '무릎·어깨 정렬', '세트 간 호흡'];
+        durationMin = iv === 'high' ? 48 : 38;
+        main = [
+          monster(iv),
+          { name: '푸시업', min: 8, sets, reps: iv === 'low' ? 8 : 12, note: iv === 'low' ? '무릎 가능 · 천천히 3초 다운' : '가슴이 바닥 가까이 · 코어 타이트' },
+          { name: '바디웨이트/고블릿 스쿼트', min: 8, sets, reps: iv === 'high' ? 15 : 12, note: '발끝·무릎 같은 방향 · 깊이 가능한 만큼' },
+          { name: '리버스 런지', min: 8, sets, reps: 10, note: '다리당 · 상체 직립' },
+          bridge(),
+          { name: '플랭크', min: 4, sets: 3, reps: iv === 'high' ? 45 : 30, note: '초 · 골반 떨어지지 않게' }
+        ];
+        cues = ['몬스터 워크로 둔근 먼저', '무릎 안쪽 붕괴 금지', '세트 간 호흡 정리'];
       } else if (focus === 'power') {
-        durationMin = iv === 'high' ? 40 : 32;
-        main = powerCircuit(iv);
-        cues = ['품질 > 횟수', '착지 조용히', '폭발 후 리셋'];
+        durationMin = iv === 'high' ? 42 : 34;
+        main = [
+          monster(iv),
+          { name: '스프롤', min: 8, sets, reps: iv === 'high' ? 10 : 8, note: '손 바닥 → 발 점프 인 · 폭발적으로 일어서기' },
+          { name: '점프 스쿼트', min: 8, sets, reps: iv === 'high' ? 12 : 10, note: '착지 조용히 · 무릎 방향' },
+          { name: '폭발 푸시업 (또는 빠른 푸시업)', min: 7, sets, reps: iv === 'low' ? 6 : 8, note: '밀 때 빠르게' },
+          { name: '빠른 제자리 니업 / 셰도우 버스트', min: 5, sets: 3, reps: 20, note: '초 올아웃 후 20초 휴식' }
+        ];
+        cues = ['품질 > 속도', '착지 안정', '폭발 후 리셋'];
       } else if (focus === 'endurance') {
-        durationMin = iv === 'high' ? 45 : 35;
-        main = endurance(iv);
-        cues = ['Push past comfort (안전하게)', '폼 붕괴 시 중단', '수분'];
+        durationMin = iv === 'high' ? 48 : 38;
+        main = [
+          monster('mid'),
+          { name: '서킷 A: 스쿼트 15 + 푸시업 10 + 런지 10/leg + 플랭크 30초', min: iv === 'high' ? 18 : 14, sets: iv === 'high' ? 4 : 3, note: '세트 간 휴식 30–45초 · 번아웃' },
+          { name: '마운틴 클라이머', min: 5, sets: 3, reps: 30, note: '초 또는 횟수' },
+          { name: '크랩 토우 터치 또는 싯업', min: 4, sets: 3, reps: 12, note: '코어' }
+        ];
+        cues = ['폼 무너지면 횟수 줄이기', 'Push past comfort (안전하게)'];
       } else if (focus === 'cardio') {
-        durationMin = iv === 'high' ? 40 : 30;
-        main = cardio(iv);
+        durationMin = iv === 'high' ? 40 : 32;
+        main = [
+          drill('존2 워밍 조깅/걷기', 5, '대화 가능'),
+          iv === 'high'
+            ? drill('인터벌', 18, '1분 hard / 1분 easy × 8–10 · 뛰거나 제자리')
+            : iv === 'low'
+              ? drill('존2 카디오', 18, '대화 가능 페이스 유지')
+              : drill('카디오 믹스', 18, '3분 스테디 + 30초 스프린트 반복'),
+          monster('low'),
+          drill('피니시 빠른 스텝', 3, '가볍게 털기')
+        ];
         cues = ['페이스 관리', '호흡 리듬'];
       } else if (focus === 'mobility') {
         durationMin = 30;
-        iv = 'low'; // mobility is recovery-leaning
-        title = `기능성 · 가동·회복 · 하`;
-        why = '가동·회복 데이. 강도보다 가동 범위와 호흡.';
-        main = mobility();
-        cues = ['통증 구간 강요 금지', '호흡을 길게'];
+        iv = score != null && score >= 75 ? iv : 'low';
+        main = [
+          drill('90/90 힙 스위치', 4, '양측 · 천천히 전환'),
+          drill('힙플렉서 카우처 / 런지 스트레치', 4, '골반 후방 경사 · 좌우'),
+          drill('흉추 오픈북', 3, '양측 8회'),
+          monster('low'),
+          drill('딥 스쿼트 홀드 + 프레이어', 3, '팔꿈치로 무릎'),
+          bird(),
+          deadBug()
+        ];
+        cues = ['통증 구간 강요 금지', '호흡 길게'];
       } else if (focus === 'agility') {
-        durationMin = iv === 'high' ? 35 : 30;
-        main = agility(iv);
-        cues = ['반응 속도', '무릎 정렬', '짧은 휴식'];
+        durationMin = iv === 'high' ? 36 : 30;
+        main = [
+          monster(iv),
+          lateral(),
+          drill('인-아웃 풋워크 (사다리 대체 테이프/상상)', 5, '빠른 발 · 상체 안정'),
+          drill('래터럴 셔플 + 터치 다운', 5, '좌우 왕복'),
+          { name: '짧은 스프린트 스타트 3–5m', min: 5, sets: 4, reps: 4, note: '전력 후 걷기 복귀' },
+          drill('카리오카 또는 하이니', 3, '협응')
+        ];
+        cues = ['무릎 정렬', '짧은 보폭으로 빠르게', '반응 속도'];
       } else {
-        // full — Fight Lab Wed-style mix + Tue strength
-        durationMin = iv === 'high' ? 55 : iv === 'low' ? 35 : 45;
+        // full — Fight Lab Tue strength + Wed power + activation
+        durationMin = iv === 'high' ? 55 : iv === 'low' ? 36 : 45;
         if (iv === 'low') {
-          main = mobility().slice(0, 2).concat(strengthCircuit('low').slice(0, 2)).concat(cardio('low'));
+          main = [
+            monster('low'), clam(), bridge(),
+            { name: '푸시업', min: 6, sets: 2, reps: 8, note: '천천히' },
+            { name: '스쿼트', min: 6, sets: 2, reps: 12, note: '맨몸' },
+            bird(),
+            drill('존2 걷기', 8, '회복 겸 카디오')
+          ];
         } else if (iv === 'high') {
-          main = cardio('high').concat(powerCircuit('high').slice(0, 3)).concat(endurance('mid').slice(0, 1));
+          main = [
+            monster('high'),
+            { name: '스프롤', min: 7, sets: 4, reps: 10, note: '폭발' },
+            { name: '점프 스쿼트', min: 7, sets: 4, reps: 12, note: '착지 조용' },
+            { name: '푸시업', min: 7, sets: 4, reps: 12, note: '풀 ROM' },
+            { name: '워킹런지', min: 6, sets: 3, reps: 12, note: '다리당' },
+            { name: '플랭크 숄더탭', min: 4, sets: 3, reps: 40, note: '초' },
+            drill('인터벌 피니시', 6, '20초 on / 10초 off × 6')
+          ];
         } else {
-          main = strengthCircuit('mid').concat(powerCircuit('mid').slice(0, 2)).concat([
-            { name: '카디오 피니시', min: 10, note: '쉬운 조깅 또는 줄넘기' }
-          ]);
+          main = [
+            monster('mid'),
+            lateral(),
+            { name: '푸시업', min: 7, sets: 3, reps: 12, note: '통제 템포' },
+            { name: '스쿼트', min: 7, sets: 3, reps: 15, note: '맨몸/고블릿' },
+            { name: '리버스 런지', min: 6, sets: 3, reps: 10, note: '다리당' },
+            { name: '스프롤 또는 버피 (무리면 스텝백)', min: 6, sets: 3, reps: 8, note: '파워' },
+            bridge(),
+            { name: '플랭크', min: 4, sets: 3, reps: 35, note: '초' }
+          ];
         }
-        cues = ['전신 균형', '서킷 사이 짧은 휴식', '기록 남기기'];
+        cues = ['몬스터 워크 = 둔근 스위치 온', '서킷 사이 짧은 휴식', '무릎 안쪽 붕괴 주의'];
       }
 
-      finisher = [
-        { name: '쿨다운 스트레칭', min: 5, note: '전신 · 호흡 정리' }
-      ];
-
+      const finisher = buildCooldownBlock('functional', iv);
       return {
         intensity: iv,
-        intensityLabel: labels[iv] || '중',
+        intensityLabel: labels[iv],
         title,
         focus: '기능성 · ' + (focusLab[focus] || focus),
         durationMin,
@@ -4669,11 +4761,9 @@ function startAlarmLoop() {
     }
 
     function localStretchPlan(intensity) {
-      // 하: 짧은 홀드·부드럽게 / 중: 표준 20–30s / 상: 깊은 홀드 40–60s·긴 플로우
       const r = getRest();
       const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
       let iv = intensity || 'mid';
-      // after hard day or low recovery, prefer not to force deep
       if (score != null && score < 45 && iv === 'high') iv = 'mid';
 
       const labels = { low: '하', mid: '중', high: '상' };
@@ -4682,110 +4772,114 @@ function startAlarmLoop() {
         full: '전신', upper: '상체', lower: '하체', hip: '고관절·힙',
         spine: '척추·등', post: '운동 후', desk: '사무·목어깨', sleep: '취침 전'
       };
-      const hold = iv === 'low' ? '15–20초' : iv === 'high' ? '40–60초' : '25–30초';
+      const holdSec = iv === 'low' ? 20 : iv === 'high' ? 50 : 30;
+      const hold = holdSec + '초';
       const sets = iv === 'high' ? 2 : 1;
-      const breath = iv === 'low' ? '편안하게' : iv === 'high' ? '길게 내쉬며 깊이' : '4초 들이쉬고 6초 내쉬기';
+      const breath = iv === 'high' ? '날숨에 조금 더 이완' : '편안하게 코 호흡';
 
-      const item = (name, min, note) => ({
+      const S = (name, min, note) => ({
         name, min, sets: sets > 1 ? sets : null, reps: null, load: null,
-        note: (note ? note + ' · ' : '') + `홀드 ${hold} · ${breath}`
+        note: `${note} · 홀드 ${hold} × ${sets} · ${breath}`
       });
 
-      let title = `스트레칭 · ${focusLab[focus]} · ${labels[iv]}`;
-      let why = `홀드 ${hold}, ${sets}세트. `;
-      if (score != null) why += `회복 ${score}점 — `;
-      if (iv === 'low') why += '조직 깨우기·긴장 완화. 통증 구간은 피하세요.';
-      else if (iv === 'high') why += '딥 스트레치. 반동 없이, 통증이 아닌 당김만.';
-      else why += '표준 정적 스트레칭. 호흡과 함께 이완.';
+      const title = `스트레칭 · ${focusLab[focus]} · ${labels[iv]}`;
+      let why = `정적 홀드 ${hold}${sets > 1 ? ' 2세트' : ''}. 반동 없이, 날카로운 통증은 금지. `;
+      if (score != null) why += `회복 ${score}점.`;
 
-      let durationMin = iv === 'high' ? 35 : iv === 'low' ? 15 : 25;
-      let warmup = [
-        item('가벼운 관절 돌리기 (목·어깨·고관절·발목)', 2, '워밍')
-      ];
-      if (iv !== 'low') {
-        warmup.push(item('캣-카우 + 월드 스쿼트 부드럽게', 3, '체온↑'));
-      }
-
+      const warmup = buildWarmupBlock('stretch', iv);
       let main = [];
-      const upper = () => [
-        item('목 측면·앞뒤 스트레칭', 3, '좌우'),
-        item('문틀 가슴 오픈 (pec stretch)', 3, '어깨 후방'),
-        item('삼두·어깨 오버헤드 스트레칭', 3, '양팔'),
-        item('손목·전완 스트레칭', 2, '타이핑·그립 후'),
-        item('상체 차일드 포즈', 3, '이완')
-      ];
-      const lower = () => [
-        item('햄스트링 (전굴 또는 벽)', 4, '무릎 살짝 굽혀도 OK'),
-        item('쿼드 (스탠딩/사이드 라잉)', 3, '좌우'),
-        item('종아리 벽 스트레치', 3, '무릎 펴고/굽히고'),
-        item('비복근·솔레우스', 2, '발목'),
-        item('발가락·발바닥 롤', 2, '골프공/병 대용 가능')
-      ];
-      const hip = () => [
-        item('90/90 힙 스트레치', 4, '양측'),
-        item('비둘기 자세 (또는 의자 피전)', 4, '깊게 숨'),
-        item('힙플렉서 런지 스트레치', 4, '골반 후방 경사'),
-        item('피겨4 / 글루트 스트레치', 3, '좌우'),
-        item('버터플라이 / 애덕터', 3, '내전근')
-      ];
-      const spine = () => [
-        item('캣-카우', 3, '분절 움직임'),
-        item('오픈북 흉추 회전', 3, '양측'),
-        item('누운 척추 비틀기', 4, '좌우'),
-        item('차일드 포즈 + 측면 걷기', 3, '광배'),
-        item('브릿지 부드럽게 (가동)', 3, '엉덩이')
-      ];
-      const desk = () => [
-        item('목·승모 릴리즈', 3, '어깨 내리지 않기'),
-        item('가슴 오픈 / 문틀', 3, '라운드숄더 보정'),
-        item('손목 굴곡·신전', 2, '양측'),
-        item('흉추 오픈북 (의자)', 3, '등받이'),
-        item('고관절 플렉서 짧은 런지', 3, '오래 앉은 뒤')
-      ];
-      const post = () => [
-        item('주요 동원 부위 우선 스트레치', 5, '오늘 운동한 근육'),
-        item('햄스트링 + 글루트', 4, '하체 세션 후'),
-        item('가슴·광배·어깨', 4, '상체 세션 후'),
-        item('고관절 플렉서', 3, '러닝·스쿼트 후'),
-        item('호흡 이완 (누워서)', 3, '심박 다운')
-      ];
-      const sleep = () => [
-        item('다리 올려 이완 (월 사용 가능)', 3, '부종·회복'),
-        item('누운 척추 비틀기', 3, '부드럽게'),
-        item('무릎 끌어안기 / 해피베이비', 3, '허리'),
-        item('차일드 포즈 또는 태아 자세', 3, '안정'),
-        item('4-7-8 호흡', 3, '수면 유도')
-      ];
-      const full = () => upper().slice(0, 3).concat(hip().slice(0, 2)).concat(lower().slice(0, 2)).concat(spine().slice(0, 2));
+      let durationMin = iv === 'high' ? 35 : iv === 'low' ? 16 : 25;
 
-      if (focus === 'upper') main = upper();
-      else if (focus === 'lower') main = lower();
-      else if (focus === 'hip') main = hip();
-      else if (focus === 'spine') main = spine();
-      else if (focus === 'desk') main = desk();
-      else if (focus === 'post') main = post();
-      else if (focus === 'sleep') {
-        main = sleep();
-        durationMin = iv === 'high' ? 25 : 15;
-        why += ' 취침 전 — 강도보다 이완.';
-      } else main = full();
+      if (focus === 'upper') {
+        main = [
+          S('목 측면 스트레치', 3, '손로 머리 살짝 · 어깨 내림 · 좌우'),
+          S('목 앞·뒤', 2, '천장/바닥 보기 과하지 않게'),
+          S('문틀 가슴 오픈 (pec)', 3, '팔꿈치 90° 문틀 · 몸 앞으로'),
+          S('광배 차일드 포즈 측면 걷기', 3, '손가락 멀리'),
+          S('삼두 오버헤드', 2, '팔꿈치 천장 · 반대손 당김 · 좌우'),
+          S('후면 어깨 크로스바디', 2, '팔 가로 · 좌우'),
+          S('손목 굴곡·신전', 2, '손바닥/손등 번갈아 · 타이핑 후')
+        ];
+      } else if (focus === 'lower') {
+        main = [
+          S('햄스트링 전굴 또는 벽', 4, '무릎 미세 굴곡 OK · 등 길이'),
+          S('쿼드 스탠딩/사이드 라잉', 3, '골반 전방 경사 주의 · 좌우'),
+          S('종아리 벽 — 무릎 펴고', 2, '뒤꿈치 바닥'),
+          S('솔레우스 — 무릎 굽히고 벽', 2, '깊은 종아리'),
+          S('피겨4 글루트 (누워서)', 3, '발목 반대 무릎 · 좌우'),
+          S('애덕터 버터플라이', 3, '발바닥 붙이고 무릎 바닥 방향'),
+          S('발바닥·발가락 스트레치', 2, '앉아서 발등/발바닥')
+        ];
+      } else if (focus === 'hip') {
+        main = [
+          S('90/90 힙 스트레치', 4, '앞뒤 정강이 바닥 · 상체 살짝 숙임 · 양측'),
+          S('비둘기 자세 (또는 의자 피전)', 4, '앞 정강이 가로 · 좌우'),
+          S('힙플렉서 로우 런지', 4, '뒷무릎 바닥 · 골반 후방 경사 · 좌우'),
+          S('프로그 스트레치 (무릎 바깥)', 3, '부드럽게 · 내전근'),
+          S('카우처 스트레치 (의자/소파)', 3, '쿼드+힙플렉서 · 좌우'),
+          S('몬스터 워크 후 정적 글루트 수축 이완', 2, '활성화 후 이완 10초')
+        ];
+      } else if (focus === 'spine') {
+        main = [
+          S('캣-카우 흐름 10회 후 홀드', 3, '분절적으로'),
+          S('오픈북 흉추 회전', 3, '무릎 붙이고 팔 열기 · 양측'),
+          S('누운 척추 비틀기', 4, '무릎 한쪽 · 시선 반대 · 좌우'),
+          S('차일드 포즈', 3, '엉덩이 발꿈치'),
+          S('스핑크스 또는 코브라 가볍게', 2, '허리가 찌릿하면 중단'),
+          S('무릎 가슴 끌어안기', 2, '양측 또는 동시')
+        ];
+      } else if (focus === 'desk') {
+        main = [
+          S('목·승모 (귀-어깨)', 3, '좌우 · 어깨 힘 빼기'),
+          S('문틀/벽 가슴 오픈', 3, '라운드 숄더 보정'),
+          S('흉추 오픈북 (의자)', 3, '등받이 끼고'),
+          S('손목 스트레치 양방향', 2, '책상 가장자리 가능'),
+          S('앉아서 피겨4', 3, '발목 무릎 · 상체 살짝 · 좌우'),
+          S('스탠딩 힙플렉서 (책상 잡고)', 3, '오래 앉은 뒤 · 좌우')
+        ];
+      } else if (focus === 'post') {
+        main = [
+          S('오늘 메인 근육 우선 스트레치', 5, '스쿼트일→힙/글루트, 벤치→가슴, 러닝→종아리·힙'),
+          S('햄스트링', 3, '양측'),
+          S('글루트 피겨4', 3, '양측'),
+          S('힙플렉서 런지', 3, '양측'),
+          S('가슴·광배', 3, '상체 쓴 날'),
+          S('종아리', 2, '러닝·점프 후'),
+          S('누워서 호흡 이완', 2, '심박 다운')
+        ];
+        why += ' 운동 직후 — 과도한 딥 스트레치는 피하고 이완 위주.';
+      } else if (focus === 'sleep') {
+        durationMin = iv === 'high' ? 22 : 14;
+        main = [
+          S('다리 올려 벽 (또는 소파)', 3, '부종·회복'),
+          S('누운 척추 비틀기', 3, '부드럽게 좌우'),
+          S('무릎 가슴 / 해피 베이비', 3, '허리 이완'),
+          S('차일드 포즈 또는 태아 자세', 3, '안전감'),
+          S('4-7-8 호흡 4회', 3, '수면 유도')
+        ];
+        why += ' 취침 전 — 강도보다 다운레귤레이션.';
+      } else {
+        // full body detailed
+        main = [
+          S('목 측면', 2, '좌우'),
+          S('문틀 가슴 오픈', 3, '양측 느낌'),
+          S('광배 차일드 측면', 2, ''),
+          S('캣-카우 → 차일드', 3, '흐름 후 홀드'),
+          S('90/90 또는 비둘기', 4, '고관절 · 좌우'),
+          S('힙플렉서 런지', 3, '좌우'),
+          S('햄스트링', 3, '좌우 또는 동시'),
+          S('쿼드', 2, '좌우'),
+          S('종아리 벽', 2, ''),
+          S('피겨4 글루트', 3, '좌우')
+        ];
+        durationMin = iv === 'high' ? 38 : iv === 'low' ? 18 : 28;
+      }
 
       if (iv === 'high' && focus !== 'sleep') {
-        main.push(item('딥 전굴 또는 스플릿 근접 (가능 범위)', 4, '억지 금지'));
-        durationMin = Math.max(durationMin, 35);
+        main.push(S('딥 전굴 또는 스플릿 근접 (가능 범위만)', 3, '억지 금지 · 2세트 홀드'));
       }
-      if (iv === 'low') durationMin = Math.min(durationMin, 18);
 
-      const finisher = [
-        item('전신 셰이크 아웃 + 심호흡', 2, '세션 정리')
-      ];
-      const cues = [
-        '반동 금지 · 통증(날카로움) 금지',
-        `홀드 ${hold}`,
-        '호흡을 내쉴 때 조금 더 이완',
-        focus === 'post' ? '운동 직후 정적 스트레치는 과도한 깊이 주의' : '매일 짧게라도 일관성'
-      ];
-
+      const finisher = buildCooldownBlock('stretch', iv);
       return {
         intensity: iv,
         intensityLabel: labels[iv],
@@ -4796,7 +4890,12 @@ function startAlarmLoop() {
         warmup,
         main,
         finisher,
-        cues,
+        cues: [
+          '반동 금지 · 날카로운 통증 금지',
+          `홀드 ${holdSec}초` + (sets > 1 ? ' × 2세트' : ''),
+          '날숨에 근육 이완',
+          '좌우 불균형 있으면 짧은 쪽 한 세트 더'
+        ],
         source: 'local-stretch',
         mode: 'stretch',
         stretchFocus: focus,
@@ -4905,108 +5004,86 @@ function startAlarmLoop() {
       const score = r ? (r.score != null ? r.score : calcRestScore(r, woTot().min)) : null;
       const core = (typeof analyzeCoreLifts === 'function') ? analyzeCoreLifts() : [];
       const due = core.filter(c => c.status === 'emergency' || c.status === 'never' || c.status === 'warn');
-      // force downshift if recovery poor
       let iv = intensity;
-      if (score != null && score < 50 && iv !== 'low') {
-        iv = 'low';
-      } else if (score != null && score < 60 && iv === 'high') {
-        iv = 'mid';
-      }
+      if (score != null && score < 50 && iv !== 'low') iv = 'low';
+      else if (score != null && score < 60 && iv === 'high') iv = 'mid';
 
+      const labels = { low: '하', mid: '중', high: '상' };
       const pickCore = () => {
         const order = ['deadlift', 'squat', 'run'];
         for (const id of order) {
           const c = due.find(x => x.id === id);
           if (c) return c;
         }
-        // rotate by day
-        const seed = daySeed ? daySeed(today()) : (today().charCodeAt(8) || 0);
+        const seed = (typeof daySeed === 'function' ? daySeed(today()) : today().charCodeAt(8)) || 0;
         const pool = core.length ? core : [
-          { id: 'squat', label: '스쿼트' },
-          { id: 'deadlift', label: '데드리프트' },
-          { id: 'run', label: '러닝' }
+          { id: 'squat', label: '스쿼트' }, { id: 'deadlift', label: '데드리프트' }, { id: 'run', label: '러닝' }
         ];
         return pool[Math.abs(seed) % pool.length];
       };
-
       const mainFocus = pickCore();
-      const labels = { low: '하', mid: '중', high: '상' };
-      let title = '', why = '', durationMin = 35;
-      let warmup = [], main = [], finisher = [], cues = [];
-
-      warmup = [
-        { name: '폼롤러·관절 돌리기', min: 5, note: '고관절·흉추' },
-        { name: '워밍업 세트 / 빠른 걷기', min: 5, note: '본세트 전 점진 부하' }
-      ];
+      const warmup = buildWarmupBlock('gym', iv);
+      let title = '', why = '', durationMin = 45;
+      let main = [], cues = [];
 
       if (iv === 'low') {
-        durationMin = 30;
-        title = `회복 세션 · ${mainFocus?.label || '전신'} 가볍게`;
-        why = score != null
-          ? `회복 ${score}점 기준 하 강도. 자극은 유지하되 신경계를 소모하지 않습니다.`
-          : '하 강도 회복 데이. 기록을 쌓되 무리하지 마세요.';
+        durationMin = 35;
+        title = `회복 세션 · ${mainFocus?.label || '전신'}`;
+        why = score != null ? `회복 ${score}점 — 하 강도. 워밍업·기술·쿨다운 비중 큼.` : '하 강도 회복 데이.';
         if (mainFocus?.id === 'run') {
           main = [
-            { name: '존2 걷기·조깅', min: 20, note: '대화 가능 페이스' },
-            { name: '가볍게 스트레칭', min: 5, note: '종아리·힙' }
+            drill('존2 걷기·조깅', 18, '대화 가능 페이스 · 발 착지 부드럽게'),
+            drill('몬스터 워크 라이트', 3, '둔근 활성화 좌우 8보'),
+            { name: '카프 레이즈 느린 템포', min: 3, sets: 2, reps: 12, note: '종아리' }
           ];
         } else if (mainFocus?.id === 'deadlift') {
           main = [
-            { name: '루마니안 데드리프트', min: 12, sets: 3, reps: 8, load: null, note: '빈바~가볍게, 힙힌지 기술' },
-            { name: '글ute bridge / 힙쓰러스트', min: 8, sets: 3, reps: 12, note: '둔근 활성화' }
+            drill('힙 힌지 드릴 (봉/우산/맨몸)', 5, '막대가 등 세 점 접촉'),
+            { name: '루마니안 데드리프트', min: 12, sets: 3, reps: 8, note: '빈바~가볍게 · 햄스트링 스트레치 느낌' },
+            { name: '글ute bridge', min: 6, sets: 3, reps: 12, note: '둔근' }
           ];
         } else {
           main = [
-            { name: '고블릿스쿼트', min: 12, sets: 3, reps: 10, note: '가벼운 중량·깊은 가동' },
-            { name: '스플릿 스쿼트 바디웨이트', min: 8, sets: 2, reps: 8, note: '좌우' }
+            drill('몬스터 워크', 3, '좌우 10보'),
+            { name: '고블릿/맨몸 스쿼트', min: 12, sets: 3, reps: 10, note: '깊이 · 무릎 추적' },
+            { name: '스플릿 스쿼트 바디웨이트', min: 8, sets: 2, reps: 8, note: '다리당' }
           ];
         }
-        finisher = [
-          { name: '호흡·쿨다운', min: 5, note: '코 호흡 4-6' }
-        ];
-        cues = ['오늘 PR 금지', '통증이 있으면 즉시 중단', '취침 시간을 훈련보다 우선'];
+        cues = ['오늘 PR 금지', '통증 시 중단', '쿨다운 스트레칭 꼭'];
       } else if (iv === 'high') {
-        durationMin = 55;
-        title = `하드 데이 · ${mainFocus?.label || '메인'} 중심`;
-        why = (due.length
-          ? `기한 임박/초과 핵심(${due.map(d => d.label).join(', ')})을 상 강도로 처리합니다. `
-          : '') + (score != null ? `회복 ${score}점.` : '');
+        durationMin = 60;
+        title = `하드 데이 · ${mainFocus?.label || '메인'}`;
+        why = (due.length ? `핵심 우선: ${due.map(d => d.label).join(', ')}. ` : '') + (score != null ? `회복 ${score}점.` : '');
         if (mainFocus?.id === 'run') {
           main = [
-            { name: '러닝 워밍업', min: 8, note: '쉬운 페이스' },
-            { name: '인터벌 러닝', min: 20, note: '1–2분 hard / 1–2분 easy × 6–8' },
-            { name: '쿨다운 조깅', min: 8, note: '심박 내리기' }
+            drill('러닝 워밍업 페이스', 6, '쉽게'),
+            drill('인터벌 러닝', 20, '1–2분 hard / 1–2분 easy × 6–8'),
+            drill('쿨다운 조깅', 6, '심박 다운')
           ];
-          cues = ['인터벌 중 폼 붕괴 시 페이스 다운', '수분 보충', '내일은 하·중으로 전환'];
         } else if (mainFocus?.id === 'deadlift') {
           main = [
-            { name: '컨벤셔널 데드리프트', min: 20, sets: 4, reps: 5, note: 'RPE 7–8, 워밍업 세트 필수' },
-            { name: '바벨로우 또는 덤벨로우', min: 12, sets: 3, reps: 8, note: '등 보조' },
+            { name: '컨벤셔널 데드리프트', min: 20, sets: 4, reps: 5, note: 'RPE 7–8 · 워밍업 세트 필수' },
+            { name: '바벨/덤벨 로우', min: 12, sets: 3, reps: 8, note: '등' },
             { name: '플랭크', min: 5, sets: 3, reps: 40, note: '초' }
           ];
-          cues = ['허리가 말리면 중량 다운', '세트 간 2–3분 휴식', '잠 7.5h+'];
         } else {
           main = [
+            drill('몬스터 워크', 3, '둔근 스위치 온'),
             { name: '백스쿼트', min: 20, sets: 4, reps: 5, note: 'RPE 7–8' },
             { name: '루마니안 데드리프트', min: 12, sets: 3, reps: 6, note: '보조 힌지' },
             { name: '워킹런지', min: 8, sets: 3, reps: 10, note: '다리당' }
           ];
-          cues = ['깊이보다 중립 척추', '무릎 통증 시 고블릿으로 교체', '단백질·수면 챙기기'];
         }
-        finisher = [
-          { name: '쿨다운 스트레칭', min: 6, note: '고관절·햄스트링' }
-        ];
+        cues = ['워밍업 생략 금지', '세트 간 2–3분', '쿨다운 스트레칭 필수'];
       } else {
-        // mid
-        durationMin = 45;
+        durationMin = 48;
         title = `표준 세션 · ${mainFocus?.label || '밸런스'}`;
-        why = (due.length
-          ? `오늘 우선순위: ${due.map(d => d.label).join(' · ')}. `
-          : '핵심 주기와 전신을 균형 있게. ') + (score != null ? `회복 ${score}점.` : '');
+        why = (due.length ? `오늘 우선: ${due.map(d => d.label).join(' · ')}. ` : '') + (score != null ? `회복 ${score}점.` : '');
         if (mainFocus?.id === 'run') {
           main = [
-            { name: '러닝', min: 30, note: '존2–3, 대화 가능~약간 힘든 페이스' },
-            { name: '코어 플랭크', min: 5, sets: 3, reps: 30, note: '초' }
+            drill('러닝 존2–3', 28, '대화 가능~약간 힘든 페이스'),
+            drill('몬스터 워크', 3, '러닝 후 둔근'),
+            { name: '플랭크', min: 4, sets: 3, reps: 30, note: '초' }
           ];
         } else if (mainFocus?.id === 'deadlift') {
           main = [
@@ -5016,29 +5093,23 @@ function startAlarmLoop() {
           ];
         } else {
           main = [
+            drill('몬스터 워크', 3, '좌우 10보 × 3'),
             { name: '백스쿼트 또는 고블릿스쿼트', min: 15, sets: 4, reps: 6, note: 'RPE 6–7' },
             { name: '레그프레스 또는 런지', min: 10, sets: 3, reps: 10, note: '하체 보조' },
             { name: '카프레이즈', min: 5, sets: 3, reps: 12, note: '종아리' }
           ];
         }
-        finisher = [
-          { name: '스트레칭·쿨다운', min: 5, note: '호흡 정리' }
-        ];
-        cues = ['핵심 1종 품질 우선', '세트 간 여유 호흡', '기록 남기기'];
+        cues = ['핵심 1종 품질', '기록 남기기', '쿨다운 빼지 않기'];
       }
 
-      // if multiple due and mid/high, add short secondary
       if (iv !== 'low' && due.length >= 2) {
         const second = due.find(d => d.id !== mainFocus?.id);
-        if (second?.id === 'run') {
-          main.push({ name: '쉬운 조깅 또는 빠른 걷기', min: 12, note: '러닝 주기 관리' });
-        } else if (second?.id === 'squat' && mainFocus?.id !== 'squat') {
-          main.push({ name: '고블릿스쿼트', min: 8, sets: 2, reps: 8, note: '스쿼트 주기 관리' });
-        } else if (second?.id === 'deadlift' && mainFocus?.id !== 'deadlift') {
-          main.push({ name: '루마니안 데드리프트', min: 8, sets: 2, reps: 6, note: '데드 주기 관리' });
-        }
+        if (second?.id === 'run') main.push(drill('쉬운 조깅 12분', 12, '러닝 주기 관리'));
+        else if (second?.id === 'squat') main.push({ name: '고블릿스쿼트', min: 8, sets: 2, reps: 8, note: '스쿼트 주기' });
+        else if (second?.id === 'deadlift') main.push({ name: '루마니안 데드리프트', min: 8, sets: 2, reps: 6, note: '데드 주기' });
       }
 
+      const finisher = buildCooldownBlock('gym', iv, mainFocus?.id || '');
       return {
         intensity: iv,
         intensityLabel: labels[iv],
@@ -5051,6 +5122,7 @@ function startAlarmLoop() {
         finisher,
         cues,
         source: 'local',
+        mode: 'gym',
         requestedIntensity: intensity,
         adjusted: iv !== intensity
       };
@@ -5130,9 +5202,9 @@ function startAlarmLoop() {
             <span class="tp-badge">${esc(plan.intensityLabel)}${plan.phase ? ' · ' + esc(plan.phase) : ''} · ${plan.durationMin || '—'}분${plan.work ? ' · ' + plan.work + '분R' : ''}</span>
           </div>
           <div class="tp-why">${esc(plan.why || '')}${plan.focus ? ` · 포커스: ${esc(plan.focus)}` : ''}${esc(adj)}</div>
-          ${block('① 워밍업', plan.warmup)}
+          ${block('① 워밍업 (구체 드릴)', plan.warmup)}
           ${block('② 메인', plan.main)}
-          ${block('③ 마무리', plan.finisher)}
+          ${block('③ 쿨다운 · 스트레칭', plan.finisher)}
           ${(plan.cues && plan.cues.length) ? `<ul class="tp-cues">${plan.cues.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
           <div class="tp-actions">
             <button type="button" class="primary" onclick="applyTrainPlanToLog()">이 세션 기록에 넣기</button>
@@ -5176,7 +5248,7 @@ function startAlarmLoop() {
 하=가벼운 풀기(홀드 15–20초), 중=표준(25–30초), 상=딥·롱(40–60초, 2세트 가능).
 포커스: full|upper|lower|hip|spine|post(운동후)|desk(사무)|sleep(취침전).
 반동 금지, 날카로운 통증 금지, 호흡 큐 포함.
-의학 진단 금지. JSON만.
+워밍업·쿨다운(finisher) 구체 동작 필수. 의학 진단 금지. JSON만.
 {
   "intensity": "low|mid|high",
   "title": "세션 제목",
@@ -7444,7 +7516,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.1,
+        version: 4.2,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey

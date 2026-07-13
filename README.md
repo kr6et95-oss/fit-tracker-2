@@ -1,4 +1,4 @@
-# FIT TRACKER 4.1 · REST
+# FIT TRACKER 4.2 · REST
 
 > 체중 관리는 꾸준함이 답입니다.  
 > **회복 > 영양 > 훈련**
