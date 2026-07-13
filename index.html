@@ -1308,7 +1308,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.5</div>
+        <div class="ver">4.6</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1920,10 +1920,12 @@
         <div class="card">
           <div class="card-h"><h2>✨ Google Gemini 연동</h2></div>
           <p class="muted" style="margin-bottom:10px;line-height:1.45">
-            이전 기본 키는 <strong>비활성</strong>이라 AI가 실패합니다.
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent,#6366f1);font-weight:700">Google AI Studio</a>에서
-            <strong>새 API 키를 발급</strong> → 아래에 붙여넣기 → <strong>키 저장</strong> → <strong>연결 테스트</strong>.
-            (Google 계정 로그인 후 Create API key. 무료 할당량으로 충분합니다.)
+            키는 <strong>이 기기 설정에만</strong> 저장됩니다 (코드/서버에 자동 저장 안 함).
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="color:var(--accent,#6366f1);font-weight:700">AI Studio</a> 키를 붙여넣고
+            <strong>키 저장 → 연결 테스트</strong>.
+            크레딧 소진(429)이면
+            <a href="https://ai.studio/projects" target="_blank" rel="noopener" style="color:var(--accent,#6366f1);font-weight:700">프로젝트·결제</a>를 확인하세요.
+            <code>AQ.</code> / <code>AIza</code> 키 모두 가능.
           </p>
           <div class="field"><label>Gemini API 키 (재발급 키 붙여넣기)</label>
             <input id="geminiKey" type="password" placeholder="AIza... (AI Studio 새 키)" autocomplete="off" />
@@ -6129,11 +6131,11 @@ function setWoMode(mode) {
 
     async function callGemini({ prompt, imageDataUrl, system, temperature = 0.6, maxOutputTokens = 4096 }) {
       const key = getGeminiKey();
-      if (!key) throw new Error('NO_KEY');
-      let model = getGeminiModel() || 'gemini-2.0-flash';
-      // strip models/ prefix if user pasted full path
+      if (!key) throw new Error('NO_KEY · 더보기→설정에 Gemini 키를 저장하세요');
+      let model = getGeminiModel() || 'gemini-2.5-flash';
       model = String(model).replace(/^models\//, '').trim();
 
+      // Auth: header (권장) + query 병행. AQ. 신형 키 / AIza 구형 키 모두 지원
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
 
       const userParts = [];
@@ -6160,7 +6162,10 @@ function setWoMode(mode) {
       try {
         res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': key
+          },
           body: JSON.stringify(body)
         });
         raw = await res.text();
@@ -6172,17 +6177,22 @@ function setWoMode(mode) {
       if (!res.ok) {
         const apiMsg = data?.error?.message || raw.slice(0, 280) || res.statusText;
         let hint = apiMsg;
-        if (res.status === 403 || /not been used|disabled|PERMISSION|API key/i.test(apiMsg)) {
-          hint = 'Gemini API가 이 키 프로젝트에서 비활성/미사용입니다. Google AI Studio에서 새 키를 발급하거나, 콘솔에서 Generative Language API를 활성화하세요. · ' + apiMsg.slice(0, 120);
+        if (res.status === 403 || /not been used|disabled|PERMISSION|API key not valid/i.test(apiMsg)) {
+          hint = 'API 키/권한 문제. AI Studio에서 새 키 발급 또는 Generative Language API 활성화. · ' + apiMsg.slice(0, 140);
         } else if (res.status === 400 && /model|not found/i.test(apiMsg)) {
-          hint = '모델 이름 오류. 설정에서 gemini-2.0-flash 등으로 바꿔 보세요. · ' + apiMsg.slice(0, 120);
-        } else if (res.status === 429) {
-          hint = '할당량 초과(잠시 후 재시도). · ' + apiMsg.slice(0, 100);
+          hint = '모델 이름 오류. 설정에서 gemini-2.5-flash 등으로 변경. · ' + apiMsg.slice(0, 120);
+        } else if (res.status === 429 || /RESOURCE_EXHAUSTED|quota|rate|prepayment|credits? are depleted|billing/i.test(apiMsg)) {
+          if (/prepayment|credits? are depleted|billing/i.test(apiMsg)) {
+            hint = 'Gemini 크레딧/선불 잔액이 없습니다. AI Studio 프로젝트에서 결제·무료 할당량을 확인하세요 (ai.studio/projects). · ' + apiMsg.slice(0, 100);
+          } else {
+            hint = '할당량 초과 또는 요청 한도. 잠시 후 재시도하거나 결제/할당량을 확인하세요. · ' + apiMsg.slice(0, 100);
+          }
+        } else if (res.status === 401) {
+          hint = '인증 실패. 키가 잘못됐거나 만료됐을 수 있습니다. 설정에서 키를 다시 붙여넣으세요. · ' + apiMsg.slice(0, 100);
         }
         throw new Error(hint || `HTTP ${res.status}`);
       }
 
-      // blocked / safety
       const block = data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason;
       const text = extractGeminiText(data);
       if (!text) {
@@ -7847,7 +7857,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.5,
+        version: 4.6,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
