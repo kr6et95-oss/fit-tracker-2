@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="foods.js"></script>
+  <script src="workouts.js"></script>
   <script src="micros.js"></script>
   <style>
     :root {
@@ -735,6 +736,39 @@
     }
     .sync-steps { font-size: .8rem; line-height: 1.55; color: var(--muted); margin: 8px 0 10px; padding-left: 1.1em; }
     .sync-steps li { margin-bottom: 4px; }
+
+    .food-hit .fn { font-weight: 700; font-size: .88rem; }
+    .food-hit .fi { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .food-hit .fg { font-size: .68rem; color: var(--p1); font-weight: 700; margin-top: 2px; }
+    .wo-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .wo-modes button {
+      padding: 8px 4px; border-radius: 12px; font-size: .72rem; font-weight: 800;
+      background: #f3f0ff; border: 1px solid var(--line); line-height: 1.25;
+    }
+    .wo-modes button.on {
+      background: linear-gradient(135deg, var(--p1), var(--p2)); color: #fff; border-color: transparent;
+    }
+    .wo-search { margin-bottom: 8px; }
+    .wo-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;
+    }
+    .wo-stat {
+      background: linear-gradient(145deg, #f5f3ff, #eef2ff);
+      border: 1px solid var(--line); border-radius: 14px; padding: 10px 8px; text-align: center;
+    }
+    .wo-stat .ws-l { font-size: .65rem; color: var(--muted); }
+    .wo-stat .ws-v { font-family: Poppins, sans-serif; font-weight: 800; font-size: 1rem; margin-top: 2px; }
+    .routine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .routine-btn {
+      text-align: left; padding: 10px 12px; border-radius: 14px;
+      background: #fff; border: 1px solid var(--line); font-size: .8rem; font-weight: 700;
+    }
+    .routine-btn span { display: block; font-size: .68rem; font-weight: 500; color: var(--muted); margin-top: 3px; }
+    .wo-chips-scroll {
+      display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .wo-chips-scroll .chip { flex: 0 0 auto; }
 </style>
 </head>
 <body>
@@ -780,7 +814,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">2.8</div>
+        <div class="ver">2.9</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1187,16 +1221,28 @@
     <!-- MOVE -->
     <section class="view" id="v-move">
       <div class="card">
-        <div class="card-h"><h2>🏃 운동 기록</h2></div>
-        <div class="wo-mode">
-          <button type="button" class="on" id="woModeCardio" onclick="setWoMode('cardio')">🏃 유산소</button>
-          <button type="button" id="woModeStrength" onclick="setWoMode('strength')">🏋️ 근력</button>
+        <div class="card-h"><h2>🏃 운동 기록</h2><span class="muted" id="woLibCount">라이브러리</span></div>
+        <div class="wo-stats" id="woTodayStats">
+          <div class="wo-stat"><div class="ws-l">오늘 분</div><div class="ws-v" id="woStatMin">0</div></div>
+          <div class="wo-stat"><div class="ws-l">kcal</div><div class="ws-v" id="woStatKcal">0</div></div>
+          <div class="wo-stat"><div class="ws-l">볼륨</div><div class="ws-v" id="woStatVol">0</div></div>
+        </div>
+        <div class="wo-modes" id="woModeBar"></div>
+        <div class="wo-chips-scroll" id="woMuscleBar" style="display:none"></div>
+        <div class="field wo-search"><label>운동 검색</label>
+          <input id="woSearch" placeholder="스쿼트, 러닝, 배드민턴…" oninput="renderWoChips()" />
         </div>
         <div class="chips" id="woChips"></div>
-        <div class="field"><label>운동</label><input id="woName" placeholder="러닝, 스쿼트…" /></div>
+        <div class="field"><label>운동</label><input id="woName" placeholder="종목 이름" /></div>
         <div class="grid2">
           <div class="field"><label>시간 (분)</label><input id="woMin" type="number" placeholder="30" /></div>
           <div class="field"><label>소모 kcal</label><input id="woKcal" type="number" placeholder="200" /></div>
+        </div>
+        <div id="woCardioFields">
+          <div class="grid2" style="margin-top:8px">
+            <div class="field"><label>거리 (km)</label><input id="woDist" type="number" step="0.1" placeholder="5.0" /></div>
+            <div class="field"><label>페이스/메모</label><input id="woPace" placeholder="5:30/km 등" /></div>
+          </div>
         </div>
         <div id="woStrengthFields" style="display:none">
           <div class="grid3" style="margin-top:8px">
@@ -1204,13 +1250,41 @@
             <div class="field"><label>회(reps)</label><input id="woReps" type="number" min="1" placeholder="10" /></div>
             <div class="field"><label>중량 kg</label><input id="woLoad" type="number" step="0.5" placeholder="40" /></div>
           </div>
-          <p class="muted" style="margin:6px 0 0;font-size:.72rem;line-height:1.4">예: 스쿼트 4세트 × 10회 @ 40kg. 칼로리를 비우면 대략 추정합니다.</p>
+          <p class="muted" style="margin:6px 0 0;font-size:.72rem;line-height:1.4">플랭크 등은 횟수에 초를 넣어도 됩니다. 칼로리 비우면 추정합니다.</p>
         </div>
+        <div class="grid2" style="margin-top:8px">
+          <div class="field"><label>RPE (1–10)</label><input id="woRpe" type="number" min="1" max="10" step="0.5" placeholder="7" /></div>
+          <div class="field"><label>부위</label>
+            <select id="woMuscle">
+              <option value="">—</option>
+              <option>가슴</option><option>등</option><option>어깨</option>
+              <option>하체</option><option>팔</option><option>코어</option><option>전신</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>메모</label><input id="woNote" placeholder="컨디션, PR, 통증 여부…" /></div>
         <button class="btn btn-s" style="margin-top:10px" onclick="addWorkout()">운동 저장</button>
       </div>
+
+      <div class="card">
+        <div class="card-h"><h2>📋 루틴 원탭 추가</h2></div>
+        <p class="muted" style="margin-bottom:6px;line-height:1.4">구성 운동을 오늘 기록에 한 번에 넣습니다. 중량은 이후에 수정하세요.</p>
+        <div class="routine-grid" id="woRoutines"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>⏱ 최근 운동 다시 하기</h2></div>
+        <div class="chips" id="woRecent"></div>
+      </div>
+
       <div class="card">
         <div class="card-h"><h2>오늘 운동</h2><span class="muted" id="woSum">0분 · 0kcal</span></div>
         <div class="list" id="woList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>📅 최근 7일 운동 요약</h2></div>
+        <div class="list" id="woWeekList"></div>
       </div>
     </section>
 
@@ -1405,12 +1479,13 @@
           </div>
           <p class="muted" id="portionHint">DB 선택 시 기준 1인분 × 배수로 자동 계산</p>
         </div>
-        <div class="field"><label>음식 이름</label><input id="fName" placeholder="닭가슴살 샐러드" /></div>
+        <div class="field"><label>음식 이름</label><input id="fName" placeholder="닭가슴살 100g" /></div>
         <div class="grid2">
+          <div class="field"><label>그램 수 (g)</label><input id="fGram" type="number" step="1" placeholder="100" /></div>
           <div class="field"><label>칼로리</label><input id="fCal" type="number" placeholder="250" /></div>
-          <div class="field"><label>단백질 g</label><input id="fPro" type="number" step="0.1" placeholder="25" /></div>
         </div>
-        <div class="grid2">
+        <div class="grid3">
+          <div class="field"><label>단백질 g</label><input id="fPro" type="number" step="0.1" placeholder="25" /></div>
           <div class="field"><label>탄수화물 g</label><input id="fCarb" type="number" step="0.1" placeholder="15" /></div>
           <div class="field"><label>지방 g</label><input id="fFat" type="number" step="0.1" placeholder="8" /></div>
         </div>
@@ -1446,33 +1521,35 @@
 
   <script>
     const KEY = 'fit-tracker-2-v1';
-    const FOODS = (window.FT_FOODS || []).map(f => ({ n: f.n, cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat, k: f.k || '' }));
+    const FOODS = (window.FT_FOODS || []).map(f => ({
+      n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
+      cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat, k: f.k || '',
+      micro: f.micro
+    }));
     const FOOD_CATS = window.FT_FOOD_CATS || ['전체'];
-    const WORKOUTS_CARDIO = [
-      { n: '걷기', min: 30, cal: 120 },
-      { n: '러닝', min: 30, cal: 280 },
-      { n: '자전거', min: 30, cal: 220 },
-      { n: '요가', min: 30, cal: 100 },
-      { n: '홈트', min: 20, cal: 150 },
-      { n: '스트레칭', min: 15, cal: 40 },
-      { n: '가벼운 산책(회복)', min: 20, cal: 60 },
-      { n: '줄넘기', min: 15, cal: 160 },
-      { n: '수영', min: 30, cal: 250 }
+    function foodLabel(f, portion) {
+      if (window.FT_foodLabel) return window.FT_foodLabel(f, portion);
+      if (!f) return '';
+      const p = portion != null && portion !== 1 ? portion : 1;
+      const g = f.g != null ? Math.round(f.g * p) : null;
+      const unit = f.unit ? ' ' + f.unit : '';
+      return f.n + unit + (g != null ? ` (${g}g)` : '') + (p !== 1 ? ` ×${p}` : '');
+    }
+    const WO_LIB = window.FT_WORKOUTS || { cardio: [], strength: [], sports: [], mobility: [] };
+    const WO_ROUTINES = window.FT_WO_ROUTINES || [];
+    const WO_MUSCLES = window.FT_WO_MUSCLES || ['전체', '가슴', '등', '어깨', '하체', '팔', '코어', '전신'];
+    const WO_MODES = window.FT_WO_MODES || [
+      { id: 'cardio', label: '🏃 유산소' },
+      { id: 'strength', label: '🏋️ 근력' },
+      { id: 'sports', label: '⚡ 스포츠' },
+      { id: 'mobility', label: '🧘 회복' }
     ];
-    const WORKOUTS_STRENGTH = [
-      { n: '스쿼트', min: 15, cal: 90, sets: 4, reps: 10, load: 40 },
-      { n: '데드리프트', min: 15, cal: 100, sets: 3, reps: 8, load: 60 },
-      { n: '벤치프레스', min: 15, cal: 90, sets: 4, reps: 8, load: 40 },
-      { n: '오버헤드프레스', min: 12, cal: 70, sets: 3, reps: 8, load: 20 },
-      { n: '바벨로우', min: 12, cal: 80, sets: 3, reps: 10, load: 40 },
-      { n: '런지', min: 12, cal: 70, sets: 3, reps: 12, load: 12 },
-      { n: '풀업/랫풀다운', min: 12, cal: 70, sets: 3, reps: 8, load: 0 },
-      { n: '레그프레스', min: 12, cal: 80, sets: 4, reps: 12, load: 80 },
-      { n: '플랭크', min: 8, cal: 35, sets: 3, reps: 45, load: 0 },
-      { n: '헬스(전신)', min: 45, cal: 200, sets: 0, reps: 0, load: 0 }
-    ];
+    // legacy aliases
+    const WORKOUTS_CARDIO = WO_LIB.cardio || [];
+    const WORKOUTS_STRENGTH = WO_LIB.strength || [];
     const WORKOUTS = WORKOUTS_CARDIO;
     let woMode = 'cardio';
+    let woMuscleFilter = '전체';
     let compChart = null;
     const HABIT_P = ['물 2L', '야식 금지', '만보 걷기', '단백질 매끼', '11시 전 취침', '식후 산책 10분', '수면 7시간+', '스크린 11시 종료'];
 
@@ -2494,18 +2571,25 @@
       if (q) {
         list = list.filter(f =>
           f.n.toLowerCase().includes(q) ||
+          (f.unit && f.unit.toLowerCase().includes(q)) ||
           (f.k && f.k.toLowerCase().includes(q)) ||
-          (f.cat && f.cat.includes(q))
+          (f.cat && f.cat.includes(q)) ||
+          (f.g != null && String(f.g).includes(q))
         );
       } else if (foodCat === '전체') {
-        list = list.slice(0, 12);
+        list = list.slice(0, 16);
       } else {
-        list = list.slice(0, 30);
+        list = list.slice(0, 40);
       }
-      box.innerHTML = list.slice(0, 40).map((f, i) => {
+      box.innerHTML = list.slice(0, 50).map((f) => {
         const idx = FOODS.indexOf(f);
+        const label = foodLabel(f);
         return `<button type="button" class="food-hit" onclick="pickFood(${idx})">
-          <div><div class="fn">${esc(f.n)}</div><div class="fi">${f.cat || ''} · P${f.pro} C${f.carb} F${f.fat}</div></div>
+          <div>
+            <div class="fn">${esc(label)}</div>
+            <div class="fi">${esc(f.cat || '')} · P${f.pro} C${f.carb} F${f.fat}</div>
+            <div class="fg">${f.g != null ? f.g + 'g 기준' : ''}${f.unit ? ' · ' + esc(f.unit) : ''}</div>
+          </div>
           <div class="fc">${f.cal}</div>
         </button>`;
       }).join('') || '<div class="empty" style="padding:12px">검색 결과 없음 — 직접 입력하세요</div>';
@@ -2515,11 +2599,12 @@
       const f = FOODS[i];
       if (!f) return;
       foodBase = {
-        n: f.n, cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat,
+        n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
+        cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat,
         micro: f.micro || attachMicro({ name: f.n, n: f.n, cat: f.cat, cal: f.cal })
       };
       applyPortion();
-      toast(f.n + (portion !== 1 ? ` × ${portion}` : '') + ' 선택');
+      toast(foodLabel(f, portion) + ' 선택');
     }
 
     function setPortion(p) {
@@ -2537,13 +2622,14 @@
     function applyPortion() {
       if (!foodBase) return;
       const p = portion || 1;
-      const name = p === 1 ? foodBase.n : `${foodBase.n} ×${p}`;
-      document.getElementById('fName').value = name;
+      const label = foodLabel(foodBase, p);
+      document.getElementById('fName').value = label;
+      const fg = document.getElementById('fGram');
+      if (fg) fg.value = foodBase.g != null ? Math.round(foodBase.g * p) : '';
       document.getElementById('fCal').value = Math.round(foodBase.cal * p);
       document.getElementById('fPro').value = Math.round(foodBase.pro * p * 10) / 10;
       document.getElementById('fCarb').value = Math.round(foodBase.carb * p * 10) / 10;
       document.getElementById('fFat').value = Math.round(foodBase.fat * p * 10) / 10;
-      // keep base micro at 1x; scale applied on addFood
       if (!foodBase.micro && window.FT_MICRO) {
         foodBase.micro = window.FT_MICRO.estimate({
           name: foodBase.n, n: foodBase.n, cat: foodBase.cat, cal: foodBase.cal
@@ -2551,7 +2637,8 @@
       }
       const hint = document.getElementById('portionHint');
       if (hint) {
-        hint.textContent = `기준 1인분 ${foodBase.cal}kcal → ${p}× = ${Math.round(foodBase.cal * p)}kcal · P${Math.round(foodBase.pro*p*10)/10} C${Math.round(foodBase.carb*p*10)/10} F${Math.round(foodBase.fat*p*10)/10} · 미량영양소도 배수 반영`;
+        const gPart = foodBase.g != null ? ` · ${Math.round(foodBase.g * p)}g` : '';
+        hint.textContent = `기준 1인분 ${foodBase.g != null ? foodBase.g + 'g · ' : ''}${foodBase.cal}kcal → ${p}× = ${Math.round(foodBase.cal * p)}kcal${gPart} · P${Math.round(foodBase.pro*p*10)/10} C${Math.round(foodBase.carb*p*10)/10} F${Math.round(foodBase.fat*p*10)/10}`;
       }
     }
 
@@ -2604,6 +2691,8 @@
       const name = document.getElementById('fName').value.trim();
       const cal = +document.getElementById('fCal').value;
       if (!name || !(cal >= 0)) return toast('이름과 칼로리를 입력하세요');
+      const gramEl = document.getElementById('fGram');
+      const grams = gramEl && gramEl.value !== '' ? +gramEl.value : (foodBase && foodBase.g != null ? Math.round(foodBase.g * (portion || 1)) : null);
       const food = {
         id: uid(),
         name,
@@ -2612,7 +2701,8 @@
         carb: +document.getElementById('fCarb').value || 0,
         fat: +document.getElementById('fFat').value || 0
       };
-      // 미량영양소 대략치 (portion 반영된 foodBase 우선)
+      if (grams != null && !isNaN(grams)) food.g = grams;
+      if (foodBase && foodBase.unit) food.unit = foodBase.unit;
       if (foodBase && foodBase.micro) {
         food.micro = window.FT_MICRO
           ? window.FT_MICRO.scale(foodBase.micro, portion || 1)
@@ -2625,14 +2715,12 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          // compress-ish: keep only if small enough; store thumbnail
           const data = e.target.result;
           if (data.length < 600000) {
             day().photos[curMeal].push(data);
             save();
             renderMealModal();
           } else {
-            // shrink via canvas
             const img = new Image();
             img.onload = () => {
               const c = document.createElement('canvas');
@@ -2651,11 +2739,13 @@
       }
       save();
       document.getElementById('fName').value = '';
+      if (gramEl) gramEl.value = '';
       document.getElementById('fCal').value = '';
       document.getElementById('fPro').value = '';
       document.getElementById('fCarb').value = '';
       document.getElementById('fFat').value = '';
       document.getElementById('fPhoto').value = '';
+      foodBase = null;
       toast('추가했어요!');
       renderMealModal();
     }
@@ -2737,18 +2827,19 @@
         el.innerHTML = '<div class="empty">아직 음식이 없어요</div>';
         return;
       }
-      el.innerHTML = list.map(f => `
-        <div class="item">
+      el.innerHTML = list.map(f => {
+        const gTxt = f.g != null ? ` · ${f.g}g` : '';
+        return `<div class="item">
           <div>
             <div class="t">${esc(f.name)}</div>
-            <div class="d">P ${f.pro} · C ${f.carb} · F ${f.fat}</div>
+            <div class="d">P ${f.pro} · C ${f.carb} · F ${f.fat}${gTxt}</div>
           </div>
           <div style="text-align:right">
             <div class="k">${Math.round(f.cal)} kcal</div>
             <button class="btn-x" style="margin-top:6px" onclick="removeFood('${curMeal}','${f.id}')">삭제</button>
           </div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
     }
 
     // ===== Weight =====
@@ -2805,34 +2896,95 @@
 
     // ===== Workout =====
     function setWoMode(mode) {
-      woMode = mode === 'strength' ? 'strength' : 'cardio';
+      const allowed = WO_MODES.map(m => m.id);
+      woMode = allowed.includes(mode) ? mode : 'cardio';
+      const bar = document.getElementById('woModeBar');
+      if (bar) {
+        bar.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mode === woMode));
+      }
+      // legacy dual buttons if present
       const c = document.getElementById('woModeCardio');
       const s = document.getElementById('woModeStrength');
       if (c) c.classList.toggle('on', woMode === 'cardio');
       if (s) s.classList.toggle('on', woMode === 'strength');
+
       const sf = document.getElementById('woStrengthFields');
+      const cf = document.getElementById('woCardioFields');
       if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
+      if (cf) cf.style.display = (woMode === 'cardio' || woMode === 'sports') ? '' : 'none';
+      const mb = document.getElementById('woMuscleBar');
+      if (mb) mb.style.display = woMode === 'strength' ? '' : 'none';
       renderWoChips();
+    }
+
+    function renderWoModeBar() {
+      const bar = document.getElementById('woModeBar');
+      if (!bar) return;
+      bar.innerHTML = WO_MODES.map(m =>
+        `<button type="button" data-mode="${m.id}" class="${m.id === woMode ? 'on' : ''}" onclick="setWoMode('${m.id}')">${m.label}</button>`
+      ).join('');
+      const mb = document.getElementById('woMuscleBar');
+      if (mb) {
+        mb.innerHTML = WO_MUSCLES.map(m =>
+          `<button type="button" class="chip ${m === woMuscleFilter ? 'on' : ''}" onclick="setWoMuscleFilter('${m}')">${m}</button>`
+        ).join('');
+      }
+      const routines = document.getElementById('woRoutines');
+      if (routines) {
+        routines.innerHTML = WO_ROUTINES.map(r =>
+          `<button type="button" class="routine-btn" onclick="applyWoRoutine('${r.id}')">${esc(r.name)}<span>${r.items.length}개 동작</span></button>`
+        ).join('');
+      }
+      const lib = document.getElementById('woLibCount');
+      if (lib) {
+        const n = Object.values(WO_LIB).reduce((a, arr) => a + (arr ? arr.length : 0), 0);
+        lib.textContent = `${n}종`;
+      }
+    }
+
+    function setWoMuscleFilter(m) {
+      woMuscleFilter = m || '전체';
+      renderWoModeBar();
+      renderWoChips();
+    }
+
+    function woListForMode() {
+      return WO_LIB[woMode] || [];
     }
 
     function renderWoChips() {
       const el = document.getElementById('woChips');
       if (!el) return;
-      const list = woMode === 'strength' ? WORKOUTS_STRENGTH : WORKOUTS_CARDIO;
-      el.innerHTML = list.map((w, i) =>
-        `<button type="button" class="chip" onclick="pickWorkoutPreset('${woMode}',${i})">${w.n}</button>`
-      ).join('');
+      let list = woListForMode().slice();
+      const q = (document.getElementById('woSearch')?.value || '').trim().toLowerCase();
+      if (woMode === 'strength' && woMuscleFilter && woMuscleFilter !== '전체') {
+        list = list.filter(w => (w.muscle || '전신') === woMuscleFilter);
+      }
+      if (q) {
+        list = list.filter(w =>
+          w.n.toLowerCase().includes(q) ||
+          (w.k && w.k.toLowerCase().includes(q)) ||
+          (w.muscle && w.muscle.includes(q))
+        );
+      }
+      el.innerHTML = list.slice(0, 40).map((w, i) => {
+        // find real index in mode list
+        const real = (WO_LIB[woMode] || []).indexOf(w);
+        const sub = w.muscle ? w.muscle : '';
+        return `<button type="button" class="chip" onclick="pickWorkoutPreset('${woMode}',${real})">${esc(w.n)}${sub && woMode==='strength' ? '' : ''}</button>`;
+      }).join('') || '<span class="muted" style="font-size:.78rem">검색 결과 없음</span>';
     }
 
     function pickWorkoutPreset(mode, idx) {
-      const list = mode === 'strength' ? WORKOUTS_STRENGTH : WORKOUTS_CARDIO;
+      const list = WO_LIB[mode] || [];
       const w = list[idx];
       if (!w) return;
-      if (mode === 'strength' && woMode !== 'strength') setWoMode('strength');
-      if (mode === 'cardio' && woMode !== 'cardio') setWoMode('cardio');
+      if (mode !== woMode) setWoMode(mode);
       document.getElementById('woName').value = w.n;
-      document.getElementById('woMin').value = w.min;
-      document.getElementById('woKcal').value = w.cal;
+      document.getElementById('woMin').value = w.min || '';
+      document.getElementById('woKcal').value = w.cal || '';
+      const muscle = document.getElementById('woMuscle');
+      if (muscle && w.muscle) muscle.value = w.muscle;
       if (mode === 'strength') {
         const a = document.getElementById('woSets');
         const b = document.getElementById('woReps');
@@ -2841,6 +2993,7 @@
         if (b) b.value = w.reps || '';
         if (c) c.value = w.load || '';
       }
+      toast(w.n + ' 선택');
     }
 
     function estimateStrengthCal(sets, reps, load, min) {
@@ -2853,6 +3006,12 @@
       return 0;
     }
 
+    function estimateCardioCal(min, dist) {
+      min = +min || 0; dist = +dist || 0;
+      if (dist > 0) return Math.round(dist * 60 + min * 2);
+      return Math.round(min * 5);
+    }
+
     function addWorkout() {
       const name = document.getElementById('woName').value.trim();
       let min = +document.getElementById('woMin').value;
@@ -2861,22 +3020,41 @@
       const setsEl = document.getElementById('woSets');
       const repsEl = document.getElementById('woReps');
       const loadEl = document.getElementById('woLoad');
+      const distEl = document.getElementById('woDist');
+      const paceEl = document.getElementById('woPace');
+      const rpeEl = document.getElementById('woRpe');
+      const noteEl = document.getElementById('woNote');
+      const muscleEl = document.getElementById('woMuscle');
       const sets = setsEl && setsEl.value !== '' ? +setsEl.value : null;
       const reps = repsEl && repsEl.value !== '' ? +repsEl.value : null;
       const load = loadEl && loadEl.value !== '' ? +loadEl.value : null;
+      const dist = distEl && distEl.value !== '' ? +distEl.value : null;
+      const pace = paceEl ? paceEl.value.trim() : '';
+      const rpe = rpeEl && rpeEl.value !== '' ? +rpeEl.value : null;
+      const note = noteEl ? noteEl.value.trim() : '';
+      const muscle = muscleEl ? muscleEl.value : '';
       const isStrength = woMode === 'strength' || (sets && reps);
 
       if (!name) return toast('운동명을 입력하세요');
       if (!min && !(sets && reps)) return toast('시간 또는 세트×횟수를 입력하세요');
       if (!min && sets && reps) min = Math.max(5, sets * 3);
       if (cal == null || cal === 0) {
-        cal = isStrength ? estimateStrengthCal(sets, reps, load, min) : 0;
+        cal = isStrength ? estimateStrengthCal(sets, reps, load, min)
+          : estimateCardioCal(min, dist);
       }
 
-      const entry = { id: uid(), name, min: min || 0, cal: cal || 0, type: isStrength ? 'strength' : 'cardio' };
+      const entry = {
+        id: uid(), name, min: min || 0, cal: cal || 0,
+        type: isStrength ? 'strength' : woMode
+      };
       if (sets != null) entry.sets = sets;
       if (reps != null) entry.reps = reps;
       if (load != null) entry.load = load;
+      if (dist != null) entry.dist = dist;
+      if (pace) entry.pace = pace;
+      if (rpe != null) entry.rpe = rpe;
+      if (note) entry.note = note;
+      if (muscle) entry.muscle = muscle;
 
       day().workouts.unshift(entry);
       save();
@@ -2886,6 +3064,10 @@
       if (setsEl) setsEl.value = '';
       if (repsEl) repsEl.value = '';
       if (loadEl) loadEl.value = '';
+      if (distEl) distEl.value = '';
+      if (paceEl) paceEl.value = '';
+      if (rpeEl) rpeEl.value = '';
+      if (noteEl) noteEl.value = '';
       toast('운동 기록!');
       render();
     }
@@ -2899,18 +3081,97 @@
       return day(k).workouts.reduce((a, w) => ({ min: a.min + (+w.min || 0), cal: a.cal + (+w.cal || 0) }), { min: 0, cal: 0 });
     }
 
+    function woVolume(w) {
+      if (!w) return 0;
+      const s = +w.sets || 0, r = +w.reps || 0, l = +w.load || 0;
+      return s && r ? s * r * Math.max(l, 0) : 0;
+    }
+
     function woDetailText(w) {
       const parts = [];
       if (w.sets || w.reps) {
         let s = '';
         if (w.sets) s += w.sets + '세트';
-        if (w.reps) s += (s ? ' × ' : '') + w.reps + (w.name && /플랭크/.test(w.name) ? '초' : '회');
+        if (w.reps) s += (s ? ' × ' : '') + w.reps + (w.name && /플랭크|초/.test(w.name) ? '초' : '회');
         if (w.load) s += ' @ ' + w.load + 'kg';
         parts.push(s);
+        const vol = woVolume(w);
+        if (vol) parts.push(vol + 'kg 볼륨');
       }
+      if (w.dist) parts.push(w.dist + 'km');
       if (w.min) parts.push(w.min + '분');
+      if (w.rpe != null) parts.push('RPE ' + w.rpe);
+      if (w.muscle) parts.push(w.muscle);
+      if (w.pace) parts.push(w.pace);
+      if (w.note) parts.push(w.note);
       return parts.join(' · ') || '기록';
     }
+
+    function applyWoRoutine(id) {
+      const r = WO_ROUTINES.find(x => x.id === id);
+      if (!r) return;
+      if (!confirm(`「${r.name}」 ${r.items.length}개 동작을 오늘 기록에 추가할까요?`)) return;
+      r.items.forEach(it => {
+        day().workouts.unshift({
+          id: uid(),
+          name: it.n,
+          min: it.min || 0,
+          cal: it.cal || 0,
+          type: it.type || 'strength',
+          sets: it.sets, reps: it.reps, load: it.load,
+          muscle: it.muscle || ''
+        });
+      });
+      save();
+      toast(r.name + ' 추가 완료!');
+      render();
+    }
+
+    function reAddWorkout(key, wid) {
+      const list = day(key).workouts || [];
+      const w = list.find(x => x.id === wid);
+      if (!w) return toast('기록을 찾지 못했어요');
+      const copy = { ...w, id: uid() };
+      day().workouts.unshift(copy);
+      save();
+      toast(copy.name + ' 다시 기록!');
+      render();
+    }
+
+    function renderWoRecent() {
+      const el = document.getElementById('woRecent');
+      if (!el) return;
+      const seen = new Map();
+      dateKeys(14).reverse().forEach(k => {
+        (S.days[k]?.workouts || []).forEach(w => {
+          const key = w.name + '|' + (w.type || '');
+          if (!seen.has(key)) seen.set(key, { ...w, _k: k });
+        });
+      });
+      const items = [...seen.values()].slice(0, 12);
+      el.innerHTML = items.length ? items.map(w =>
+        `<button type="button" class="chip" onclick="reAddWorkout('${w._k}','${w.id}')">${esc(w.name)}</button>`
+      ).join('') : '<span class="muted" style="font-size:.78rem">최근 기록이 있으면 여기에 뜹니다</span>';
+    }
+
+    function renderWoWeek() {
+      const el = document.getElementById('woWeekList');
+      if (!el) return;
+      const keys = dateKeys(7).reverse();
+      el.innerHTML = keys.map(k => {
+        const list = S.days[k]?.workouts || [];
+        const t = woTot(k);
+        if (!list.length) {
+          return `<div class="item"><div class="t">${k.slice(5)}</div><div class="d">휴식/미기록</div></div>`;
+        }
+        const names = list.slice(0, 3).map(w => w.name).join(', ') + (list.length > 3 ? ` 외 ${list.length-3}` : '');
+        return `<div class="item">
+          <div><div class="t">${k.slice(5)} · ${list.length}세션</div><div class="d">${esc(names)}</div></div>
+          <div class="k">${t.min}분<br>${t.cal}kcal</div>
+        </div>`;
+      }).join('');
+    }
+
     
 
 
@@ -4030,7 +4291,7 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
           <div class="item">
             <div>
               <div class="t">${esc(f.name)}</div>
-              <div class="d">${labels[f.meal]} · P${f.pro} C${f.carb} F${f.fat}</div>
+              <div class="d">${labels[f.meal]} · P${f.pro} C${f.carb} F${f.fat}${f.g != null ? ' · ' + f.g + 'g' : ''}</div>
             </div>
             <div style="text-align:right">
               <div class="k">${Math.round(f.cal)}</div>
@@ -4050,30 +4311,44 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
     }
 
     function renderMove() {
+      if (typeof renderWoModeBar === 'function') renderWoModeBar();
+      if (typeof renderWoChips === 'function') renderWoChips();
+      if (typeof renderWoRecent === 'function') renderWoRecent();
+      if (typeof renderWoWeek === 'function') renderWoWeek();
+
       const wo = woTot();
       const list = day().workouts;
+      let vol = 0;
+      list.forEach(w => { vol += woVolume(w); });
       const strengthN = list.filter(w => w.type === 'strength' || w.sets).length;
+
       const sumEl = document.getElementById('woSum');
       if (sumEl) sumEl.textContent = `${wo.min}분 · ${wo.cal} kcal` + (strengthN ? ` · 근력 ${strengthN}` : '');
+      const sm = document.getElementById('woStatMin');
+      const sk = document.getElementById('woStatKcal');
+      const sv = document.getElementById('woStatVol');
+      if (sm) sm.textContent = wo.min;
+      if (sk) sk.textContent = wo.cal;
+      if (sv) sv.textContent = vol >= 1000 ? (vol/1000).toFixed(1) + 't' : vol;
+
       const listEl = document.getElementById('woList');
       if (listEl) {
         listEl.innerHTML = list.length ? list.map(w => `
           <div class="item">
             <div>
-              <div class="t">${esc(w.name)}${w.type === 'strength' || w.sets ? ' 🏋️' : ''}</div>
+              <div class="t">${esc(w.name)}${w.type === 'strength' || w.sets ? ' 🏋️' : (w.type === 'mobility' ? ' 🧘' : (w.type === 'sports' ? ' ⚡' : ''))}</div>
               <div class="d">${esc(woDetailText(w))}</div>
             </div>
             <div style="text-align:right"><div class="k">${w.cal || 0} kcal</div>
             <button class="btn-x" style="margin-top:6px" onclick="removeWo('${w.id}')">삭제</button></div>
           </div>
-        `).join('') : '<div class="empty">오늘 운동이 없어요 · 프리셋으로 빠르게 남겨보세요</div>';
+        `).join('') : '<div class="empty">오늘 운동이 없어요 · 프리셋·루틴으로 빠르게 남겨보세요</div>';
       }
+
       const sf = document.getElementById('woStrengthFields');
+      const cf = document.getElementById('woCardioFields');
       if (sf) sf.style.display = woMode === 'strength' ? '' : 'none';
-      const c = document.getElementById('woModeCardio');
-      const s = document.getElementById('woModeStrength');
-      if (c) c.classList.toggle('on', woMode === 'cardio');
-      if (s) s.classList.toggle('on', woMode === 'strength');
+      if (cf) cf.style.display = (woMode === 'cardio' || woMode === 'sports') ? '' : 'none';
     }
 
     function renderWater() {
@@ -4525,7 +4800,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 2.8,
+        version: 2.9,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
