@@ -1,4 +1,4 @@
-const CACHE = 'fit-tracker-2-v32';
+const CACHE = 'fit-tracker-2-v33';
 const ASSETS = [
   './',
   './index.html',
@@ -28,6 +28,26 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const url = e.request.url || '';
+  // HTML/앱 셸은 네트워크 우선 (옛 캐시가 클릭 먹통·구버전 고정하는 문제 방지)
+  const isNav = e.request.mode === 'navigate'
+    || url.endsWith('/')
+    || url.endsWith('/index.html')
+    || /\/fit-tracker-2\/?(\?.*)?$/.test(url);
+  if (isNav) {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request).then((hit) => hit || caches.match('./index.html')))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then((hit) => {
       const net = fetch(e.request)
@@ -39,6 +59,7 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => hit);
+      // stale-while-revalidate: 캐시가 있어도 백그라운드 갱신
       return hit || net;
     })
   );

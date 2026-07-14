@@ -453,8 +453,9 @@
       position: fixed; inset: 0; background: rgba(26,26,46,.55);
       display: none; align-items: flex-end; justify-content: center;
       z-index: 70; padding: 12px;
+      pointer-events: none;
     }
-    .modal.open { display: flex; }
+    .modal.open { display: flex; pointer-events: auto; }
     .sheet {
       width: min(480px, 100%);
       background: #fff;
@@ -478,8 +479,9 @@
       background: linear-gradient(135deg, #667eea, #764ba2);
       display: none; align-items: center; justify-content: center;
       padding: 20px;
+      pointer-events: none;
     }
-    .setup.on { display: flex; }
+    .setup.on { display: flex; pointer-events: auto; }
     .setup-card {
       width: min(420px, 100%);
       background: #fff;
@@ -645,6 +647,7 @@
     }
     .alarm-banner {
       display: none;
+      pointer-events: none;
       position: fixed; left: 50%; top: 12px; transform: translateX(-50%);
       width: min(440px, calc(100% - 24px));
       z-index: 120;
@@ -655,7 +658,7 @@
       box-shadow: 0 16px 40px rgba(49,46,129,.45);
       animation: up .25s ease;
     }
-    .alarm-banner.on { display: block; }
+    .alarm-banner.on { display: block; pointer-events: auto; }
     .alarm-banner h4 { font-family: Poppins, sans-serif; font-size: 1rem; margin-bottom: 4px; }
     .alarm-banner p { font-size: .84rem; opacity: .92; line-height: 1.45; }
     .alarm-banner .ab-actions { display: flex; gap: 8px; margin-top: 10px; }
@@ -1353,6 +1356,7 @@
 
     .core-emergency-banner {
       display: none;
+      pointer-events: none;
       position: fixed; left: 50%; top: 12px; transform: translateX(-50%);
       width: min(440px, calc(100% - 24px));
       z-index: 125;
@@ -1363,7 +1367,7 @@
       box-shadow: 0 16px 40px rgba(159, 18, 57, .45);
       animation: corePulse 1.4s ease-in-out infinite;
     }
-    .core-emergency-banner.on { display: block; }
+    .core-emergency-banner.on { display: block; pointer-events: auto; }
     .core-emergency-banner h4 { font-size: .95rem; font-weight: 800; margin-bottom: 4px; }
     .core-emergency-banner p { font-size: .8rem; line-height: 1.45; opacity: .95; margin-bottom: 10px; }
     .core-emergency-banner .ab-actions { display: flex; gap: 8px; }
@@ -1631,7 +1635,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.16.1</div>
+        <div class="ver">4.16.2</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2264,17 +2268,17 @@
           의료 진단이 아닌 코칭용 추정 · 회복 시간·스트레칭 연동.
         </p>
         <div class="bf-mode-row bodyfat-turn">
-          <button type="button" class="on" id="bfMode3d" onclick="setBodyFatigueMode('3d')">🌐 3D</button>
-          <button type="button" id="bfModeSvg" onclick="setBodyFatigueMode('svg')">🗺 평면</button>
-          <button type="button" id="bfViewFront" onclick="setBodyFatigueView('front')">앞</button>
+          <button type="button" id="bfMode3d" onclick="setBodyFatigueMode('3d')">🌐 3D</button>
+          <button type="button" class="on" id="bfModeSvg" onclick="setBodyFatigueMode('svg')">🗺 평면</button>
+          <button type="button" class="on" id="bfViewFront" onclick="setBodyFatigueView('front')">앞</button>
           <button type="button" id="bfViewBack" onclick="setBodyFatigueView('back')">뒤</button>
         </div>
-        <div id="bfSvgStage" class="bodyfat-stage" style="display:none">
+        <div id="bfSvgStage" class="bodyfat-stage">
           <div class="bodyfat-3d" id="bodyFatigue3d">
             <svg class="bodyfat-svg" id="bodyFatigueSvg" viewBox="0 0 200 360" role="img" aria-label="인체 피로 히트맵"></svg>
           </div>
         </div>
-        <div id="bf3dStage" class="bf-3d-wrap">
+        <div id="bf3dStage" class="bf-3d-wrap" style="display:none">
           <div class="bf-3d-hint">드래그로 회전 · 핀치/휠 줌 · 부위 탭</div>
         </div>
         <div class="bodyfat-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
@@ -4512,7 +4516,9 @@
 
     // ===== 바디 피로 맵 (3D · 좌우 · 회복 · 스트레칭) =====
     let bodyFatigueView = 'front';
-    let bodyFatigueMode = '3d'; // 3d | svg
+    // 모바일에서는 기본 평면(SVG). 3D는 사용자가 선택하거나 데스크톱에서만 자동
+    let bodyFatigueMode = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+      ? 'svg' : '3d';
     let bodyFatigueSelected = null;
     let lastBodyFatigueModel = null;
     let bf3d = null; // { renderer, scene, camera, group, meshes, raf, wrap }
@@ -4728,8 +4734,7 @@
       renderBodyFatigueMap();
     }
 
-    function setBodyFatigueMode(mode) {
-      bodyFatigueMode = mode === 'svg' ? 'svg' : '3d';
+    function syncBodyFatigueModeUI() {
       const m3 = document.getElementById('bfMode3d');
       const ms = document.getElementById('bfModeSvg');
       if (m3) m3.classList.toggle('on', bodyFatigueMode === '3d');
@@ -4738,10 +4743,24 @@
       const d3St = document.getElementById('bf3dStage');
       if (svgSt) svgSt.style.display = bodyFatigueMode === 'svg' ? '' : 'none';
       if (d3St) d3St.style.display = bodyFatigueMode === '3d' ? '' : 'none';
+    }
+
+    function setBodyFatigueMode(mode) {
+      bodyFatigueMode = mode === 'svg' ? 'svg' : '3d';
+      syncBodyFatigueModeUI();
       if (bodyFatigueMode === '3d') {
-        try { ensureBodyFatigue3D(); updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(7)); } catch (e) {}
+        try {
+          if (isMoveGeneralVisible()) {
+            ensureBodyFatigue3D();
+            updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(7));
+          }
+        } catch (e) {
+          bodyFatigueMode = 'svg';
+          syncBodyFatigueModeUI();
+          try { disposeBodyFatigue3D(false); } catch (e2) {}
+        }
       } else {
-        disposeBodyFatigue3D(false);
+        try { disposeBodyFatigue3D(false); } catch (e) {}
       }
       renderBodyFatigueMap();
     }
@@ -4881,19 +4900,33 @@
         + ` — 약한 쪽 편측 운동·스트레칭을 권장합니다.</div>`;
     }
 
+    function isMoveGeneralVisible() {
+      const move = document.getElementById('v-move');
+      const gen = document.getElementById('move-panel-general');
+      if (!move || !move.classList.contains('on')) return false;
+      if (gen && gen.style.display === 'none') return false;
+      return true;
+    }
+
     function renderBodyFatigueMap() {
       const model = analyzeBodyFatigue(7);
       lastBodyFatigueModel = model;
-      if (bodyFatigueMode === 'svg') drawBodyFatigueSvg(model);
-      else {
+      try { syncBodyFatigueModeUI(); } catch (e) {}
+      // 3D/WebGL은 운동>일반 탭이 보일 때만 (백그라운드 초기화로 모바일 터치 먹김 방지)
+      if (bodyFatigueMode === 'svg' || !isMoveGeneralVisible()) {
+        if (!isMoveGeneralVisible() && bf3d) {
+          try { disposeBodyFatigue3D(false); } catch (e) {}
+        }
+        try { drawBodyFatigueSvg(model); } catch (e) {}
+      } else {
         try {
           ensureBodyFatigue3D();
           updateBodyFatigue3DColors(model);
         } catch (e) {
-          // fallback
           bodyFatigueMode = 'svg';
-          setBodyFatigueMode('svg');
-          drawBodyFatigueSvg(model);
+          try { syncBodyFatigueModeUI(); } catch (e1) {}
+          try { disposeBodyFatigue3D(false); } catch (e2) {}
+          try { drawBodyFatigueSvg(model); } catch (e3) {}
         }
       }
 
@@ -6802,11 +6835,29 @@ function startAlarmLoop() {
     }
 
     // ===== Navigation =====
+    function closeAllOverlays() {
+      try {
+        document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+      } catch (e) {}
+      // setup stays if first-run
+      try {
+        if (S && S.setup && S.profile) {
+          const setup = document.getElementById('setup');
+          if (setup) setup.classList.remove('on');
+        }
+      } catch (e) {}
+    }
+
     function show(name) {
+      closeAllOverlays();
+      // leave move tab → dispose WebGL so it can't steal touches
+      if (name !== 'move') {
+        try { disposeBodyFatigue3D(false); } catch (e) {}
+      }
       document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
       const el = document.getElementById('v-' + name);
       if (el) el.classList.add('on');
-      const navMap = { habit: 'more' };
+      const navMap = { habit: 'more', box: 'move' };
       const navName = navMap[name] || name;
       document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === navName));
       if (name === 'rest') { loadRestForm(); renderRest(); }
@@ -6821,8 +6872,10 @@ function startAlarmLoop() {
       if (name === 'box') {
         // legacy deep-link → 운동 안 복싱 탭
         try {
-          show('move');
+          document.getElementById('v-move')?.classList.add('on');
+          document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === 'move'));
           setMoveSubTab('box');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
           return;
         } catch (e) {}
       }
@@ -11464,39 +11517,55 @@ function roundRect(ctx, x, y, w, h, r) {
     }
 
     function render() {
-      document.getElementById('dateLine').textContent = dayLabel() + ' · 회복이 성과다';
-      renderQuote(false);
-      renderHomeGoals();
-      renderLog();
-      renderMove();
-      renderWater();
-      renderHabits();
-      renderMyFoods();
-      try { renderMealTemplates(); } catch (e) {}
-      renderWeekPlanUI();
-      renderWeightAvgUI();
-      try { renderCoreLiftUI(); } catch (e) {}
-      try { tickCoreAlerts(false); } catch (e) {}
-      try { renderRecoveryGateUI(); } catch (e) {}
-      try { renderStreakUI(); } catch (e) {}
-      try { renderCoreRecommendUI(); } catch (e) {}
-      try { renderAdaptiveUI(); } catch (e) {}
-      try { renderProteinSpreadUI(); } catch (e) {}
-      try { renderMeasureUI(); } catch (e) {}
-      try { renderPhaseUI(); } catch (e) {}
-      // 특수 주 만료 자동 종료
       try {
-        if (S.phasePlan && S.phasePlan.end && today() > S.phasePlan.end) {
-          const pp = S.phasePlan;
-          if (pp.type === 'diet_break' && pp.prevGoals) S.goals = { ...S.goals, ...pp.prevGoals };
-          S.phasePlan = null;
-          save();
+        document.getElementById('dateLine').textContent = dayLabel() + ' · 회복이 성과다';
+        renderQuote(false);
+        renderHomeGoals();
+        // 무거운 탭 UI는 해당 뷰가 켜져 있을 때만 (모바일 터치/성능)
+        const on = (id) => document.getElementById(id)?.classList.contains('on');
+        if (on('v-log') || on('v-home')) {
+          try { renderLog(); } catch (e) {}
         }
-      } catch (e) {}
-      renderMicroUI();
-      refreshCoach(false);
-      if (document.getElementById('restScoreN') && document.getElementById('v-rest').classList.contains('on')) {
-        renderRest();
+        if (on('v-move')) {
+          try {
+            if (typeof moveSubTab !== 'undefined' && moveSubTab === 'box') renderBoxing();
+            else renderMove();
+          } catch (e) {}
+        } else {
+          try { disposeBodyFatigue3D(false); } catch (e) {}
+        }
+        try { renderWater(); } catch (e) {}
+        try { renderHabits(); } catch (e) {}
+        try { renderMyFoods(); } catch (e) {}
+        try { renderMealTemplates(); } catch (e) {}
+        try { renderWeekPlanUI(); } catch (e) {}
+        try { renderWeightAvgUI(); } catch (e) {}
+        try { renderCoreLiftUI(); } catch (e) {}
+        try { tickCoreAlerts(false); } catch (e) {}
+        try { renderRecoveryGateUI(); } catch (e) {}
+        try { renderStreakUI(); } catch (e) {}
+        try { renderCoreRecommendUI(); } catch (e) {}
+        try { renderAdaptiveUI(); } catch (e) {}
+        try { renderProteinSpreadUI(); } catch (e) {}
+        try { renderMeasureUI(); } catch (e) {}
+        try { renderPhaseUI(); } catch (e) {}
+        try {
+          if (S.phasePlan && S.phasePlan.end && today() > S.phasePlan.end) {
+            const pp = S.phasePlan;
+            if (pp.type === 'diet_break' && pp.prevGoals) S.goals = { ...S.goals, ...pp.prevGoals };
+            S.phasePlan = null;
+            save();
+          }
+        } catch (e) {}
+        try { renderMicroUI(); } catch (e) {}
+        if (on('v-home')) {
+          try { refreshCoach(false); } catch (e) {}
+        }
+        if (on('v-rest')) {
+          try { renderRest(); } catch (e) {}
+        }
+      } catch (e) {
+        console.error('render failed', e);
       }
     }
 
@@ -11506,7 +11575,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.16.1,
+        version: 4.16.2,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
