@@ -634,17 +634,26 @@
     .debt-card .dv { font-family: Poppins, sans-serif; font-size: 1.35rem; font-weight: 800; }
     .debt-card .ds { font-size: .7rem; opacity: .8; margin-top: 2px; }
     .portion-row {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-      margin-bottom: 12px;
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+      margin-bottom: 8px;
     }
     .portion-row button {
-      padding: 10px 4px; border-radius: 12px; font-weight: 800; font-size: .82rem;
+      padding: 9px 2px; border-radius: 12px; font-weight: 800; font-size: .78rem;
       background: #f3f0ff; border: 2px solid var(--line); color: var(--muted);
     }
     .portion-row button.on {
       background: linear-gradient(135deg, var(--p1), var(--p2));
       border-color: transparent; color: #fff;
     }
+    .portion-custom {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px;
+      margin-bottom: 10px; align-items: center;
+    }
+    .portion-custom input {
+      width: 100%; padding: 10px 12px; border-radius: 12px;
+      border: 2px solid var(--line); background: #faf9ff;
+    }
+    .portion-custom .btn { width: auto; padding: 10px 14px; white-space: nowrap; }
     .alarm-banner {
       display: none;
       pointer-events: none;
@@ -1635,7 +1644,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.17</div>
+        <div class="ver">4.18</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2796,14 +2805,24 @@
           <div class="food-results" id="foodResults"></div>
         </div>
         <div class="chips" id="foodChips"></div>
-        <div class="field"><label>인분 배수</label>
+        <div class="field"><label>인분 배수 (0.25 단위 상세)</label>
           <div class="portion-row" id="portionRow">
+            <button type="button" data-p="0.25" onclick="setPortion(0.25)">0.25×</button>
             <button type="button" data-p="0.5" onclick="setPortion(0.5)">0.5×</button>
+            <button type="button" data-p="0.75" onclick="setPortion(0.75)">0.75×</button>
             <button type="button" data-p="1" class="on" onclick="setPortion(1)">1×</button>
+            <button type="button" data-p="1.25" onclick="setPortion(1.25)">1.25×</button>
             <button type="button" data-p="1.5" onclick="setPortion(1.5)">1.5×</button>
+            <button type="button" data-p="1.75" onclick="setPortion(1.75)">1.75×</button>
             <button type="button" data-p="2" onclick="setPortion(2)">2×</button>
+            <button type="button" data-p="2.5" onclick="setPortion(2.5)">2.5×</button>
+            <button type="button" data-p="3" onclick="setPortion(3)">3×</button>
           </div>
-          <p class="muted" id="portionHint">DB 선택 시 기준 1인분 × 배수로 자동 계산</p>
+          <div class="portion-custom">
+            <input id="portionCustom" type="number" min="0.1" max="10" step="0.05" inputmode="decimal" placeholder="직접 입력 예: 1.3" />
+            <button type="button" class="btn btn-g" onclick="applyCustomPortion()">적용</button>
+          </div>
+          <p class="muted" id="portionHint">DB 선택 시 기준 1인분 × 배수로 자동 계산 (1.25·1.75 등 세밀 조절)</p>
         </div>
         <div class="field"><label>음식 이름</label><input id="fName" placeholder="닭가슴살 100g" /></div>
         <div class="grid2">
@@ -2865,10 +2884,11 @@
     function foodLabel(f, portion) {
       if (window.FT_foodLabel) return window.FT_foodLabel(f, portion);
       if (!f) return '';
-      const p = portion != null && portion !== 1 ? portion : 1;
+      const p = portion != null && isFinite(+portion) ? +portion : 1;
       const g = f.g != null ? Math.round(f.g * p) : null;
       const unit = f.unit ? ' ' + f.unit : '';
-      return f.n + unit + (g != null ? ` (${g}g)` : '') + (p !== 1 ? ` ×${p}` : '');
+      const pTxt = Math.abs(p - 1) > 0.001 ? ` ×${Math.round(p * 100) / 100}` : '';
+      return f.n + unit + (g != null ? ` (${g}g)` : '') + pTxt;
     }
     const WO_LIB = window.FT_WORKOUTS || { cardio: [], strength: [], sports: [], mobility: [] };
     const WO_ROUTINES = window.FT_WO_ROUTINES || [];
@@ -3274,9 +3294,7 @@
         n: f.name, cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat,
         micro: f.micro || attachMicro(f)
       };
-      portion = 1;
-      document.querySelectorAll('#portionRow button').forEach(b => b.classList.toggle('on', +b.dataset.p === 1));
-      applyPortion();
+      setPortion(1);
       toast(f.name + ' 선택');
     }
 
@@ -6986,16 +7004,48 @@ function startAlarmLoop() {
       toast(foodLabel(f, portion) + ' 선택');
     }
 
-    function setPortion(p) {
-      portion = p;
+    const PORTION_PRESETS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+
+    function fmtPortion(p) {
+      const n = +p;
+      if (!isFinite(n)) return '1';
+      return (Math.round(n * 100) / 100).toString();
+    }
+
+    function highlightPortion(p) {
+      const val = +p;
       document.querySelectorAll('#portionRow button').forEach(b => {
-        b.classList.toggle('on', +b.dataset.p === p);
+        b.classList.toggle('on', Math.abs(+b.dataset.p - val) < 0.001);
       });
+      const custom = document.getElementById('portionCustom');
+      if (!custom) return;
+      if (!PORTION_PRESETS.some(x => Math.abs(x - val) < 0.001)) {
+        custom.value = fmtPortion(val);
+      } else if (document.activeElement !== custom) {
+        custom.value = '';
+      }
+    }
+
+    function setPortion(p) {
+      const val = +p;
+      if (!isFinite(val) || val <= 0 || val > 10) {
+        toast('배수는 0.1 ~ 10 사이로 입력하세요');
+        return;
+      }
+      portion = Math.round(val * 100) / 100;
+      highlightPortion(portion);
       if (foodBase) applyPortion();
       else {
         const hint = document.getElementById('portionHint');
-        if (hint) hint.textContent = `배수 ${p}× — DB에서 음식을 고르면 자동 계산됩니다`;
+        if (hint) hint.textContent = `배수 ${fmtPortion(portion)}× — DB에서 음식을 고르면 자동 계산됩니다`;
       }
+    }
+
+    function applyCustomPortion() {
+      const raw = document.getElementById('portionCustom')?.value;
+      if (raw === '' || raw == null) return toast('배수를 입력하세요 (예: 1.3)');
+      setPortion(+raw);
+      if (foodBase) toast(`배수 ${fmtPortion(portion)}× 적용`);
     }
 
     function applyPortion() {
@@ -7017,7 +7067,7 @@ function startAlarmLoop() {
       const hint = document.getElementById('portionHint');
       if (hint) {
         const gPart = foodBase.g != null ? ` · ${Math.round(foodBase.g * p)}g` : '';
-        hint.textContent = `기준 1인분 ${foodBase.g != null ? foodBase.g + 'g · ' : ''}${foodBase.cal}kcal → ${p}× = ${Math.round(foodBase.cal * p)}kcal${gPart} · P${Math.round(foodBase.pro*p*10)/10} C${Math.round(foodBase.carb*p*10)/10} F${Math.round(foodBase.fat*p*10)/10}`;
+        hint.textContent = `기준 1인분 ${foodBase.g != null ? foodBase.g + 'g · ' : ''}${foodBase.cal}kcal → ${fmtPortion(p)}× = ${Math.round(foodBase.cal * p)}kcal${gPart} · P${Math.round(foodBase.pro*p*10)/10} C${Math.round(foodBase.carb*p*10)/10} F${Math.round(foodBase.fat*p*10)/10}`;
       }
     }
 
@@ -10009,11 +10059,9 @@ JSON만. 마크다운 금지.
           micro = attachMicro({ name, cal });
         }
         foodBase = { n: name, cal, pro, carb, fat, micro };
-        portion = 1;
-        document.querySelectorAll('#portionRow button').forEach(b => b.classList.toggle('on', +b.dataset.p === 1));
-        applyPortion();
+        setPortion(1);
         if (hint) {
-          hint.textContent = `추정 완료(매크로+미량 대략) · 신뢰도 ${j.confidence != null ? Math.round(j.confidence * 100) + '%' : '?'} ${j.note ? '· ' + j.note : ''} · 확인 후 추가`;
+          hint.textContent = `추정 완료(매크로+미량 대략) · 신뢰도 ${j.confidence != null ? Math.round(j.confidence * 100) + '%' : '?'} ${j.note ? '· ' + j.note : ''} · 확인 후 추가 · 인분 배수로 미세 조절 가능`;
         }
         toast('음식 분석 완료 · 확인 후 추가!');
       } catch (e) {
@@ -11575,7 +11623,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.17,
+        version: 4.18,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey

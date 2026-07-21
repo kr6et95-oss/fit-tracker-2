@@ -1102,15 +1102,15 @@ window.FT_FOODS = [
 
 window.FT_FOOD_CATS = ['전체', '주식', '단백질', '국찌개', '채소', '과일', '간식', '음료', '유제품', '편의점', '배달', '한식', '카페', '베이커리', '분식', '반찬', '안주'];
 
-/** 표시용 라벨: 이름 + 단위 + (그램) */
+/** 표시용 라벨: 이름 + 단위 + (그램) · 배수 1.25/1.75 등 지원 */
 window.FT_foodLabel = function (f, portion) {
   if (!f) return '';
-  const p = (portion != null && portion !== 1) ? portion : 1;
+  const p = (portion != null && isFinite(+portion)) ? +portion : 1;
   const g = f.g != null ? Math.round(f.g * p) : null;
   const unit = f.unit ? String(f.unit) : '';
   const base = f.n + (unit ? ' ' + unit : '');
   const gTxt = g != null ? ` (${g}g)` : '';
-  const pTxt = p !== 1 ? ` ×${p}` : '';
+  const pTxt = Math.abs(p - 1) > 0.001 ? ` ×${Math.round(p * 100) / 100}` : '';
   return base + gTxt + pTxt;
 };
 
