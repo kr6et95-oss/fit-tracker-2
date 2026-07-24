@@ -21,30 +21,34 @@
   <script src="micros.js"></script>
   <style>
     :root {
-      --p1: #667eea;
-      --p2: #764ba2;
-      --accent: #ff6b6b;
-      --ok: #4ecdc4;
-      --warn: #ffe66d;
-      --bg: #f3f0ff;
+      --p1: #5b6cf0;
+      --p2: #6d4bb8;
+      --accent: #ef5b5b;
+      --ok: #2db8ae;
+      --warn: #e6b84d;
+      --bg: #f4f5fb;
       --card: #ffffff;
-      --ink: #1a1a2e;
-      --muted: #6b7280;
-      --line: #e8e4f5;
+      --ink: #151728;
+      --muted: #6b7285;
+      --line: #e6e8f2;
+      --line-soft: #eef0f7;
+      --surface: #f7f8fc;
       --nav: 68px;
       --safe: env(safe-area-inset-bottom, 0px);
-      --r: 20px;
-      --shadow: 0 12px 36px rgba(102, 126, 234, .18);
+      --r: 18px;
+      --r-sm: 14px;
+      --shadow: 0 1px 2px rgba(21,23,40,.04), 0 8px 24px rgba(21,23,40,.05);
+      --shadow-soft: 0 1px 2px rgba(21,23,40,.03);
+      --space: 10px;
+      --space-lg: 16px;
+      --accent-bar: #5b6cf0;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { min-height: 100%; }
     body {
       font-family: "Noto Sans KR", -apple-system, sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(900px 420px at 0% -10%, rgba(118,75,162,.25), transparent 55%),
-        radial-gradient(700px 380px at 100% 0%, rgba(102,126,234,.28), transparent 50%),
-        linear-gradient(165deg, #eef0ff 0%, #f8f7fc 45%, #f3f0ff 100%);
+      background: #f0f1f7;
     }
     button, input, select, textarea { font: inherit; color: inherit; }
     button { border: 0; background: none; cursor: pointer; }
@@ -52,168 +56,247 @@
       max-width: 480px;
       margin: 0 auto;
       min-height: 100dvh;
-      padding: 14px 14px calc(var(--nav) + var(--safe) + 18px);
+      padding: 12px 12px calc(var(--nav) + var(--safe) + 16px);
     }
+
+    /* —— layout sections (cohesion) —— */
+    .ui-section {
+      margin-bottom: 18px;
+    }
+    .ui-section:last-child { margin-bottom: 4px; }
+    .ui-section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .72rem; font-weight: 800; color: var(--muted);
+      letter-spacing: .04em; text-transform: uppercase;
+      margin: 2px 4px 8px;
+    }
+    .ui-section-label::after {
+      content: ""; flex: 1; height: 1px; background: var(--line);
+    }
+    .ui-stack { display: flex; flex-direction: column; gap: 8px; }
+    .ui-stack > .card,
+    .ui-stack > .gate-card,
+    .ui-stack > .rest-hero,
+    .ui-stack > .goal-box,
+    .ui-stack > .core-nudge,
+    .ui-stack > .adaptive-card,
+    .ui-stack > .streak-row,
+    .ui-stack > .grid2 { margin-bottom: 0; }
+    .ui-fold {
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      background: var(--card);
+      box-shadow: var(--shadow-soft);
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+    .ui-fold > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 800;
+      font-size: .9rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      user-select: none;
+    }
+    .ui-fold > summary::-webkit-details-marker { display: none; }
+    .ui-fold > summary::after {
+      content: "▾";
+      color: var(--muted);
+      font-size: .85rem;
+      transition: transform .2s;
+    }
+    .ui-fold[open] > summary {
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .ui-fold[open] > summary::after { transform: rotate(180deg); }
+    .ui-fold-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .ui-fold-body > .card,
+    .ui-fold-body > .adaptive-card { margin-bottom: 0; box-shadow: none; border-color: var(--line-soft); background: var(--surface); }
+    .ui-fold .muted-sum {
+      font-size: .72rem; font-weight: 600; color: var(--muted);
+    }
+    .card-divider {
+      height: 1px; background: var(--line-soft); margin: 12px 0;
+    }
+    .action-row {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin-top: 10px;
+    }
+    .action-row .btn { width: auto; padding: 9px 12px; font-size: .78rem; }
 
     /* header */
     .hero-head {
       background: linear-gradient(135deg, var(--p1), var(--p2));
-      border-radius: 24px;
-      padding: 18px 18px 16px;
+      border-radius: 20px;
+      padding: 16px 16px 14px;
       color: #fff;
-      box-shadow: var(--shadow);
-      margin-bottom: 14px;
+      box-shadow: 0 10px 28px rgba(91, 108, 240, .22);
+      margin-bottom: 12px;
       position: relative;
       overflow: hidden;
     }
     .hero-head::after {
       content: "";
-      position: absolute; right: -20px; top: -30px;
-      width: 140px; height: 140px; border-radius: 50%;
+      position: absolute; right: -24px; top: -36px;
+      width: 120px; height: 120px; border-radius: 50%;
       background: rgba(255,255,255,.1);
     }
     .brand-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; position: relative; z-index: 1; }
     .brand-row h1 {
       font-family: Poppins, sans-serif;
-      font-size: 1.45rem; font-weight: 800; letter-spacing: -.02em;
+      font-size: 1.28rem; font-weight: 800; letter-spacing: -.02em;
     }
-    .brand-row .sub { opacity: .92; font-size: .82rem; margin-top: 4px; }
+    .brand-row .sub { opacity: .9; font-size: .78rem; margin-top: 3px; }
     .ver {
-      background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.28);
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.24);
       border-radius: 999px;
-      padding: 5px 10px;
+      padding: 4px 10px;
       font-family: Poppins, sans-serif;
-      font-size: .7rem;
+      font-size: .68rem;
       font-weight: 700;
       white-space: nowrap;
     }
-    .date-line { margin-top: 12px; font-size: .8rem; opacity: .9; position: relative; z-index: 1; }
+    .date-line { margin-top: 10px; font-size: .78rem; opacity: .88; position: relative; z-index: 1; }
     .quote-box {
       position: relative; z-index: 1;
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 16px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
       background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.16);
       cursor: pointer;
       transition: background .15s;
     }
     .quote-box:active { background: rgba(255,255,255,.2); }
     .quote-box .q-idiom {
       font-family: Poppins, "Noto Sans KR", sans-serif;
-      font-size: 1.05rem; font-weight: 800; letter-spacing: .04em;
-      margin-bottom: 4px;
+      font-size: .98rem; font-weight: 800; letter-spacing: .04em;
+      margin-bottom: 2px;
     }
     .quote-box .q-mean {
-      font-size: .75rem; opacity: .88; margin-bottom: 8px;
+      font-size: .72rem; opacity: .85; margin-bottom: 6px;
     }
     .quote-box .q-line {
-      font-size: .88rem; font-weight: 700; line-height: 1.45;
+      font-size: .84rem; font-weight: 700; line-height: 1.45;
     }
     .quote-box .q-hint {
-      margin-top: 8px; font-size: .68rem; opacity: .7;
+      margin-top: 6px; font-size: .65rem; opacity: .65;
     }
 
     .view { display: none; animation: up .2s ease; }
     .view.on { display: block; }
-    @keyframes up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
     .card {
       background: var(--card);
       border-radius: var(--r);
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 8px 28px rgba(26,26,46,.06);
-      border: 1px solid rgba(255,255,255,.7);
+      padding: 14px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--line);
     }
     .card-h {
       display: flex; align-items: center; justify-content: space-between;
-      gap: 8px; margin-bottom: 12px;
+      gap: 8px; margin-bottom: 10px;
     }
     .card-h h2 {
-      font-size: 1rem; font-weight: 800;
+      font-size: .92rem; font-weight: 800;
       display: flex; align-items: center; gap: 6px;
+      letter-spacing: -.01em;
     }
-    .muted { color: var(--muted); font-size: .8rem; }
+    .muted { color: var(--muted); font-size: .78rem; }
 
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 
+    /* Quiet metric tiles — accent bar instead of rainbow fills */
     .stat {
-      border-radius: 16px;
-      padding: 14px 12px;
-      color: #fff;
-      min-height: 86px;
+      border-radius: var(--r-sm);
+      padding: 12px 12px 11px;
+      color: var(--ink);
+      min-height: 78px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent-bar);
+      box-shadow: none;
     }
-    .stat .l { font-size: .75rem; opacity: .92; margin-bottom: 6px; }
-    .stat .v { font-family: Poppins, sans-serif; font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em; }
-    .stat .s { font-size: .72rem; opacity: .88; margin-top: 3px; }
-    .s1 { background: linear-gradient(135deg, #667eea, #764ba2); }
-    .s2 { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .s3 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-    .s4 { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #0f3d2e; }
-    .s5 { background: linear-gradient(135deg, #fa709a, #fee140); color: #3b1d2a; }
-    .s6 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); color: #2a1a3a; }
+    .stat .l { font-size: .72rem; color: var(--muted); font-weight: 700; margin-bottom: 5px; opacity: 1; }
+    .stat .v { font-family: Poppins, sans-serif; font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
+    .stat .s { font-size: .68rem; color: var(--muted); margin-top: 3px; opacity: 1; }
+    .s1, .s2, .s3, .s4, .s5, .s6 { background: var(--surface); color: var(--ink); }
+    .s1 { border-left-color: #5b6cf0; }
+    .s2 { border-left-color: #e056a0; }
+    .s3 { border-left-color: #2f9ed8; }
+    .s4 { border-left-color: #2db8ae; }
+    .s5 { border-left-color: #e6a23c; }
+    .s6 { border-left-color: #8b6fd4; }
 
     .goal-box {
-      background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
-      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
       padding: 14px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-soft);
     }
     .goal-box .g { text-align: center; }
-    .goal-box .gl { font-size: .75rem; color: #444; margin-bottom: 4px; }
-    .goal-box .gv { font-family: Poppins, sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--ink); }
+    .goal-box .gl { font-size: .72rem; color: var(--muted); margin-bottom: 4px; font-weight: 700; }
+    .goal-box .gv { font-family: Poppins, sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--ink); }
 
-    .progress-item { margin-bottom: 14px; }
+    .progress-item { margin-bottom: 12px; }
     .progress-item:last-child { margin-bottom: 0; }
     .ph {
-      display: flex; justify-content: space-between; margin-bottom: 6px;
-      font-size: .82rem; font-weight: 700;
+      display: flex; justify-content: space-between; margin-bottom: 5px;
+      font-size: .8rem; font-weight: 700;
     }
     .pbar {
-      height: 14px; background: #eee8ff; border-radius: 999px; overflow: hidden;
+      height: 10px; background: var(--line-soft); border-radius: 999px; overflow: hidden;
     }
     .pbar > i {
       display: block; height: 100%; width: 0%; border-radius: inherit;
       transition: width .35s ease;
-      background: linear-gradient(90deg, #667eea, #764ba2);
+      background: linear-gradient(90deg, var(--p1), var(--p2));
     }
-    .pbar.carb > i { background: linear-gradient(90deg, #f093fb, #f5576c); }
-    .pbar.fat > i { background: linear-gradient(90deg, #4facfe, #00f2fe); }
-    .pbar.cal > i { background: linear-gradient(90deg, #fa709a, #fee140); }
-    .pbar.over > i { background: linear-gradient(90deg, #ff6b6b, #ee5a52); }
-    .pr { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+    .pbar.carb > i { background: linear-gradient(90deg, #e056a0, #c84b8a); }
+    .pbar.fat > i { background: linear-gradient(90deg, #2f9ed8, #3bb3c9); }
+    .pbar.cal > i { background: linear-gradient(90deg, #e6a23c, #d98a2c); }
+    .pbar.over > i { background: linear-gradient(90deg, #ef5b5b, #dc4545); }
+    .pr { font-size: .72rem; color: var(--muted); margin-top: 4px; }
     .pr.ok { color: #0d9488; font-weight: 700; }
     .pr.bad { color: #ef4444; font-weight: 700; }
 
-    .meal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .meal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .meal-card {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff; border-radius: 16px; padding: 16px 12px;
-      text-align: center; box-shadow: 0 8px 18px rgba(102,126,234,.25);
-      transition: transform .15s;
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: none;
+      transition: transform .15s, border-color .15s, background .15s;
     }
-    .meal-card:active { transform: scale(.97); }
-    .meal-card .ic { font-size: 1.7rem; }
-    .meal-card .nm { font-weight: 800; margin-top: 4px; }
-    .meal-card .ct { font-size: .78rem; opacity: .9; margin-top: 2px; }
+    .meal-card:active { transform: scale(.97); background: #eef0ff; border-color: #c7c9f0; }
+    .meal-card .ic { font-size: 1.4rem; }
+    .meal-card .nm { font-weight: 800; margin-top: 4px; font-size: .9rem; }
+    .meal-card .ct { font-size: .72rem; color: var(--muted); margin-top: 2px; opacity: 1; }
 
-    .field { margin-bottom: 12px; }
+    .field { margin-bottom: 10px; }
     .field label {
-      display: block; font-size: .78rem; font-weight: 700;
-      color: var(--muted); margin-bottom: 6px;
+      display: block; font-size: .74rem; font-weight: 700;
+      color: var(--muted); margin-bottom: 5px;
     }
     .field input, .field select, .field textarea {
       width: 100%;
-      border: 2px solid var(--line);
+      border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 12px 14px;
-      background: #faf9ff;
+      padding: 11px 12px;
+      background: var(--surface);
       outline: none;
-      transition: border .15s;
+      transition: border .15s, background .15s;
     }
     .field input:focus, .field select:focus, .field textarea:focus {
       border-color: var(--p1);
@@ -224,41 +307,41 @@
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       width: 100%;
-      border-radius: 14px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 13px;
       font-weight: 800;
-      transition: transform .12s, box-shadow .12s;
+      transition: transform .12s, background .12s, border-color .12s;
     }
     .btn:active { transform: scale(.98); }
     .btn-p {
-      background: linear-gradient(135deg, var(--accent), #ee5a52);
+      background: var(--accent);
       color: #fff;
-      box-shadow: 0 8px 18px rgba(255,107,107,.35);
+      box-shadow: none;
     }
     .btn-s {
-      background: linear-gradient(135deg, var(--ok), #2bb5ad);
+      background: var(--ok);
       color: #fff;
-      box-shadow: 0 8px 18px rgba(78,205,196,.3);
+      box-shadow: none;
     }
     .btn-g {
-      background: #f3f0ff;
-      color: var(--p2);
+      background: var(--surface);
+      color: var(--ink);
       border: 1px solid var(--line);
     }
     .btn-sm {
-      width: auto; padding: 8px 12px; font-size: .78rem; border-radius: 999px;
+      width: auto; padding: 7px 11px; font-size: .75rem; border-radius: 999px;
     }
     .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .btn-x {
-      background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3;
+      background: #fff5f5; color: #e11d48; border: 1px solid #fecdd3;
       padding: 6px 10px; border-radius: 10px; font-size: .72rem; font-weight: 700; width: auto;
     }
 
     .list { display: flex; flex-direction: column; gap: 8px; }
     .item {
       display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      background: #faf9ff; border: 1px solid var(--line);
-      border-radius: 14px; padding: 12px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--r-sm); padding: 12px;
     }
     .item .t { font-weight: 800; font-size: .92rem; }
     .item .d { font-size: .75rem; color: var(--muted); margin-top: 2px; }
@@ -267,11 +350,11 @@
 
     .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .chip {
-      background: #f3f0ff; border: 1px solid var(--line);
+      background: var(--surface); border: 1px solid var(--line);
       border-radius: 999px; padding: 7px 11px;
-      font-size: .75rem; font-weight: 700; color: var(--muted);
+      font-size: .74rem; font-weight: 700; color: var(--muted);
     }
-    .chip:active { background: #e8e4ff; color: var(--p2); }
+    .chip:active, .chip.on { background: #eef0ff; color: var(--p1); border-color: #c7c9f0; }
 
     .water-box { text-align: center; padding: 6px 0; }
     .water-n { font-family: Poppins, sans-serif; font-size: 2.4rem; font-weight: 800; color: var(--p1); }
@@ -315,27 +398,28 @@
 
     /* Recovery gate · streaks · PR · meal templates */
     .gate-card {
-      border-radius: 16px; padding: 14px 14px 12px; margin-bottom: 12px;
-      border: 1px solid var(--line); background: #fff;
-      box-shadow: 0 6px 20px rgba(26,26,46,.05);
+      border-radius: var(--r); padding: 14px; margin-bottom: 10px;
+      border: 1px solid var(--line); background: var(--card);
+      box-shadow: var(--shadow-soft);
+      border-left: 3px solid var(--muted);
     }
-    .gate-card.red { background: linear-gradient(135deg,#fff1f2,#ffe4e6); border-color:#fecdd3; }
-    .gate-card.amber { background: linear-gradient(135deg,#fffbeb,#fef3c7); border-color:#fde68a; }
-    .gate-card.green { background: linear-gradient(135deg,#ecfdf5,#d1fae5); border-color:#a7f3d0; }
-    .gate-card.gold { background: linear-gradient(135deg,#eff6ff,#dbeafe); border-color:#93c5fd; }
-    .gate-card.unknown { background: #f8fafc; }
-    .gate-card .gt { font-size: .72rem; font-weight: 800; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
-    .gate-card .glabel { font-size: 1.02rem; font-weight: 800; margin: 4px 0 2px; }
-    .gate-card .gdetail { font-size: .8rem; color: #444; line-height: 1.45; }
-    .gate-card .gmax { margin-top: 8px; font-size: .78rem; font-weight: 700; }
-    .streak-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .gate-card.red { background: #fff8f8; border-color: #f0d0d4; border-left-color: #e11d48; }
+    .gate-card.amber { background: #fffbf5; border-color: #f0e0b8; border-left-color: #d97706; }
+    .gate-card.green { background: #f6fdf9; border-color: #c6e8d6; border-left-color: #059669; }
+    .gate-card.gold { background: #f7f9ff; border-color: #cdd8f0; border-left-color: #3b82f6; }
+    .gate-card.unknown { background: var(--card); border-left-color: #94a3b8; }
+    .gate-card .gt { font-size: .68rem; font-weight: 800; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+    .gate-card .glabel { font-size: .98rem; font-weight: 800; margin: 4px 0 2px; }
+    .gate-card .gdetail { font-size: .78rem; color: var(--muted); line-height: 1.45; }
+    .gate-card .gmax { margin-top: 8px; font-size: .76rem; font-weight: 700; color: var(--ink); }
+    .streak-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     .streak-pill {
-      background: #fff; border: 1px solid var(--line); border-radius: 14px;
-      padding: 10px 8px; text-align: center;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm);
+      padding: 10px 6px; text-align: center; box-shadow: var(--shadow-soft);
     }
-    .streak-pill .sn { font-family: Poppins, sans-serif; font-size: 1.25rem; font-weight: 800; color: var(--p1); }
-    .streak-pill .sl { font-size: .68rem; color: var(--muted); margin-top: 2px; font-weight: 700; }
-    .streak-pill .ss { font-size: .62rem; color: var(--muted); margin-top: 2px; }
+    .streak-pill .sn { font-family: Poppins, sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--p1); }
+    .streak-pill .sl { font-size: .66rem; color: var(--muted); margin-top: 2px; font-weight: 700; }
+    .streak-pill .ss { font-size: .6rem; color: var(--muted); margin-top: 2px; }
     .pr-item {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
       padding: 10px 0; border-bottom: 1px solid var(--line);
@@ -360,28 +444,32 @@
     .tpl-item .td { font-size: .72rem; color: var(--muted); }
 
     .core-nudge {
-      border-radius: 16px; padding: 14px; margin-bottom: 12px;
-      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #eff6ff 100%);
-      border: 1px solid #a7f3d0;
-      box-shadow: 0 6px 20px rgba(16, 185, 129, .1);
+      border-radius: var(--r); padding: 14px; margin-bottom: 10px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 3px solid #059669;
+      box-shadow: var(--shadow-soft);
     }
     .core-nudge.due {
-      background: linear-gradient(135deg, #fff7ed, #fef3c7);
-      border-color: #fcd34d;
+      background: #fffbf5;
+      border-color: #f0e0b8;
+      border-left-color: #d97706;
     }
     .core-nudge.over {
-      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-      border-color: #fecdd3;
+      background: #fff8f8;
+      border-color: #f0d0d4;
+      border-left-color: #e11d48;
     }
     .core-nudge.done {
-      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
-      border-color: #86efac;
+      background: #f6fdf9;
+      border-color: #c6e8d6;
+      border-left-color: #059669;
     }
-    .core-nudge .cn-k { font-size: .7rem; font-weight: 800; color: #059669; letter-spacing: .04em; text-transform: uppercase; }
+    .core-nudge .cn-k { font-size: .68rem; font-weight: 800; color: #059669; letter-spacing: .04em; text-transform: uppercase; }
     .core-nudge.due .cn-k, .core-nudge.over .cn-k { color: #b45309; }
     .core-nudge.over .cn-k { color: #be123c; }
-    .core-nudge .cn-t { font-size: 1.02rem; font-weight: 800; margin: 4px 0 6px; }
-    .core-nudge .cn-d { font-size: .8rem; color: #374151; line-height: 1.45; margin-bottom: 10px; }
+    .core-nudge .cn-t { font-size: .95rem; font-weight: 800; margin: 4px 0 6px; }
+    .core-nudge .cn-d { font-size: .78rem; color: var(--muted); line-height: 1.45; margin-bottom: 10px; }
     .core-nudge .cn-actions { display: flex; flex-wrap: wrap; gap: 8px; }
     .core-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
     .core-chips .chip { font-size: .75rem; }
@@ -393,26 +481,30 @@
     }
 
     .tabs {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px; margin-bottom: 12px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+      gap: 4px; margin-bottom: 12px;
+      padding: 4px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
     }
     .tab {
-      padding: 10px; border-radius: 12px; font-weight: 800; font-size: .8rem;
-      background: #f3f0ff; color: var(--muted); border: 1px solid var(--line);
+      padding: 9px 8px; border-radius: 10px; font-weight: 800; font-size: .78rem;
+      background: transparent; color: var(--muted); border: 0;
     }
-    .tab.on { background: linear-gradient(135deg, var(--p1), var(--p2)); color: #fff; border-color: transparent; }
+    .tab.on { background: var(--card); color: var(--ink); border: 0; box-shadow: var(--shadow-soft); }
 
     .nav {
       position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
       width: min(480px, 100%);
       height: calc(var(--nav) + var(--safe));
       padding: 6px 6px calc(6px + var(--safe));
-      background: rgba(255,255,255,.92);
+      background: rgba(255,255,255,.94);
       backdrop-filter: blur(14px);
       border-top: 1px solid var(--line);
       display: grid; grid-template-columns: repeat(6, 1fr);
       z-index: 40;
-      box-shadow: 0 -8px 24px rgba(102,126,234,.08);
+      box-shadow: 0 -4px 16px rgba(21,23,40,.06);
     }
     .nav button {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -420,22 +512,23 @@
       border-radius: 12px;
     }
     .move-subtabs {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 12px;
+      padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
     }
     .move-subtabs .tab {
-      padding: 12px; border-radius: 14px; font-weight: 800; font-size: .88rem;
-      background: #f3f0ff; color: var(--muted); border: 1px solid var(--line);
+      padding: 11px; border-radius: 10px; font-weight: 800; font-size: .86rem;
+      background: transparent; color: var(--muted); border: 0;
     }
     .move-subtabs .tab.on {
-      background: linear-gradient(135deg, var(--p1), var(--p2)); color: #fff; border-color: transparent;
+      background: var(--card); color: var(--ink); border: 0; box-shadow: var(--shadow-soft);
     }
     .move-subtabs .tab.box-on {
-      background: linear-gradient(135deg, #ea580c, #c2410c); color: #fff; border-color: transparent;
+      background: #fff4ed; color: #c2410c; border: 0; box-shadow: var(--shadow-soft);
     }
     .nav button .i { font-size: 1.15rem; }
     .nav button.on {
-      color: var(--p2);
-      background: #f0edff;
+      color: var(--p1);
+      background: #eef0ff;
     }
 
     .toast {
@@ -511,37 +604,63 @@
     }
     .banner.on { display: block; }
 
-    /* Rest / Recovery */
-    .rest-hero {
-      background: linear-gradient(145deg, #1e1b4b 0%, #312e81 45%, #4c1d95 100%);
-      color: #fff;
-      border-radius: 22px;
-      padding: 18px;
+    /* App update / force refresh banner */
+    .update-banner {
+      display: none;
       margin-bottom: 12px;
-      box-shadow: 0 14px 36px rgba(49, 46, 129, .35);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      background: #f0f4ff;
+      border: 1px solid #c7d2fe;
+      border-left: 3px solid var(--p1);
+      box-shadow: var(--shadow-soft);
+    }
+    .update-banner.on { display: block; }
+    .update-banner .ub-title {
+      font-weight: 800; font-size: .9rem; margin-bottom: 4px; color: var(--ink);
+    }
+    .update-banner .ub-body {
+      font-size: .78rem; color: var(--muted); line-height: 1.45; margin-bottom: 10px;
+    }
+    .update-banner .ub-actions {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .update-banner .ub-actions .btn {
+      width: auto; padding: 9px 12px; font-size: .78rem;
+    }
+
+    /* Rest / Recovery — one dark hero, used sparingly */
+    .rest-hero {
+      background: linear-gradient(145deg, #1c1f33 0%, #2a2f55 55%, #35306b 100%);
+      color: #fff;
+      border-radius: var(--r);
+      padding: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 10px 28px rgba(28, 31, 51, .22);
+      border: 1px solid rgba(255,255,255,.06);
     }
     .rest-hero .rh-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    .rest-hero .rh-label { font-size: .78rem; opacity: .85; margin-bottom: 4px; }
-    .rest-hero .rh-title { font-family: Poppins, sans-serif; font-size: 1.15rem; font-weight: 800; }
+    .rest-hero .rh-label { font-size: .72rem; opacity: .78; margin-bottom: 4px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+    .rest-hero .rh-title { font-family: Poppins, sans-serif; font-size: 1.08rem; font-weight: 800; }
     .rest-score {
-      width: 88px; height: 88px; border-radius: 50%;
-      background: conic-gradient(var(--ok) calc(var(--pct) * 1%), rgba(255,255,255,.15) 0);
+      width: 80px; height: 80px; border-radius: 50%;
+      background: conic-gradient(var(--ok) calc(var(--pct) * 1%), rgba(255,255,255,.12) 0);
       display: grid; place-items: center;
       flex-shrink: 0;
       position: relative;
     }
     .rest-score::before {
       content: "";
-      position: absolute; inset: 8px;
-      background: #1e1b4b; border-radius: 50%;
+      position: absolute; inset: 7px;
+      background: #1c1f33; border-radius: 50%;
     }
     .rest-score .rs-in {
       position: relative; z-index: 1; text-align: center;
       font-family: Poppins, sans-serif;
     }
-    .rest-score .rs-n { font-size: 1.45rem; font-weight: 800; line-height: 1; }
-    .rest-score .rs-u { font-size: .65rem; opacity: .8; }
-    .rest-tips { margin-top: 12px; font-size: .84rem; line-height: 1.5; opacity: .95; }
+    .rest-score .rs-n { font-size: 1.35rem; font-weight: 800; line-height: 1; }
+    .rest-score .rs-u { font-size: .62rem; opacity: .75; }
+    .rest-tips { margin-top: 10px; font-size: .8rem; line-height: 1.5; opacity: .9; }
     .rest-tips strong { color: #c4b5fd; }
     .scale-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .scale-btn {
@@ -678,94 +797,87 @@
     .alarm-banner .ab-actions button.primary { background: #fff; color: #4c1d95; }
     #shareCanvas { display: none; }
 
-    /* Elite 3-coach board */
+    /* Elite 3-coach board — calm, matches card system */
     .elite-head {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-      color: #fff;
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: var(--r-sm);
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--line);
     }
     .elite-head .eh-kicker {
-      font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
-      opacity: .75; font-weight: 700; margin-bottom: 4px;
+      font-size: .66rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 800; margin-bottom: 4px;
     }
     .elite-head .eh-title {
-      font-family: Poppins, sans-serif; font-size: 1.05rem; font-weight: 800;
+      font-family: Poppins, sans-serif; font-size: .98rem; font-weight: 800;
     }
-    .elite-head .eh-sub { font-size: .78rem; opacity: .88; margin-top: 4px; line-height: 1.4; }
+    .elite-head .eh-sub { font-size: .75rem; color: var(--muted); margin-top: 4px; line-height: 1.4; }
     .elite-roster {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 12px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px;
     }
     .elite-pill {
-      text-align: center; padding: 10px 6px 8px; border-radius: 14px;
-      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
-      font-size: .68rem; font-weight: 800; line-height: 1.3;
+      text-align: center; padding: 8px 4px 6px; border-radius: 12px;
+      background: var(--card); border: 1px solid var(--line);
+      font-size: .66rem; font-weight: 800; line-height: 1.3; color: var(--muted);
     }
     .elite-pill .ep-photo {
-      width: 48px; height: 48px; border-radius: 50%;
-      object-fit: cover; display: block; margin: 0 auto 6px;
-      border: 2px solid rgba(255,255,255,.45);
-      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      width: 40px; height: 40px; border-radius: 50%;
+      object-fit: cover; display: block; margin: 0 auto 5px;
+      border: 2px solid var(--line);
+      box-shadow: none;
     }
     .elite-pill .ep-ic { display: block; font-size: 1.1rem; margin-bottom: 2px; }
     .trainer-card {
-      border-radius: 16px;
-      padding: 14px;
-      margin-bottom: 10px;
+      border-radius: var(--r-sm);
+      padding: 12px;
+      margin-bottom: 8px;
       border: 1px solid var(--line);
-      background: #faf9ff;
+      border-left: 3px solid var(--p1);
+      background: var(--surface);
     }
-    .trainer-card.rest {
-      background: linear-gradient(145deg, #eef2ff, #f5f3ff);
-      border-color: #c7d2fe;
-    }
-    .trainer-card.nutrition {
-      background: linear-gradient(145deg, #ecfdf5, #f0fdf4);
-      border-color: #a7f3d0;
-    }
-    .trainer-card.training {
-      background: linear-gradient(145deg, #fff7ed, #fef3c7);
-      border-color: #fde68a;
-    }
+    .trainer-card.rest { border-left-color: #6366f1; background: #f8f9ff; }
+    .trainer-card.nutrition { border-left-color: #059669; background: #f6fdf9; }
+    .trainer-card.training { border-left-color: #d97706; background: #fffbf5; }
     .trainer-card .tc-top {
       display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
     }
     .trainer-card .tc-avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      display: grid; place-items: center; font-size: 1.25rem;
-      background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center; font-size: 1.15rem;
+      background: var(--card); box-shadow: none;
       flex-shrink: 0; overflow: hidden;
-      border: 2px solid rgba(255,255,255,.9);
+      border: 1px solid var(--line);
     }
     .trainer-card .tc-avatar img {
       width: 100%; height: 100%; object-fit: cover; display: block;
     }
-    .trainer-card .tc-name { font-weight: 800; font-size: .92rem; }
-    .trainer-card .tc-role { font-size: .72rem; color: var(--muted); margin-top: 1px; }
+    .trainer-card .tc-name { font-weight: 800; font-size: .88rem; }
+    .trainer-card .tc-role { font-size: .7rem; color: var(--muted); margin-top: 1px; }
     .trainer-card .tc-badge {
-      margin-left: auto; font-size: .65rem; font-weight: 800;
+      margin-left: auto; font-size: .62rem; font-weight: 800;
       padding: 3px 8px; border-radius: 999px;
-      background: #0f172a; color: #fbbf24;
+      background: var(--ink); color: #fff;
       white-space: nowrap;
     }
     .trainer-card .tc-body {
-      font-size: .86rem; line-height: 1.55; color: var(--ink);
+      font-size: .84rem; line-height: 1.55; color: var(--ink);
     }
-    .trainer-card .tc-body strong { color: #312e81; }
+    .trainer-card .tc-body strong { color: var(--p2); }
     .trainer-card .tc-action {
-      margin-top: 8px; font-size: .78rem; font-weight: 700;
+      margin-top: 8px; font-size: .76rem; font-weight: 700;
       padding: 8px 10px; border-radius: 10px;
-      background: rgba(15,23,42,.05);
+      background: rgba(15,23,42,.04);
     }
     .coach-verdict {
-      border-radius: 14px; padding: 12px 14px;
-      background: linear-gradient(135deg, #1e1b4b, #4c1d95);
-      color: #fff; font-size: .88rem; line-height: 1.5;
+      border-radius: var(--r-sm); padding: 12px 14px;
+      background: var(--ink);
+      color: #fff; font-size: .86rem; line-height: 1.5;
       margin-top: 4px;
     }
     .coach-verdict .cv-label {
-      font-size: .68rem; opacity: .8; font-weight: 800;
+      font-size: .66rem; opacity: .75; font-weight: 800;
       letter-spacing: .06em; margin-bottom: 4px;
     }
 
@@ -847,47 +959,50 @@
     }
     .sgz-verdict .cv-body { font-size: .88rem; line-height: 1.5; color: #fffbeb; }
     .adaptive-card {
-      border-radius: 16px; padding: 14px; margin-bottom: 12px;
-      background: linear-gradient(145deg, #fff7ed, #fefce8);
-      border: 1px solid #fcd34d;
+      border-radius: var(--r); padding: 14px; margin-bottom: 10px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 3px solid #d97706;
+      box-shadow: var(--shadow-soft);
     }
     .adaptive-card .ad-metrics {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 10px 0;
     }
     .adaptive-card .ad-m {
-      background: #fff; border-radius: 12px; padding: 8px 6px; text-align: center;
-      border: 1px solid #fde68a;
+      background: var(--surface); border-radius: 12px; padding: 8px 6px; text-align: center;
+      border: 1px solid var(--line);
     }
     .adaptive-card .ad-m .v {
-      font-family: Poppins, sans-serif; font-weight: 800; font-size: .95rem; color: #b45309;
+      font-family: Poppins, sans-serif; font-weight: 800; font-size: .92rem; color: var(--ink);
     }
     .adaptive-card .ad-m .l { font-size: .65rem; color: var(--muted); margin-top: 2px; font-weight: 700; }
     .cheat-pill {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 6px 10px; border-radius: 999px; font-size: .75rem; font-weight: 800;
-      background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
+      background: var(--surface); color: var(--muted); border: 1px solid var(--line);
     }
-    .cheat-pill.go { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
-    .cheat-pill.wait { background: #e0e7ff; color: #3730a3; border-color: #a5b4fc; }
+    .cheat-pill.go { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .cheat-pill.wait { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
     .pro-hit { outline: 2px solid #34d399; }
     .pro-miss { outline: 2px solid transparent; }
     .pro-low .v { color: #dc2626 !important; }
     .pro-ok .v { color: #059669 !important; }
     .measure-banner {
-      border-radius: 14px; padding: 12px 14px; margin-bottom: 12px;
-      background: linear-gradient(135deg, #eff6ff, #e0e7ff);
-      border: 1px solid #93c5fd; font-size: .84rem; line-height: 1.45;
+      border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 10px;
+      background: #f7f9ff; border: 1px solid #cdd8f0;
+      border-left: 3px solid #3b82f6; font-size: .82rem; line-height: 1.45;
     }
     .phase-card-active {
-      background: linear-gradient(145deg, #ecfdf5, #f0fdf4) !important;
-      border-color: #6ee7b7 !important;
+      background: #f6fdf9 !important;
+      border-color: #c6e8d6 !important;
+      border-left: 3px solid #059669 !important;
     }
 
-    /* Body fatigue map — 3D-ish mannequin heat */
+    /* Body fatigue map — anatomical heat mannequin */
     .bodyfat-stage {
-      perspective: 900px;
+      perspective: 1100px;
       margin: 8px auto 12px;
-      max-width: 320px;
+      max-width: 340px;
     }
     .bodyfat-turn {
       display: flex; gap: 6px; justify-content: center; margin-bottom: 10px;
@@ -902,40 +1017,79 @@
     .bodyfat-3d {
       position: relative;
       transform-style: preserve-3d;
-      transform: rotateX(8deg) rotateY(-12deg);
-      transition: transform .35s ease;
-      filter: drop-shadow(0 18px 28px rgba(15, 23, 42, .22));
+      transform: rotateX(6deg) rotateY(-8deg);
+      transition: transform .4s cubic-bezier(.2,.8,.2,1);
+      filter: drop-shadow(0 22px 36px rgba(15, 23, 42, .28));
     }
-    .bodyfat-3d.back-view { transform: rotateX(8deg) rotateY(12deg); }
+    .bodyfat-3d.back-view { transform: rotateX(6deg) rotateY(8deg); }
     .bodyfat-svg {
       width: 100%; height: auto; display: block;
-      background: radial-gradient(ellipse at 50% 30%, #eef2ff 0%, #f8fafc 55%, #e2e8f0 100%);
-      border-radius: 24px;
-      border: 1px solid #e2e8f0;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% 18%, rgba(199,210,254,.55) 0%, transparent 58%),
+        radial-gradient(ellipse 80% 60% at 50% 72%, rgba(226,232,240,.9) 0%, transparent 70%),
+        linear-gradient(165deg, #f8fafc 0%, #eef2ff 42%, #e2e8f0 100%);
+      border-radius: 28px;
+      border: 1px solid #dbe3f0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
     }
     .bodyfat-svg .bf-zone {
       cursor: pointer;
-      transition: filter .15s, stroke-width .15s;
-      stroke: rgba(15,23,42,.25);
-      stroke-width: 1.2;
+      transition: filter .18s, stroke-width .18s, opacity .18s;
+      stroke: rgba(15,23,42,.18);
+      stroke-width: 1;
+      stroke-linejoin: round;
+      stroke-linecap: round;
     }
     .bodyfat-svg .bf-zone:hover, .bodyfat-svg .bf-zone.on {
       stroke: #0f172a;
-      stroke-width: 2.2;
-      filter: brightness(1.05);
+      stroke-width: 2;
+      filter: brightness(1.08) drop-shadow(0 0 6px rgba(15,23,42,.25));
+    }
+    .bodyfat-svg .bf-zone.hot {
+      filter: drop-shadow(0 0 8px rgba(239,68,68,.35));
     }
     .bodyfat-svg .bf-base {
-      fill: #cbd5e1;
+      fill: #c5cdd8;
       stroke: #94a3b8;
-      stroke-width: 1;
+      stroke-width: .9;
+    }
+    .bodyfat-svg .bf-silhouette {
+      fill: #d7dee8;
+      stroke: #94a3b8;
+      stroke-width: 1.4;
+      stroke-linejoin: round;
+    }
+    .bodyfat-svg .bf-shade {
+      fill: rgba(15,23,42,.06);
+      pointer-events: none;
+    }
+    .bodyfat-svg .bf-label {
+      font-family: Poppins, system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 9px;
+      fill: rgba(15,23,42,.55);
+      pointer-events: none;
+      text-anchor: middle;
+    }
+    .bodyfat-svg .bf-score {
+      font-family: Poppins, system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 10px;
+      fill: #0f172a;
+      pointer-events: none;
+      text-anchor: middle;
+      paint-order: stroke;
+      stroke: rgba(255,255,255,.75);
+      stroke-width: 2.5px;
     }
     .bodyfat-legend {
       display: flex; align-items: center; gap: 8px; justify-content: center;
       font-size: .7rem; color: var(--muted); margin: 8px 0 4px; font-weight: 700;
     }
     .bodyfat-legend .bar {
-      flex: 1; max-width: 140px; height: 8px; border-radius: 99px;
-      background: linear-gradient(90deg, #4ade80, #facc15, #f97316, #ef4444);
+      flex: 1; max-width: 160px; height: 10px; border-radius: 99px;
+      background: linear-gradient(90deg, #4ade80 0%, #facc15 35%, #f97316 68%, #ef4444 100%);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.12);
     }
     .bf-list { margin-top: 8px; }
     .bf-row {
@@ -943,6 +1097,7 @@
       padding: 8px 0; border-bottom: 1px solid var(--line); cursor: pointer;
     }
     .bf-row:last-child { border-bottom: 0; }
+    .bf-row.on { background: linear-gradient(90deg, rgba(99,102,241,.08), transparent); border-radius: 8px; }
     .bf-row .nm { font-weight: 800; font-size: .82rem; }
     .bf-row .bar-wrap {
       height: 10px; border-radius: 99px; background: #f1f5f9; overflow: hidden;
@@ -959,18 +1114,23 @@
     .bf-3d-wrap {
       position: relative;
       width: 100%;
-      height: 340px;
-      border-radius: 24px;
+      height: 380px;
+      border-radius: 28px;
       overflow: hidden;
-      background: radial-gradient(ellipse at 50% 20%, #e0e7ff 0%, #0f172a 75%);
-      border: 1px solid #1e293b;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 15%, rgba(129,140,248,.35) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 70% at 50% 80%, rgba(15,23,42,.4) 0%, transparent 65%),
+        linear-gradient(180deg, #1e293b 0%, #0f172a 55%, #020617 100%);
+      border: 1px solid #334155;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 40px rgba(15,23,42,.25);
       touch-action: none;
     }
     .bf-3d-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
     .bf-3d-hint {
-      position: absolute; left: 0; right: 0; bottom: 8px;
-      text-align: center; font-size: .68rem; color: rgba(255,255,255,.7);
+      position: absolute; left: 0; right: 0; bottom: 10px;
+      text-align: center; font-size: .68rem; color: rgba(255,255,255,.72);
       pointer-events: none; font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0,0,0,.45);
     }
     .bf-side-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
@@ -1644,7 +1804,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver">4.18</div>
+        <div class="ver" id="appVerBadge">4.20</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1663,299 +1823,356 @@
       </div>
     </div>
 
-    <!-- HOME -->
+    <div class="update-banner" id="updateBanner" role="status" aria-live="polite">
+      <div class="ub-title">새 버전이 준비됐어요</div>
+      <div class="ub-body" id="updateBannerBody">캐시에 새 앱이 받아졌습니다. 적용하면 화면을 새로 불러옵니다. 기록 데이터는 유지됩니다.</div>
+      <div class="ub-actions">
+        <button type="button" class="btn btn-p" onclick="applyAppUpdate()">지금 적용</button>
+        <button type="button" class="btn btn-g" onclick="dismissUpdateBanner()">나중에</button>
+        <button type="button" class="btn btn-s" onclick="forceAppRefresh()">강제 새로고침</button>
+      </div>
+    </div>
+
+    <!-- HOME — grouped by priority, secondary items folded -->
     <section class="view on" id="v-home">
       <div class="core-alert-strip" id="coreAlertHome"></div>
-      <div class="card" style="padding:12px 14px">
-        <div class="card-h" style="margin-bottom:8px">
-          <h2 style="font-size:.95rem">🎯 핵심 운동 사이클</h2>
-          <span class="muted" style="font-size:.72rem">런 4일 · 스쿼트/데드 7일</span>
-        </div>
-        <div class="core-grid" id="coreGridHome"></div>
-        <p class="muted" style="margin-top:8px;font-size:.72rem;line-height:1.4" id="coreHomeHint">
-          데드리프트·스쿼트·러닝을 핵심으로 봅니다. 기한이 임박하면 경고, 초과하면 비상 알림이 뜹니다.
-        </p>
-      </div>
-      <!-- Rest first — recovery over nutrition/training -->
-      <div class="rest-hero" onclick="show('rest')" style="cursor:pointer">
-        <div class="rh-top">
-          <div>
-            <div class="rh-label">오늘 가장 중요한 지표</div>
-            <div class="rh-title">😴 회복 점수</div>
-            <div style="margin-top:8px;font-size:.82rem;opacity:.9" id="homeRestStatus">휴식 기록을 시작해 보세요</div>
-          </div>
-          <div class="rest-score" id="homeRestRing" style="--pct:0">
-            <div class="rs-in"><div class="rs-n" id="homeRestScore">—</div><div class="rs-u">/100</div></div>
-          </div>
-        </div>
-        <div class="rest-tips" id="homeRestTip">수면 · 컨디션 · 근육 피로를 기록하면 훈련·식단보다 먼저 회복 코칭을 드려요.</div>
-        <div class="debt-box" id="homeDebtBox" style="display:none">
-          <div class="debt-card">
-            <div class="dl">수면 부채 (7일)</div>
-            <div class="dv" id="homeDebt">0h</div>
-            <div class="ds" id="homeDebtHint">목표 대비 부족분</div>
-          </div>
-          <div class="debt-card">
-            <div class="dl">오늘 권장 취침</div>
-            <div class="dv" id="homeBed" style="font-size:1.15rem">—</div>
-            <div class="ds" id="homeAlarmHint">알람 설정은 휴식 탭</div>
-          </div>
-        </div>
-      </div>
 
-      <div class="gate-card unknown" id="homeGateCard" onclick="show('move')" style="cursor:pointer">
-        <div class="gt">Today's training gate</div>
-        <div class="glabel" id="homeGateLabel">회복 게이트 계산 중…</div>
-        <div class="gdetail" id="homeGateDetail">수면·컨디션을 기록하면 오늘 허용 강도가 표시됩니다.</div>
-        <div class="gmax" id="homeGateMax">최대 강도 —</div>
-      </div>
-
-      <div class="streak-row" id="homeStreakRow">
-        <div class="streak-pill" onclick="show('move')" style="cursor:pointer">
-          <div class="sn" id="stWorkout">0</div>
-          <div class="sl">🔥 운동 스트릭</div>
-          <div class="ss" id="stWorkoutHint">Rest credit 적용</div>
-        </div>
-        <div class="streak-pill" onclick="show('more')" style="cursor:pointer">
-          <div class="sn" id="stWater">0</div>
-          <div class="sl">💧 물 스트릭</div>
-          <div class="ss" id="stWaterHint">목표 달성일</div>
-        </div>
-        <div class="streak-pill" onclick="show('rest')" style="cursor:pointer">
-          <div class="sn" id="stSleep">0</div>
-          <div class="sl">😴 수면 스트릭</div>
-          <div class="ss" id="stSleepHint">목표 ±0.5h</div>
-        </div>
-      </div>
-
-      <div class="core-nudge" id="homeCoreNudge">
-        <div class="cn-k">Core first · 복근·코어</div>
-        <div class="cn-t" id="homeCoreTitle">코어는 모든 리프트의 기반</div>
-        <div class="cn-d" id="homeCoreDetail">척추 안정·자세·힘 전달. 매일 짧게라도 권장합니다.</div>
-        <div class="core-chips" id="homeCoreChips"></div>
-        <div class="cn-actions">
-          <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px" onclick="applyCorePrescription()">+ 추천 코어 기록</button>
-          <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="show('move')">운동 탭</button>
-        </div>
-      </div>
-
-      <div class="goal-box">
-        <div class="grid3">
-          <div class="g"><div class="gl">현재</div><div class="gv" id="gCur">—</div></div>
-          <div class="g"><div class="gl">목표</div><div class="gv" id="gTar">—</div></div>
-          <div class="g"><div class="gl">남은 감량</div><div class="gv" id="gDiff">—</div></div>
-        </div>
-        <div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.08)">
-          <div class="gl">예상 기간 (주 0.5kg)</div>
-          <div class="gv" id="gDays" style="font-size:1.5rem">—</div>
-        </div>
-      </div>
-
-      <div class="grid2" style="margin-bottom:12px">
-        <div class="stat s1"><div class="l">🔥 목표 칼로리</div><div class="v" id="gCal">—</div><div class="s">kcal / day</div></div>
-        <div class="stat s2"><div class="l">🥩 단백질</div><div class="v" id="gPro">—</div><div class="s">g / day</div></div>
-        <div class="stat s3"><div class="l">🍚 탄수화물</div><div class="v" id="gCarb">—</div><div class="s">g / day</div></div>
-        <div class="stat s5"><div class="l">🥑 지방</div><div class="v" id="gFat">—</div><div class="s">g / day</div></div>
-      </div>
-
-      <div class="adaptive-card" id="adaptiveCard" style="display:none">
-        <div class="card-h" style="margin-bottom:6px">
-          <h2 style="font-size:.95rem">🎯 적응형 목표</h2>
-          <span class="muted" id="adPhase">분석 중</span>
-        </div>
-        <p class="muted" id="adMusHint" style="margin-bottom:6px;line-height:1.4;font-size:.75rem">체중·골격근 속도 + 훈련·섭취로 칼로리·단백질을 조정 제안합니다.</p>
-        <div class="ad-metrics">
-          <div class="ad-m"><div class="v" id="adCal">—</div><div class="l">제안 kcal</div><div class="l" id="adCalSub">—</div></div>
-          <div class="ad-m"><div class="v" id="adPro">—</div><div class="l">제안 단백질</div><div class="l" id="adProSub">—</div></div>
-          <div class="ad-m"><div class="v" id="adTrain">—</div><div class="l">훈련 가이드</div><div class="l" id="adTrainSub">—</div></div>
-        </div>
-        <div id="adReasons"></div>
-        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-          <span class="cheat-pill" id="adCheatPill">🍪 치팅 주기</span>
-        </div>
-        <p class="muted" id="adCheatDetail" style="margin-top:6px;line-height:1.4;font-size:.75rem"></p>
-        <div class="cn-actions" style="margin-top:10px">
-          <button type="button" class="btn btn-p" style="width:auto;padding:8px 14px" onclick="applyAdaptiveTargets()">이 목표 적용</button>
-          <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="logCheatDay('meal')">치팅 끼니 기록</button>
-          <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px" onclick="logCheatDay('day')">리피드 데이 기록</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h2>📊 오늘 진행</h2><button class="btn btn-sm btn-g" onclick="show('log')">기록하기</button></div>
-        <div class="progress-item">
-          <div class="ph"><span>칼로리</span><span><b id="tCal">0</b> / <span id="tCalG">0</span></span></div>
-          <div class="pbar cal" id="barCal"><i></i></div>
-          <div class="pr" id="prCal"></div>
-        </div>
-        <div class="progress-item">
-          <div class="ph"><span>단백질</span><span><b id="tPro">0</b>g / <span id="tProG">0</span>g</span></div>
-          <div class="pbar" id="barPro"><i></i></div>
-        </div>
-        <div class="progress-item">
-          <div class="ph"><span>탄수화물</span><span><b id="tCarb">0</b>g / <span id="tCarbG">0</span>g</span></div>
-          <div class="pbar carb" id="barCarb"><i></i></div>
-        </div>
-        <div class="progress-item">
-          <div class="ph"><span>지방</span><span><b id="tFat">0</b>g / <span id="tFatG">0</span>g</span></div>
-          <div class="pbar fat" id="barFat"><i></i></div>
-        </div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">
-          <div class="ph" style="margin-bottom:8px"><span>🥩 끼니별 단백질 분산</span><span class="muted" id="proSpreadBadge">—</span></div>
-          <div class="grid4" id="proSpreadGrid" style="gap:6px">
-            <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">아침</div><div class="v" id="proB" style="font-size:1rem">0</div><div class="s">g</div></div>
-            <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">점심</div><div class="v" id="proL" style="font-size:1rem">0</div><div class="s">g</div></div>
-            <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">저녁</div><div class="v" id="proD" style="font-size:1rem">0</div><div class="s">g</div></div>
-            <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">간식</div><div class="v" id="proS" style="font-size:1rem">0</div><div class="s">g</div></div>
-          </div>
-          <p class="muted" id="proSpreadHint" style="margin-top:8px;line-height:1.4;font-size:.75rem">끼니당 25g+ 분산이 근조직 보존에 유리합니다.</p>
-        </div>
-      </div>
-
-      <div class="card" id="phaseCard">
-        <div class="card-h"><h2>📉 딜로드 · 다이어트 브레이크</h2><span class="muted" id="phaseStatus">분석</span></div>
-        <p class="muted" id="phaseDetail" style="margin-bottom:10px;line-height:1.45;font-size:.8rem">연속 컷·고부하·회복 저하 시 유지 칼로리 또는 훈련 감량 주를 제안합니다.</p>
-        <div id="phaseActiveBox" style="display:none;margin-bottom:10px" class="insight good"></div>
-        <div class="cn-actions">
-          <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px" onclick="startDeloadWeek()">딜로드 7일 시작</button>
-          <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="startDietBreak(7)">다이어트 브레이크 7일</button>
-          <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="startDietBreak(14)">브레이크 14일</button>
-          <button type="button" class="btn btn-sm btn-g" style="width:auto" onclick="endPhasePlan()">종료</button>
-        </div>
-      </div>
-
-      <div class="card" id="measureCard">
-        <div class="card-h"><h2>📆 체성분 측정 요일</h2><span class="muted" id="measureBadge">주 1회</span></div>
-        <p class="muted" style="margin-bottom:8px;line-height:1.4;font-size:.78rem">같은 요일·아침에 재면 적응형 분석이 안정됩니다. 체중만이 아니라 골격근·체지방도 같이.</p>
-        <div class="field"><label>측정 요일</label>
-          <select id="measureWeekday" onchange="saveMeasurePrefs()">
-            <option value="1">월요일</option>
-            <option value="2">화요일</option>
-            <option value="3">수요일</option>
-            <option value="4">목요일</option>
-            <option value="5">금요일</option>
-            <option value="6">토요일</option>
-            <option value="0">일요일</option>
-          </select>
-        </div>
-        <label class="muted" style="display:flex;align-items:center;gap:8px;margin:8px 0">
-          <input type="checkbox" id="measureRemind" checked onchange="saveMeasurePrefs()" style="width:18px;height:18px" />
-          측정 요일에 홈 배너로 알림
-        </label>
-        <p class="muted" id="measureHint" style="line-height:1.4;font-size:.75rem"></p>
-        <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px;margin-top:6px" onclick="show('log')">기록 탭에서 체성분 입력</button>
-      </div>
-
-      <div class="grid2">
-        <div class="stat s3" onclick="show('more')" style="cursor:pointer"><div class="l">💧 물</div><div class="v" id="hWater">0/8</div><div class="s">컵</div></div>
-        <div class="stat s4" onclick="show('move')" style="cursor:pointer"><div class="l">🏃 운동</div><div class="v" id="hMove">0분</div><div class="s" id="hMoveK">0 kcal</div></div>
-        <div class="stat s6" onclick="show('more'); moreTab('habit')" style="cursor:pointer"><div class="l">✅ 습관</div><div class="v" id="hHabit">0/0</div><div class="s">완료</div></div>
-        <div class="stat s1" onclick="show('report')" style="cursor:pointer"><div class="l">⚖️ 최근 체중</div><div class="v" id="hW">—</div><div class="s" id="hWd">기록하기</div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-h">
-          <h2>📅 이번 주 밸런스</h2>
-          <button class="btn btn-sm btn-g" onclick="show('rest')">계획 수정</button>
-        </div>
-        <div class="week-sum" id="homeWeekSum">
-          <div class="ws"><div class="n" id="homeWsTrain">0</div><div class="l">🏋️ 훈련</div></div>
-          <div class="ws"><div class="n" id="homeWsActive">0</div><div class="l">🚶 액티브</div></div>
-          <div class="ws"><div class="n" id="homeWsRest">0</div><div class="l">🛏 완전휴식</div></div>
-        </div>
-        <div class="week-cal" id="homeWeekCal" style="margin-top:10px"></div>
-        <p class="muted" id="homeWeekHint" style="margin-top:8px;line-height:1.45">탭해서 휴식 탭에서 상세 설정</p>
-      </div>
-
-      <div class="card" onclick="show('log')" style="cursor:pointer">
-        <div class="card-h"><h2>💊 오늘 미량영양소</h2><span class="muted">대략 · 상세는 기록</span></div>
-        <div class="grid2" id="homeMicroQuick">
-          <div class="stat s4" style="min-height:auto"><div class="l">식이섬유</div><div class="v" id="hmFiber" style="font-size:1.1rem">—</div><div class="s" id="hmFiberP">목표 대비</div></div>
-          <div class="stat s5" style="min-height:auto"><div class="l">나트륨</div><div class="v" id="hmNa" style="font-size:1.1rem">—</div><div class="s" id="hmNaP">상한 참고</div></div>
-          <div class="stat s3" style="min-height:auto"><div class="l">칼슘 · 철</div><div class="v" id="hmCaFe" style="font-size:.95rem">—</div><div class="s">대략</div></div>
-          <div class="stat s6" style="min-height:auto"><div class="l">비타민 C·D</div><div class="v" id="hmVit" style="font-size:.95rem">—</div><div class="s">대략</div></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><h2>⚖️ 체중 · 주간 평균</h2><span class="muted">일일 출렁임 완화</span></div>
-        <div class="grid2">
-          <div class="stat s1" style="min-height:auto"><div class="l">오늘/최근</div><div class="v" id="hW2" style="font-size:1.2rem">—</div><div class="s" id="hWd2">—</div></div>
-          <div class="stat s3" style="min-height:auto"><div class="l">7일 평균</div><div class="v" id="hWAvg" style="font-size:1.2rem">—</div><div class="s" id="hWAvgSub">측정 n회</div></div>
-        </div>
-        <div class="comp-row" style="margin-top:10px" id="hCompRow">
-          <div class="comp-mini"><div class="cm-l">체지방</div><div class="cm-v" id="hFat">—</div><div class="cm-s" id="hFatSub">%</div></div>
-          <div class="comp-mini"><div class="cm-l">골격근</div><div class="cm-v" id="hMuscle">—</div><div class="cm-s" id="hMuscleSub">kg</div></div>
-          <div class="comp-mini"><div class="cm-l">체수분</div><div class="cm-v" id="hWaterPct">—</div><div class="cm-s" id="hWaterPctSub">%</div></div>
-        </div>
-        <p class="muted" id="hWAvgHint" style="margin-top:8px;line-height:1.45">저울은 매일 흔들립니다. 코치는 주 평균·체성분을 같이 봅니다.</p>
-        <div id="weightCommentHome" class="wcomment tone-info" style="display:none"></div>
-      </div>
-
-      <div class="card" style="padding:12px">
-        <div class="elite-head">
-          <div class="eh-kicker">Coaching board · 오늘의 브리핑</div>
-          <div class="eh-title">🏆 세 코치 보드</div>
-          <div class="eh-sub">회복 · 영양 · 훈련이 한 팀으로 붙어 있는 느낌. 저울 숫자만이 아니라 몸 전체를 봅니다.</div>
-          <div class="elite-roster">
-            <div class="elite-pill">
-              <img class="ep-photo" src="coaches/seoan.jpg" alt="서안" width="48" height="48" />
-              회복<br>서안
+      <!-- 1. Today priority -->
+      <div class="ui-section">
+        <div class="ui-section-label">오늘 우선</div>
+        <div class="ui-stack">
+          <div class="rest-hero" onclick="show('rest')" style="cursor:pointer">
+            <div class="rh-top">
+              <div>
+                <div class="rh-label">가장 중요한 지표</div>
+                <div class="rh-title">회복 점수</div>
+                <div style="margin-top:8px;font-size:.8rem;opacity:.9" id="homeRestStatus">휴식 기록을 시작해 보세요</div>
+              </div>
+              <div class="rest-score" id="homeRestRing" style="--pct:0">
+                <div class="rs-in"><div class="rs-n" id="homeRestScore">—</div><div class="rs-u">/100</div></div>
+              </div>
             </div>
-            <div class="elite-pill">
-              <img class="ep-photo" src="coaches/naeun.jpg" alt="나은" width="48" height="48" />
-              영양<br>나은
+            <div class="rest-tips" id="homeRestTip">수면 · 컨디션 · 근육 피로를 기록하면 훈련·식단보다 먼저 회복 코칭을 드려요.</div>
+            <div class="debt-box" id="homeDebtBox" style="display:none">
+              <div class="debt-card">
+                <div class="dl">수면 부채 (7일)</div>
+                <div class="dv" id="homeDebt">0h</div>
+                <div class="ds" id="homeDebtHint">목표 대비 부족분</div>
+              </div>
+              <div class="debt-card">
+                <div class="dl">오늘 권장 취침</div>
+                <div class="dv" id="homeBed" style="font-size:1.1rem">—</div>
+                <div class="ds" id="homeAlarmHint">알람 설정은 휴식 탭</div>
+              </div>
             </div>
-            <div class="elite-pill">
-              <img class="ep-photo" src="coaches/ganghyeok.jpg" alt="강혁" width="48" height="48" />
-              훈련<br>강혁
+          </div>
+
+          <div class="gate-card unknown" id="homeGateCard" onclick="show('move')" style="cursor:pointer">
+            <div class="gt">오늘 훈련 게이트</div>
+            <div class="glabel" id="homeGateLabel">회복 게이트 계산 중…</div>
+            <div class="gdetail" id="homeGateDetail">수면·컨디션을 기록하면 오늘 허용 강도가 표시됩니다.</div>
+            <div class="gmax" id="homeGateMax">최대 강도 —</div>
+          </div>
+
+          <div class="card">
+            <div class="card-h" style="margin-bottom:8px">
+              <h2>핵심 운동 사이클</h2>
+              <span class="muted" style="font-size:.72rem">런 4일 · 스쿼트/데드 7일</span>
+            </div>
+            <div class="core-grid" id="coreGridHome"></div>
+            <p class="muted" style="margin-top:8px;font-size:.72rem;line-height:1.4" id="coreHomeHint">
+              데드리프트·스쿼트·러닝 기한이 임박하면 경고, 초과하면 비상 알림이 뜹니다.
+            </p>
+          </div>
+
+          <div class="streak-row" id="homeStreakRow">
+            <div class="streak-pill" onclick="show('move')" style="cursor:pointer">
+              <div class="sn" id="stWorkout">0</div>
+              <div class="sl">운동 스트릭</div>
+              <div class="ss" id="stWorkoutHint">Rest credit</div>
+            </div>
+            <div class="streak-pill" onclick="show('more')" style="cursor:pointer">
+              <div class="sn" id="stWater">0</div>
+              <div class="sl">물 스트릭</div>
+              <div class="ss" id="stWaterHint">목표 달성일</div>
+            </div>
+            <div class="streak-pill" onclick="show('rest')" style="cursor:pointer">
+              <div class="sn" id="stSleep">0</div>
+              <div class="sl">수면 스트릭</div>
+              <div class="ss" id="stSleepHint">목표 ±0.5h</div>
+            </div>
+          </div>
+
+          <div class="core-nudge" id="homeCoreNudge">
+            <div class="cn-k">Core first</div>
+            <div class="cn-t" id="homeCoreTitle">코어는 모든 리프트의 기반</div>
+            <div class="cn-d" id="homeCoreDetail">척추 안정·자세·힘 전달. 매일 짧게라도 권장합니다.</div>
+            <div class="core-chips" id="homeCoreChips"></div>
+            <div class="action-row">
+              <button type="button" class="btn btn-s" onclick="applyCorePrescription()">+ 추천 코어</button>
+              <button type="button" class="btn btn-g" onclick="show('move')">운동 탭</button>
             </div>
           </div>
         </div>
-        <div class="card-h" style="margin-bottom:8px">
-          <h2 style="font-size:.95rem">오늘의 브리핑</h2>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-            <button class="btn btn-sm btn-g" onclick="refreshCoach(true)">로컬 보드</button>
-            <button class="btn btn-sm btn-g" style="background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;border:0" onclick="geminiCoach()">✨ Gemini 보드</button>
+      </div>
+
+      <!-- 2. Goals & today macros -->
+      <div class="ui-section">
+        <div class="ui-section-label">목표 · 오늘 진행</div>
+        <div class="ui-stack">
+          <div class="goal-box">
+            <div class="grid3">
+              <div class="g"><div class="gl">현재</div><div class="gv" id="gCur">—</div></div>
+              <div class="g"><div class="gl">목표</div><div class="gv" id="gTar">—</div></div>
+              <div class="g"><div class="gl">남은 감량</div><div class="gv" id="gDiff">—</div></div>
+            </div>
+            <div class="card-divider"></div>
+            <div style="text-align:center">
+              <div class="gl">예상 기간 (주 0.5kg)</div>
+              <div class="gv" id="gDays" style="font-size:1.35rem">—</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="stat s1"><div class="l">목표 칼로리</div><div class="v" id="gCal">—</div><div class="s">kcal / day</div></div>
+            <div class="stat s2"><div class="l">단백질</div><div class="v" id="gPro">—</div><div class="s">g / day</div></div>
+            <div class="stat s3"><div class="l">탄수화물</div><div class="v" id="gCarb">—</div><div class="s">g / day</div></div>
+            <div class="stat s5"><div class="l">지방</div><div class="v" id="gFat">—</div><div class="s">g / day</div></div>
+          </div>
+
+          <div class="adaptive-card" id="adaptiveCard" style="display:none">
+            <div class="card-h" style="margin-bottom:6px">
+              <h2>적응형 목표</h2>
+              <span class="muted" id="adPhase">분석 중</span>
+            </div>
+            <p class="muted" id="adMusHint" style="margin-bottom:6px;line-height:1.4;font-size:.74rem">체중·골격근 속도 + 훈련·섭취로 칼로리·단백질을 조정 제안합니다.</p>
+            <div class="ad-metrics">
+              <div class="ad-m"><div class="v" id="adCal">—</div><div class="l">제안 kcal</div><div class="l" id="adCalSub">—</div></div>
+              <div class="ad-m"><div class="v" id="adPro">—</div><div class="l">제안 단백질</div><div class="l" id="adProSub">—</div></div>
+              <div class="ad-m"><div class="v" id="adTrain">—</div><div class="l">훈련 가이드</div><div class="l" id="adTrainSub">—</div></div>
+            </div>
+            <div id="adReasons"></div>
+            <div class="action-row">
+              <span class="cheat-pill" id="adCheatPill">치팅 주기</span>
+            </div>
+            <p class="muted" id="adCheatDetail" style="margin-top:6px;line-height:1.4;font-size:.74rem"></p>
+            <div class="action-row">
+              <button type="button" class="btn btn-p" onclick="applyAdaptiveTargets()">이 목표 적용</button>
+              <button type="button" class="btn btn-g" onclick="logCheatDay('meal')">치팅 끼니</button>
+              <button type="button" class="btn btn-s" onclick="logCheatDay('day')">리피드 데이</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h2>오늘 진행</h2><button class="btn btn-sm btn-g" onclick="show('log')">기록하기</button></div>
+            <div class="progress-item">
+              <div class="ph"><span>칼로리</span><span><b id="tCal">0</b> / <span id="tCalG">0</span></span></div>
+              <div class="pbar cal" id="barCal"><i></i></div>
+              <div class="pr" id="prCal"></div>
+            </div>
+            <div class="progress-item">
+              <div class="ph"><span>단백질</span><span><b id="tPro">0</b>g / <span id="tProG">0</span>g</span></div>
+              <div class="pbar" id="barPro"><i></i></div>
+            </div>
+            <div class="progress-item">
+              <div class="ph"><span>탄수화물</span><span><b id="tCarb">0</b>g / <span id="tCarbG">0</span>g</span></div>
+              <div class="pbar carb" id="barCarb"><i></i></div>
+            </div>
+            <div class="progress-item">
+              <div class="ph"><span>지방</span><span><b id="tFat">0</b>g / <span id="tFatG">0</span>g</span></div>
+              <div class="pbar fat" id="barFat"><i></i></div>
+            </div>
+            <div class="card-divider"></div>
+            <div class="ph" style="margin-bottom:8px"><span>끼니별 단백질</span><span class="muted" id="proSpreadBadge">—</span></div>
+            <div class="grid4" id="proSpreadGrid">
+              <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">아침</div><div class="v" id="proB" style="font-size:1rem">0</div><div class="s">g</div></div>
+              <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">점심</div><div class="v" id="proL" style="font-size:1rem">0</div><div class="s">g</div></div>
+              <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">저녁</div><div class="v" id="proD" style="font-size:1rem">0</div><div class="s">g</div></div>
+              <div class="stat s2" style="min-height:auto;padding:10px 6px"><div class="l">간식</div><div class="v" id="proS" style="font-size:1rem">0</div><div class="s">g</div></div>
+            </div>
+            <p class="muted" id="proSpreadHint" style="margin-top:8px;line-height:1.4;font-size:.74rem">끼니당 25g+ 분산이 근조직 보존에 유리합니다.</p>
           </div>
         </div>
-        <div id="coachBox">
-          <div class="empty">기록이 쌓이면 세 코치가 오늘의 브리핑을 올립니다.</div>
+      </div>
+
+      <!-- 3. Activity snapshot -->
+      <div class="ui-section">
+        <div class="ui-section-label">활동 스냅샷</div>
+        <div class="ui-stack">
+          <div class="grid2">
+            <div class="stat s3" onclick="show('more')" style="cursor:pointer"><div class="l">물</div><div class="v" id="hWater">0/8</div><div class="s">컵</div></div>
+            <div class="stat s4" onclick="show('move')" style="cursor:pointer"><div class="l">운동</div><div class="v" id="hMove">0분</div><div class="s" id="hMoveK">0 kcal</div></div>
+            <div class="stat s6" onclick="show('more'); moreTab('habit')" style="cursor:pointer"><div class="l">습관</div><div class="v" id="hHabit">0/0</div><div class="s">완료</div></div>
+            <div class="stat s1" onclick="show('report')" style="cursor:pointer"><div class="l">최근 체중</div><div class="v" id="hW">—</div><div class="s" id="hWd">기록하기</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              <h2>이번 주 밸런스</h2>
+              <button class="btn btn-sm btn-g" onclick="show('rest')">계획 수정</button>
+            </div>
+            <div class="week-sum" id="homeWeekSum">
+              <div class="ws"><div class="n" id="homeWsTrain">0</div><div class="l">훈련</div></div>
+              <div class="ws"><div class="n" id="homeWsActive">0</div><div class="l">액티브</div></div>
+              <div class="ws"><div class="n" id="homeWsRest">0</div><div class="l">완전휴식</div></div>
+            </div>
+            <div class="week-cal" id="homeWeekCal" style="margin-top:10px"></div>
+            <p class="muted" id="homeWeekHint" style="margin-top:8px;line-height:1.45">탭해서 휴식 탭에서 상세 설정</p>
+          </div>
         </div>
-        <p class="muted" id="geminiStatus" style="margin-top:8px">Gemini 키: 더보기 → 설정에서 연결</p>
+      </div>
+
+      <!-- 4. Body -->
+      <div class="ui-section">
+        <div class="ui-section-label">몸 · 체성분</div>
+        <div class="ui-stack">
+          <div class="card">
+            <div class="card-h"><h2>체중 · 주간 평균</h2><span class="muted">일일 출렁임 완화</span></div>
+            <div class="grid2">
+              <div class="stat s1" style="min-height:auto"><div class="l">오늘/최근</div><div class="v" id="hW2" style="font-size:1.15rem">—</div><div class="s" id="hWd2">—</div></div>
+              <div class="stat s3" style="min-height:auto"><div class="l">7일 평균</div><div class="v" id="hWAvg" style="font-size:1.15rem">—</div><div class="s" id="hWAvgSub">측정 n회</div></div>
+            </div>
+            <div class="comp-row" style="margin-top:10px" id="hCompRow">
+              <div class="comp-mini"><div class="cm-l">체지방</div><div class="cm-v" id="hFat">—</div><div class="cm-s" id="hFatSub">%</div></div>
+              <div class="comp-mini"><div class="cm-l">골격근</div><div class="cm-v" id="hMuscle">—</div><div class="cm-s" id="hMuscleSub">kg</div></div>
+              <div class="comp-mini"><div class="cm-l">체수분</div><div class="cm-v" id="hWaterPct">—</div><div class="cm-s" id="hWaterPctSub">%</div></div>
+            </div>
+            <p class="muted" id="hWAvgHint" style="margin-top:8px;line-height:1.45">저울은 매일 흔들립니다. 주 평균·체성분을 같이 보세요.</p>
+            <div id="weightCommentHome" class="wcomment tone-info" style="display:none"></div>
+          </div>
+
+          <div class="card" onclick="show('log')" style="cursor:pointer">
+            <div class="card-h"><h2>미량영양소</h2><span class="muted">대략 · 상세는 기록</span></div>
+            <div class="grid2" id="homeMicroQuick">
+              <div class="stat s4" style="min-height:auto"><div class="l">식이섬유</div><div class="v" id="hmFiber" style="font-size:1.05rem">—</div><div class="s" id="hmFiberP">목표 대비</div></div>
+              <div class="stat s5" style="min-height:auto"><div class="l">나트륨</div><div class="v" id="hmNa" style="font-size:1.05rem">—</div><div class="s" id="hmNaP">상한 참고</div></div>
+              <div class="stat s3" style="min-height:auto"><div class="l">칼슘 · 철</div><div class="v" id="hmCaFe" style="font-size:.92rem">—</div><div class="s">대략</div></div>
+              <div class="stat s6" style="min-height:auto"><div class="l">비타민 C·D</div><div class="v" id="hmVit" style="font-size:.92rem">—</div><div class="s">대략</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Coaching -->
+      <div class="ui-section">
+        <div class="ui-section-label">코칭</div>
+        <div class="card" style="margin-bottom:0">
+          <div class="elite-head">
+            <div class="eh-kicker">오늘의 브리핑</div>
+            <div class="eh-title">세 코치 보드</div>
+            <div class="eh-sub">회복 · 영양 · 훈련이 한 팀으로. 숫자만이 아니라 몸 전체를 봅니다.</div>
+            <div class="elite-roster">
+              <div class="elite-pill">
+                <img class="ep-photo" src="coaches/seoan.jpg" alt="서안" width="40" height="40" />
+                회복 · 서안
+              </div>
+              <div class="elite-pill">
+                <img class="ep-photo" src="coaches/naeun.jpg" alt="나은" width="40" height="40" />
+                영양 · 나은
+              </div>
+              <div class="elite-pill">
+                <img class="ep-photo" src="coaches/ganghyeok.jpg" alt="강혁" width="40" height="40" />
+                훈련 · 강혁
+              </div>
+            </div>
+          </div>
+          <div class="card-h" style="margin-bottom:8px">
+            <h2>브리핑</h2>
+            <div class="action-row" style="margin:0">
+              <button class="btn btn-sm btn-g" onclick="refreshCoach(true)">로컬</button>
+              <button class="btn btn-sm btn-s" onclick="geminiCoach()">Gemini</button>
+            </div>
+          </div>
+          <div id="coachBox">
+            <div class="empty">기록이 쌓이면 세 코치가 오늘의 브리핑을 올립니다.</div>
+          </div>
+          <p class="muted" id="geminiStatus" style="margin-top:8px">Gemini 키: 더보기 → 설정에서 연결</p>
+        </div>
+      </div>
+
+      <!-- 6. Secondary / settings-like (collapsed by default) -->
+      <div class="ui-section">
+        <details class="ui-fold">
+          <summary>
+            <span>더 보기 · 적응 · 딜로드 · 측정</span>
+            <span class="muted-sum">필요할 때만</span>
+          </summary>
+          <div class="ui-fold-body">
+            <div class="card" id="phaseCard">
+              <div class="card-h"><h2>딜로드 · 다이어트 브레이크</h2><span class="muted" id="phaseStatus">분석</span></div>
+              <p class="muted" id="phaseDetail" style="margin-bottom:10px;line-height:1.45;font-size:.78rem">연속 컷·고부하·회복 저하 시 유지 칼로리 또는 훈련 감량 주를 제안합니다.</p>
+              <div id="phaseActiveBox" style="display:none;margin-bottom:10px" class="insight good"></div>
+              <div class="action-row">
+                <button type="button" class="btn btn-s" onclick="startDeloadWeek()">딜로드 7일</button>
+                <button type="button" class="btn btn-g" onclick="startDietBreak(7)">브레이크 7일</button>
+                <button type="button" class="btn btn-g" onclick="startDietBreak(14)">브레이크 14일</button>
+                <button type="button" class="btn btn-sm btn-g" onclick="endPhasePlan()">종료</button>
+              </div>
+            </div>
+
+            <div class="card" id="measureCard">
+              <div class="card-h"><h2>체성분 측정 요일</h2><span class="muted" id="measureBadge">주 1회</span></div>
+              <p class="muted" style="margin-bottom:8px;line-height:1.4;font-size:.76rem">같은 요일·아침에 재면 분석이 안정됩니다. 체중·골격근·체지방을 같이.</p>
+              <div class="field"><label>측정 요일</label>
+                <select id="measureWeekday" onchange="saveMeasurePrefs()">
+                  <option value="1">월요일</option>
+                  <option value="2">화요일</option>
+                  <option value="3">수요일</option>
+                  <option value="4">목요일</option>
+                  <option value="5">금요일</option>
+                  <option value="6">토요일</option>
+                  <option value="0">일요일</option>
+                </select>
+              </div>
+              <label class="muted" style="display:flex;align-items:center;gap:8px;margin:8px 0">
+                <input type="checkbox" id="measureRemind" checked onchange="saveMeasurePrefs()" style="width:18px;height:18px" />
+                측정 요일에 홈 배너로 알림
+              </label>
+              <p class="muted" id="measureHint" style="line-height:1.4;font-size:.74rem"></p>
+              <div class="action-row">
+                <button type="button" class="btn btn-s" onclick="show('log')">기록 탭에서 입력</button>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </section>
 
     <!-- REST (primary pillar) -->
     <section class="view" id="v-rest">
-      <div class="rest-hero">
-        <div class="rh-top">
-          <div>
-            <div class="rh-label">Recovery First</div>
-            <div class="rh-title">😴 오늘 회복 분석</div>
-            <div style="margin-top:8px;font-size:.8rem;opacity:.9">영양·훈련보다 회복이 성과를 만듭니다</div>
+      <div class="ui-section">
+        <div class="ui-section-label">오늘 회복</div>
+        <div class="rest-hero" style="margin-bottom:0">
+          <div class="rh-top">
+            <div>
+              <div class="rh-label">Recovery first</div>
+              <div class="rh-title">오늘 회복 분석</div>
+              <div style="margin-top:8px;font-size:.78rem;opacity:.88">영양·훈련보다 회복이 성과를 만듭니다</div>
+            </div>
+            <div class="rest-score" id="restRing" style="--pct:0">
+              <div class="rs-in"><div class="rs-n" id="restScoreN">—</div><div class="rs-u">/100</div></div>
+            </div>
           </div>
-          <div class="rest-score" id="restRing" style="--pct:0">
-            <div class="rs-in"><div class="rs-n" id="restScoreN">—</div><div class="rs-u">/100</div></div>
-          </div>
-        </div>
-        <div class="rest-tips" id="restGradeLine">수면·컨디션을 입력하면 점수가 계산됩니다.</div>
-        <div class="debt-box">
-          <div class="debt-card">
-            <div class="dl">수면 부채 (7일)</div>
-            <div class="dv" id="restDebt">—</div>
-            <div class="ds" id="restDebtHint">목표 − 실제 누적</div>
-          </div>
-          <div class="debt-card">
-            <div class="dl">권장 취침</div>
-            <div class="dv" id="restRecBed" style="font-size:1.15rem">—</div>
-            <div class="ds" id="restDebtPay">부채 상환 포함</div>
+          <div class="rest-tips" id="restGradeLine">수면·컨디션을 입력하면 점수가 계산됩니다.</div>
+          <div class="debt-box">
+            <div class="debt-card">
+              <div class="dl">수면 부채 (7일)</div>
+              <div class="dv" id="restDebt">—</div>
+              <div class="ds" id="restDebtHint">목표 − 실제 누적</div>
+            </div>
+            <div class="debt-card">
+              <div class="dl">권장 취침</div>
+              <div class="dv" id="restRecBed" style="font-size:1.1rem">—</div>
+              <div class="ds" id="restDebtPay">부채 상환 포함</div>
+            </div>
           </div>
         </div>
       </div>
 
+      <div class="ui-section">
+        <div class="ui-section-label">기록</div>
       <div class="card">
-        <div class="card-h"><h2>⏰ 취침 알람 · 목표 수면</h2></div>
+        <div class="card-h"><h2>취침 알람 · 목표 수면</h2></div>
         <div class="grid2">
           <div class="field"><label>목표 수면 (시간)</label><input id="targetSleep" type="number" min="5" max="12" step="0.5" placeholder="7.5" /></div>
           <div class="field"><label>목표 기상</label><input id="targetWake" type="time" /></div>
@@ -2043,14 +2260,17 @@
         <div class="field"><label>메모 (선택)</label><input id="restMemo" placeholder="예: 늦게 잠, 어깨 뻐근" /></div>
         <button class="btn btn-p" onclick="saveRest()">휴식 기록 저장</button>
       </div>
+      </div>
 
+      <div class="ui-section">
+        <div class="ui-section-label">인사이트 · 주간</div>
       <div class="card">
-        <div class="card-h"><h2>🔎 회복 인사이트</h2></div>
+        <div class="card-h"><h2>회복 인사이트</h2></div>
         <div id="restInsights"></div>
       </div>
 
       <div class="card">
-        <div class="card-h"><h2>📅 이번 주 훈련·휴식 계획</h2></div>
+        <div class="card-h"><h2>이번 주 훈련·휴식 계획</h2></div>
         <p class="muted" style="margin-bottom:10px;line-height:1.45">
           날짜를 탭하면 <strong>훈련 → 액티브 → 완전휴식 → 미정</strong> 순환.
           이상적: 훈련 3~5 · 액티브 1~2 · 완전휴식 1+
@@ -2068,23 +2288,24 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-h"><h2>📈 최근 7일 회복</h2></div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-h"><h2>최근 7일 회복</h2></div>
         <div class="chart-box" style="height:180px"><canvas id="restChart"></canvas></div>
         <div class="list" id="restWeekList" style="margin-top:12px"></div>
+      </div>
       </div>
     </section>
 
     <!-- REPORT -->
     <section class="view" id="v-report">
-      <div class="tabs">
+      <div class="tabs" style="grid-template-columns:1fr 1fr">
         <button class="tab on" data-rt="week" onclick="setReportRange('week')">주간</button>
         <button class="tab" data-rt="month" onclick="setReportRange('month')">월간</button>
       </div>
 
       <div class="card">
         <div class="card-h">
-          <h2 id="reportTitle">📊 주간 리포트</h2>
+          <h2 id="reportTitle">주간 리포트</h2>
           <span class="muted" id="reportRange"></span>
         </div>
         <div class="report-kpi" id="reportKpis"></div>
@@ -2133,8 +2354,10 @@
 
     <!-- LOG (meals + weight) -->
     <section class="view" id="v-log">
+      <div class="ui-section">
+        <div class="ui-section-label">식단</div>
       <div class="card">
-        <div class="card-h"><h2>🍽️ 오늘 식단</h2><span class="muted" id="mealSum">0 kcal</span></div>
+        <div class="card-h"><h2>오늘 식단</h2><span class="muted" id="mealSum">0 kcal</span></div>
         <div class="meal-quick">
           <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px" onclick="copyYesterdayAllMeals()">⏪ 어제와 동일</button>
           <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="copyYesterdayMeal('breakfast')">🌅 어제 아침</button>
@@ -2180,9 +2403,12 @@
         </div>
         <button class="btn btn-s" onclick="addMyFoodFromForm()">+ 내 메뉴로 저장</button>
       </div>
+      </div>
 
+      <div class="ui-section">
+        <div class="ui-section-label">체중 · 미량</div>
       <div class="card">
-        <div class="card-h"><h2>⚖️ 오늘 체중</h2><span class="muted" id="logWAvg">주 평균 —</span></div>
+        <div class="card-h"><h2>오늘 체중</h2><span class="muted" id="logWAvg">주 평균 —</span></div>
         <div class="grid2">
           <div class="field"><label>체중 (kg)</label><input id="todayW" type="number" step="0.1" placeholder="64.8" /></div>
           <div class="field"><label>체지방 % (선택)</label><input id="todayFat" type="number" step="0.1" placeholder="24" /></div>
@@ -2212,6 +2438,7 @@
         </p>
         <div id="microBars"></div>
         <div id="microTips" style="margin-top:10px"></div>
+      </div>
       </div>
     </section>
 
@@ -2270,7 +2497,7 @@
       <div class="card" id="bodyFatigueCard">
         <div class="card-h">
           <h2>🧍 바디 피로 맵</h2>
-          <span class="muted">3D · 좌우 · 7일</span>
+          <span class="muted">해부학 · 3D · 좌우 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
           수행 기록을 부위·<strong>좌/우</strong>로 합산해 피로 히트맵을 그립니다.
@@ -2284,7 +2511,7 @@
         </div>
         <div id="bfSvgStage" class="bodyfat-stage">
           <div class="bodyfat-3d" id="bodyFatigue3d">
-            <svg class="bodyfat-svg" id="bodyFatigueSvg" viewBox="0 0 200 360" role="img" aria-label="인체 피로 히트맵"></svg>
+            <svg class="bodyfat-svg" id="bodyFatigueSvg" viewBox="0 0 200 390" role="img" aria-label="인체 피로 히트맵"></svg>
           </div>
         </div>
         <div id="bf3dStage" class="bf-3d-wrap" style="display:none">
@@ -2536,6 +2763,27 @@
       <div id="more-habit" style="display:none"></div>
 
       <div id="more-set" style="display:none">
+        <div class="card" id="appUpdateCard">
+          <div class="card-h">
+            <h2>🔄 앱 업데이트</h2>
+            <span class="muted" id="appVerLabel">v4.20</span>
+          </div>
+          <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
+            홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
+            <strong>업데이트 확인</strong>은 서버에 새 버전이 있는지 보고,
+            <strong>강제 새로고침</strong>은 캐시·서비스워커를 비운 뒤 최신 파일을 다시 받습니다.
+            <strong>기록 데이터(localStorage)는 유지</strong>됩니다.
+          </p>
+          <p class="muted" id="appUpdateStatus" style="margin-bottom:12px;line-height:1.45;font-size:.76rem">상태 확인 중…</p>
+          <div class="action-row" style="margin-top:0">
+            <button type="button" class="btn btn-s" onclick="checkAppUpdate()">업데이트 확인</button>
+            <button type="button" class="btn btn-p" onclick="forceAppRefresh()">강제 새로고침</button>
+          </div>
+          <div class="action-row">
+            <button type="button" class="btn btn-g" onclick="softReloadApp()">일반 새로고침</button>
+            <button type="button" class="btn btn-g" onclick="clearAppCachesOnly()">캐시만 비우기</button>
+          </div>
+        </div>
         <div class="card">
           <div class="card-h"><h2>⚙️ 프로필 · 목표</h2></div>
           <div class="grid2">
@@ -2875,6 +3123,9 @@
 
   <script>
     const KEY = 'fit-tracker-2-v1';
+    /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
+    const APP_VERSION = '4.20';
+    const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
       cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat, cat: f.cat, k: f.k || '',
@@ -4693,26 +4944,30 @@
     }
 
     function fatigueHeatColor(score) {
-      // 0 green → yellow → orange → red
+      // smooth 4-stop heat: mint → lime → amber → orange → crimson
       const s = Math.max(0, Math.min(100, score)) / 100;
-      let r, g, b;
-      if (s < 0.33) {
-        const t = s / 0.33;
-        r = Math.round(74 + (250 - 74) * t);
-        g = Math.round(222 + (204 - 222) * t);
-        b = Math.round(128 + (21 - 128) * t);
-      } else if (s < 0.66) {
-        const t = (s - 0.33) / 0.33;
-        r = Math.round(250 + (249 - 250) * t);
-        g = Math.round(204 + (115 - 204) * t);
-        b = Math.round(21 + (22 - 21) * t);
-      } else {
-        const t = (s - 0.66) / 0.34;
-        r = Math.round(249 + (239 - 249) * t);
-        g = Math.round(115 + (68 - 115) * t);
-        b = Math.round(22 + (68 - 22) * t);
+      const stops = [
+        { t: 0,    r: 74,  g: 222, b: 128 }, // #4ade80
+        { t: 0.28, r: 163, g: 230, b: 53  }, // #a3e635
+        { t: 0.5,  r: 250, g: 204, b: 21  }, // #facc15
+        { t: 0.72, r: 249, g: 115, b: 22  }, // #f97316
+        { t: 1,    r: 220, g: 38,  b: 38  }  // #dc2626
+      ];
+      let a = stops[0], b = stops[stops.length - 1];
+      for (let i = 0; i < stops.length - 1; i++) {
+        if (s >= stops[i].t && s <= stops[i + 1].t) {
+          a = stops[i]; b = stops[i + 1];
+          break;
+        }
       }
-      return `rgb(${r},${g},${b})`;
+      const span = Math.max(1e-6, b.t - a.t);
+      const u = (s - a.t) / span;
+      // smoothstep
+      const t = u * u * (3 - 2 * u);
+      const r = Math.round(a.r + (b.r - a.r) * t);
+      const g = Math.round(a.g + (b.g - a.g) * t);
+      const bl = Math.round(a.b + (b.b - a.b) * t);
+      return `rgb(${r},${g},${bl})`;
     }
 
     function stretchesForRegions(regionIds, take = 4) {
@@ -4790,69 +5045,169 @@
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
+    /**
+     * Anatomical SVG body map — fitness-app style mannequin.
+     * Zones are organic muscle shapes (not ellipses); silhouette is layered base.
+     */
+    const BF_SVG_ANATOMY = {
+      // Head / neck / hands / feet stay as non-interactive base pieces
+      baseFront: [
+        // head
+        'M100 12c-12.5 0-22.5 10.2-22.5 23 0 10.4 6.6 19.2 15.8 22.2v6.6h13.4v-6.6C115.9 54.2 122.5 45.4 122.5 35 122.5 22.2 112.5 12 100 12z',
+        // neck
+        'M91 62h18c1.5 0 2.8 1.2 2.8 2.8V78c0 1.2-.8 2.2-2 2.5-4 .9-8.2 1.4-9.8 1.4s-5.8-.5-9.8-1.4c-1.2-.3-2-1.3-2-2.5V64.8c0-1.6 1.3-2.8 2.8-2.8z',
+        // hands
+        'M30 192c-3 1-5 4-5 8 0 5 3 9 7 10 3 1 6 0 8-2l4-5c1-4 1-8 0-11-2-3-8-3-14 0z',
+        'M170 192c3 1 5 4 5 8 0 5-3 9-7 10-3 1-6 0-8-2l-4-5c-1-4-1-8 0-11 2-3 8-3 14 0z',
+        // feet
+        'M66 356c-2 2-3 6-2 10 1 4 4 7 9 8h16c3 0 5-2 5-5v-6c0-4-2-7-6-8-6-2-16-2-22 1z',
+        'M134 356c2 2 3 6 2 10-1 4-4 7-9 8h-16c-3 0-5-2-5-5v-6c0-4 2-7 6-8 6-2 16-2 22 1z'
+      ],
+      baseBack: [
+        'M100 12c-12.5 0-22.5 10.2-22.5 23 0 10.4 6.6 19.2 15.8 22.2v6.6h13.4v-6.6C115.9 54.2 122.5 45.4 122.5 35 122.5 22.2 112.5 12 100 12z',
+        'M91 62h18c1.5 0 2.8 1.2 2.8 2.8V78c0 1.2-.8 2.2-2 2.5-4 .9-8.2 1.4-9.8 1.4s-5.8-.5-9.8-1.4c-1.2-.3-2-1.3-2-2.5V64.8c0-1.6 1.3-2.8 2.8-2.8z',
+        'M30 192c-3 1-5 4-5 8 0 5 3 9 7 10 3 1 6 0 8-2l4-5c1-4 1-8 0-11-2-3-8-3-14 0z',
+        'M170 192c3 1 5 4 5 8 0 5-3 9-7 10-3 1-6 0-8-2l-4-5c-1-4-1-8 0-11 2-3 8-3 14 0z',
+        'M66 356c-2 2-3 6-2 10 1 4 4 7 9 8h16c3 0 5-2 5-5v-6c0-4-2-7-6-8-6-2-16-2-22 1z',
+        'M134 356c2 2 3 6 2 10-1 4-4 7-9 8h-16c-3 0-5-2-5-5v-6c0-4 2-7 6-8 6-2 16-2 22 1z'
+      ],
+      // Soft torso underlay (gives continuous body reading under heat zones)
+      torsoFront:
+        'M72 82c-6 3-12 9-16 16-3 6-4 12-4 18v8c2 1 5 1 8 0l4-2c1 14 3 28 6 40 2 10 4 20 4 30v20c0 8 1 16 3 22l2 8h42l2-8c2-6 3-14 3-22v-20c0-10 2-20 4-30 3-12 5-26 6-40l4 2c3 1 6 1 8 0v-8c0-6-1-12-4-18-4-7-10-13-16-16-8-4-18-6-28-6s-20 2-28 6z' +
+        'M78 224c-3 6-4 16-4 28v36c0 8 1 14 3 18h46c2-4 3-10 3-18v-36c0-12-1-22-4-28H78z' +
+        'M80 304c-2 4-3 12-3 22v28h46v-28c0-10-1-18-3-22H80z',
+      torsoBack:
+        'M72 82c-6 3-12 9-16 16-3 6-4 12-4 18v8c2 1 5 1 8 0l4-2c1 14 3 28 6 40 2 10 4 20 4 30v20c0 8 1 16 3 22l2 8h42l2-8c2-6 3-14 3-22v-20c0-10 2-20 4-30 3-12 5-26 6-40l4 2c3 1 6 1 8 0v-8c0-6-1-12-4-18-4-7-10-13-16-16-8-4-18-6-28-6s-20 2-28 6z' +
+        'M78 224c-3 6-4 16-4 28v36c0 8 1 14 3 18h46c2-4 3-10 3-18v-36c0-12-1-22-4-28H78z' +
+        'M80 304c-2 4-3 12-3 22v28h46v-28c0-10-1-18-3-22H80z',
+      front: [
+        // deltoids
+        { id: 'shoulders', side: 'L', d: 'M78 80c-12 3-24 12-30 24-4 8-5 16-4 24 5-1 11-1 16 1 6 2 11 6 14 11 1-12 2-24 2-34 0-9 1-17 2-26z', lx: 56, ly: 100 },
+        { id: 'shoulders', side: 'R', d: 'M122 80c12 3 24 12 30 24 4 8 5 16 4 24-5-1-11-1-16 1-6 2-11 6-14 11-1-12-2-24-2-34 0-9-1-17-2-26z', lx: 144, ly: 100 },
+        // pectorals
+        { id: 'chest', side: 'B', d: 'M70 98c-3 10-4 22-2 34 2 10 6 18 12 22 4 2 8 2 12 0l8-6 8 6c4 2 8 2 12 0 6-4 10-12 12-22 2-12 1-24-2-34-8-6-18-10-30-10s-22 4-30 10z', lx: 100, ly: 120 },
+        // arms
+        { id: 'arms', side: 'L', d: 'M40 120c-5 3-8 10-8 18v48c0 9 4 16 10 18 4 1 8-1 10-4l5-9c1-10 2-22 2-32v-24c0-7-3-12-8-15-3-2-8-3-11 0z', lx: 42, ly: 152 },
+        { id: 'arms', side: 'R', d: 'M160 120c5 3 8 10 8 18v48c0 9-4 16-10 18-4 1-8-1-10-4l-5-9c-1-10-2-22-2-32v-24c0-7 3-12 8-15 3-2 8-3 11 0z', lx: 158, ly: 152 },
+        // abs / core
+        { id: 'core', side: 'B', d: 'M76 152c-2 10-3 22-1 34 2 12 6 22 12 28h26c6-6 10-16 12-28 2-12 1-24-1-34-6-3-14-5-24-5s-18 2-24 5z', lx: 100, ly: 178 },
+        // quads
+        { id: 'quads', side: 'L', d: 'M74 212c-5 5-7 14-7 26v52c0 12 3 20 8 26 5 4 12 4 16-1 4-5 6-14 6-26v-50c0-10-2-18-7-23-4-4-11-6-16-4z', lx: 80, ly: 254 },
+        { id: 'quads', side: 'R', d: 'M126 212c5 5 7 14 7 26v52c0 12-3 20-8 26-5 4-12 4-16-1-4-5-6-14-6-26v-50c0-10 2-18 7-23 4-4 11-6 16-4z', lx: 120, ly: 254 },
+        // calves
+        { id: 'calves', side: 'L', d: 'M76 304c-4 5-6 14-6 24v36c0 9 3 15 8 18 4 2 9 1 12-3 3-3 4-9 4-17v-36c0-9-1-16-5-20-3-3-9-5-13-2z', lx: 80, ly: 336 },
+        { id: 'calves', side: 'R', d: 'M124 304c4 5 6 14 6 24v36c0 9-3 15-8 18-4 2-9 1-12-3-3-3-4-9-4-17v-36c0-9 1-16 5-20 3-3 9-5 13-2z', lx: 120, ly: 336 }
+      ],
+      back: [
+        { id: 'shoulders', side: 'L', d: 'M78 80c-12 3-24 12-30 24-4 8-5 16-4 24 5-1 11-1 16 1 6 2 11 6 14 11 1-12 2-24 2-34 0-9 1-17 2-26z', lx: 56, ly: 100 },
+        { id: 'shoulders', side: 'R', d: 'M122 80c12 3 24 12 30 24 4 8 5 16 4 24-5-1-11-1-16 1-6 2-11 6-14 11-1-12-2-24-2-34 0-9-1-17-2-26z', lx: 144, ly: 100 },
+        // traps + lats block
+        { id: 'back', side: 'B', d: 'M68 94c-3 12-4 26-2 40 2 14 6 26 12 34h44c6-8 10-20 12-34 2-14 1-28-2-40-8-7-20-12-32-12s-24 5-32 12z', lx: 100, ly: 130 },
+        { id: 'arms', side: 'L', d: 'M40 120c-5 3-8 10-8 18v48c0 9 4 16 10 18 4 1 8-1 10-4l5-9c1-10 2-22 2-32v-24c0-7-3-12-8-15-3-2-8-3-11 0z', lx: 42, ly: 152 },
+        { id: 'arms', side: 'R', d: 'M160 120c5 3 8 10 8 18v48c0 9-4 16-10 18-4 1-8-1-10-4l-5-9c-1-10-2-22-2-32v-24c0-7 3-12 8-15 3-2 8-3 11 0z', lx: 158, ly: 152 },
+        { id: 'glutes', side: 'L', d: 'M74 192c-6 3-10 10-10 18 0 12 6 22 16 26 6 2 12 1 15-3 2-3 3-8 3-14v-18c0-7-3-12-8-14-5-3-12-1-16 5z', lx: 80, ly: 212 },
+        { id: 'glutes', side: 'R', d: 'M126 192c6 3 10 10 10 18 0 12-6 22-16 26-6 2-12 1-15-3-2-3-3-8-3-14v-18c0-7 3-12 8-14 5-3 12-1 16 5z', lx: 120, ly: 212 },
+        { id: 'hams', side: 'L', d: 'M74 226c-5 5-7 14-7 28v46c0 12 3 20 8 24 5 4 12 3 16-2 4-5 6-14 6-26v-46c0-12-2-20-7-24-4-4-11-5-16 0z', lx: 80, ly: 262 },
+        { id: 'hams', side: 'R', d: 'M126 226c5 5 7 14 7 28v46c0 12-3 20-8 24-5 4-12 3-16-2-4-5-6-14-6-26v-46c0-12 2-20 7-24 4-4 11-5 16 0z', lx: 120, ly: 262 },
+        { id: 'calves', side: 'L', d: 'M76 304c-4 5-6 14-6 24v36c0 9 3 15 8 18 4 2 9 1 12-3 3-3 4-9 4-17v-36c0-9-1-16-5-20-3-3-9-5-13-2z', lx: 80, ly: 336 },
+        { id: 'calves', side: 'R', d: 'M124 304c4 5 6 14 6 24v36c0 9-3 15-8 18-4 2-9 1-12-3-3-3-4-9-4-17v-36c0-9 1-16 5-20 3-3 9-5 13-2z', lx: 120, ly: 336 }
+      ]
+    };
+
     function drawBodyFatigueSvg(model) {
       const svg = document.getElementById('bodyFatigueSvg');
       if (!svg) return;
+      svg.setAttribute('viewBox', '0 0 200 390');
       const byId = {};
       (model.items || []).forEach(it => { byId[it.id] = it; });
-      const col = (id) => fatigueHeatColor(byId[id]?.score || 0);
-      const colSide = (id, side) => {
+      const scoreOf = (id, side) => {
         const it = byId[id];
-        if (!it) return fatigueHeatColor(0);
-        if (side === 'L') return fatigueHeatColor(it.scoreL != null ? it.scoreL : it.score);
-        if (side === 'R') return fatigueHeatColor(it.scoreR != null ? it.scoreR : it.score);
-        return fatigueHeatColor(it.score);
+        if (!it) return 0;
+        if (side === 'L' && it.scoreL != null) return it.scoreL;
+        if (side === 'R' && it.scoreR != null) return it.scoreR;
+        return it.score || 0;
       };
+      const colOf = (id, side) => fatigueHeatColor(scoreOf(id, side));
       const sel = bodyFatigueSelected;
-      const isOn = (id) => sel === id ? ' on' : '';
       const front = bodyFatigueView !== 'back';
+      const zones = front ? BF_SVG_ANATOMY.front : BF_SVG_ANATOMY.back;
+      const baseParts = front ? BF_SVG_ANATOMY.baseFront : BF_SVG_ANATOMY.baseBack;
+      const torso = front ? BF_SVG_ANATOMY.torsoFront : BF_SVG_ANATOMY.torsoBack;
 
-      if (front) {
-        svg.innerHTML = `
-          <defs>
-            <filter id="bfSoft" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.2" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <ellipse class="bf-base" cx="100" cy="36" rx="22" ry="26"/>
-          <rect class="bf-base" x="88" y="58" width="24" height="14" rx="6"/>
-          <ellipse class="bf-zone${isOn('shoulders')}" cx="62" cy="88" rx="22" ry="14" fill="${colSide('shoulders','L')}" filter="url(#bfSoft)" onclick="selectBodyRegion('shoulders')"/>
-          <ellipse class="bf-zone${isOn('shoulders')}" cx="138" cy="88" rx="22" ry="14" fill="${colSide('shoulders','R')}" filter="url(#bfSoft)" onclick="selectBodyRegion('shoulders')"/>
-          <ellipse class="bf-zone${isOn('chest')}" cx="100" cy="118" rx="36" ry="28" fill="${col('chest')}" filter="url(#bfSoft)" onclick="selectBodyRegion('chest')"/>
-          <ellipse class="bf-zone${isOn('arms')}" cx="48" cy="130" rx="14" ry="42" fill="${colSide('arms','L')}" filter="url(#bfSoft)" onclick="selectBodyRegion('arms')"/>
-          <ellipse class="bf-zone${isOn('arms')}" cx="152" cy="130" rx="14" ry="42" fill="${colSide('arms','R')}" filter="url(#bfSoft)" onclick="selectBodyRegion('arms')"/>
-          <ellipse class="bf-zone${isOn('core')}" cx="100" cy="168" rx="30" ry="32" fill="${col('core')}" filter="url(#bfSoft)" onclick="selectBodyRegion('core')"/>
-          <ellipse class="bf-zone${isOn('quads')}" cx="82" cy="240" rx="18" ry="52" fill="${colSide('quads','L')}" filter="url(#bfSoft)" onclick="selectBodyRegion('quads')"/>
-          <ellipse class="bf-zone${isOn('quads')}" cx="118" cy="240" rx="18" ry="52" fill="${colSide('quads','R')}" filter="url(#bfSoft)" onclick="selectBodyRegion('quads')"/>
-          <ellipse class="bf-zone${isOn('calves')}" cx="82" cy="310" rx="14" ry="36" fill="${colSide('calves','L')}" filter="url(#bfSoft)" onclick="selectBodyRegion('calves')"/>
-          <ellipse class="bf-zone${isOn('calves')}" cx="118" cy="310" rx="14" ry="36" fill="${colSide('calves','R')}" filter="url(#bfSoft)" onclick="selectBodyRegion('calves')"/>
-          <text x="100" y="352" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">FRONT · L/R 구분 · 탭=상세</text>
-        `;
-      } else {
-        svg.innerHTML = `
-          <defs>
-            <filter id="bfSoftB" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.2" result="b"/>
-              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          <ellipse class="bf-base" cx="100" cy="36" rx="22" ry="26"/>
-          <rect class="bf-base" x="88" y="58" width="24" height="14" rx="6"/>
-          <ellipse class="bf-zone${isOn('shoulders')}" cx="62" cy="88" rx="22" ry="14" fill="${colSide('shoulders','L')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('shoulders')"/>
-          <ellipse class="bf-zone${isOn('shoulders')}" cx="138" cy="88" rx="22" ry="14" fill="${colSide('shoulders','R')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('shoulders')"/>
-          <ellipse class="bf-zone${isOn('back')}" cx="100" cy="130" rx="38" ry="40" fill="${col('back')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('back')"/>
-          <ellipse class="bf-zone${isOn('arms')}" cx="48" cy="130" rx="14" ry="42" fill="${colSide('arms','L')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('arms')"/>
-          <ellipse class="bf-zone${isOn('arms')}" cx="152" cy="130" rx="14" ry="42" fill="${colSide('arms','R')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('arms')"/>
-          <ellipse class="bf-zone${isOn('glutes')}" cx="82" cy="188" rx="18" ry="20" fill="${colSide('glutes','L')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('glutes')"/>
-          <ellipse class="bf-zone${isOn('glutes')}" cx="118" cy="188" rx="18" ry="20" fill="${colSide('glutes','R')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('glutes')"/>
-          <ellipse class="bf-zone${isOn('hams')}" cx="82" cy="250" rx="18" ry="48" fill="${colSide('hams','L')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('hams')"/>
-          <ellipse class="bf-zone${isOn('hams')}" cx="118" cy="250" rx="18" ry="48" fill="${colSide('hams','R')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('hams')"/>
-          <ellipse class="bf-zone${isOn('calves')}" cx="82" cy="312" rx="14" ry="34" fill="${colSide('calves','L')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('calves')"/>
-          <ellipse class="bf-zone${isOn('calves')}" cx="118" cy="312" rx="14" ry="34" fill="${colSide('calves','R')}" filter="url(#bfSoftB)" onclick="selectBodyRegion('calves')"/>
-          <text x="100" y="352" text-anchor="middle" fill="#64748b" font-size="11" font-weight="700">BACK · L/R 구분 · 탭=상세</text>
-        `;
-      }
+      const baseEls = baseParts.map(d =>
+        `<path class="bf-base" d="${d}" fill="url(#bfSkinGrad)" filter="url(#bfSilSoft)"/>`
+      ).join('');
+
+      const zoneEls = zones.map(z => {
+        const sc = scoreOf(z.id, z.side);
+        const on = sel === z.id ? ' on' : '';
+        const hot = sc >= 70 ? ' hot' : '';
+        // low fatigue = more translucent so silhouette reads through
+        const op = sc < 12 ? 0.55 : sc < 30 ? 0.78 : 0.94;
+        const scoreTxt = sc >= 22
+          ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}">${sc}</text>`
+          : '';
+        return `
+          <path class="bf-zone${on}${hot}" data-region="${z.id}" data-side="${z.side}"
+            d="${z.d}" fill="${colOf(z.id, z.side)}" opacity="${op}" filter="url(#bfMuscleGlow)"
+            onclick="selectBodyRegion('${z.id}')"/>
+          ${scoreTxt}`;
+      }).join('');
+
+      // muscle definition lines (subtle, non-interactive)
+      const defLines = front
+        ? `<path d="M100 102v52M88 120h24M88 138h24" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1"/>
+           <path d="M86 160v36M114 160v36M100 160v40" fill="none" stroke="rgba(15,23,42,.1)" stroke-width="1"/>
+           <path d="M88 230v60M112 230v60" fill="none" stroke="rgba(15,23,42,.08)" stroke-width="1"/>`
+        : `<path d="M100 98v70" fill="none" stroke="rgba(15,23,42,.14)" stroke-width="1.2"/>
+           <path d="M82 110c6 20 8 40 8 58M118 110c-6 20-8 40-8 58" fill="none" stroke="rgba(15,23,42,.1)" stroke-width="1"/>
+           <path d="M88 240v50M112 240v50" fill="none" stroke="rgba(15,23,42,.08)" stroke-width="1"/>`;
+
+      svg.innerHTML = `
+        <defs>
+          <linearGradient id="bfSkinGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#eef2f7"/>
+            <stop offset="45%" stop-color="#d4dce8"/>
+            <stop offset="100%" stop-color="#b8c4d4"/>
+          </linearGradient>
+          <radialGradient id="bfFloor" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(100,116,139,.22)"/>
+            <stop offset="100%" stop-color="rgba(100,116,139,0)"/>
+          </radialGradient>
+          <filter id="bfMuscleGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="b"/>
+            <feOffset dy="1.2" result="o"/>
+            <feComponentTransfer in="o" result="s">
+              <feFuncA type="linear" slope=".32"/>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode in="s"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="bfSilSoft" x="-10%" y="-6%" width="120%" height="116%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="b"/>
+            <feOffset dy="2.5" result="o"/>
+            <feComponentTransfer in="o" result="sh">
+              <feFuncA type="linear" slope=".22"/>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode in="sh"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <ellipse cx="100" cy="374" rx="58" ry="11" fill="url(#bfFloor)"/>
+        <!-- continuous torso underlay -->
+        <path class="bf-silhouette" d="${torso}" fill="url(#bfSkinGrad)" filter="url(#bfSilSoft)"
+          stroke="rgba(100,116,139,.35)" stroke-width="1.2" stroke-linejoin="round"/>
+        ${baseEls}
+        <!-- heat muscle zones -->
+        <g>${zoneEls}</g>
+        <!-- subtle anatomy lines -->
+        <g pointer-events="none">${defLines}</g>
+        <text class="bf-label" x="100" y="388">${front ? 'FRONT' : 'BACK'} · L/R 구분 · 탭=상세</text>
+      `;
     }
 
     function renderBodyFatigueDetail(item, model) {
@@ -4994,9 +5349,8 @@
       const wrap = document.getElementById('bf3dStage');
       if (!wrap) return;
       if (bf3d && bf3d.renderer) {
-        // resize
         const w = wrap.clientWidth || 300;
-        const h = wrap.clientHeight || 340;
+        const h = wrap.clientHeight || 380;
         bf3d.camera.aspect = w / h;
         bf3d.camera.updateProjectionMatrix();
         bf3d.renderer.setSize(w, h, false);
@@ -5004,98 +5358,158 @@
       }
       disposeBodyFatigue3D(true);
       const w = wrap.clientWidth || 300;
-      const h = wrap.clientHeight || 340;
+      const h = wrap.clientHeight || 380;
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0f172a);
-      const camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-      camera.position.set(0, 1.1, 3.2);
-      camera.lookAt(0, 0.9, 0);
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      scene.background = new THREE.Color(0x0b1220);
+      scene.fog = new THREE.Fog(0x0b1220, 4.5, 9);
+
+      const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+      camera.position.set(0, 1.05, 3.05);
+      camera.lookAt(0, 0.88, 0);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(w, h, false);
-      // keep hint on top
+      if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
+      if (THREE.ACESFilmicToneMapping !== undefined) {
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+      }
       const hint = wrap.querySelector('.bf-3d-hint');
       wrap.insertBefore(renderer.domElement, hint || null);
 
-      const hemi = new THREE.HemisphereLight(0xffffff, 0x334155, 1.1);
+      // studio lighting
+      scene.add(new THREE.AmbientLight(0x94a3b8, 0.35));
+      const hemi = new THREE.HemisphereLight(0xf8fafc, 0x1e293b, 0.85);
       scene.add(hemi);
-      const dir = new THREE.DirectionalLight(0xffffff, 0.85);
-      dir.position.set(2, 4, 3);
-      scene.add(dir);
-      const fill = new THREE.DirectionalLight(0xa5b4fc, 0.35);
-      fill.position.set(-3, 1, -2);
+      const key = new THREE.DirectionalLight(0xffffff, 1.05);
+      key.position.set(2.2, 4.2, 2.8);
+      scene.add(key);
+      const fill = new THREE.DirectionalLight(0xa5b4fc, 0.45);
+      fill.position.set(-2.8, 1.6, -1.5);
       scene.add(fill);
+      const rim = new THREE.DirectionalLight(0x67e8f9, 0.35);
+      rim.position.set(0.4, 1.2, -3);
+      scene.add(rim);
 
       const group = new THREE.Group();
       scene.add(group);
       const meshes = [];
 
-      function addPart(geo, x, y, z, region, side) {
-        const mat = new THREE.MeshStandardMaterial({
-          color: 0x94a3b8, roughness: 0.45, metalness: 0.08, emissive: 0x000000, emissiveIntensity: 0.15
+      function skinMat(hex) {
+        return new THREE.MeshStandardMaterial({
+          color: hex,
+          roughness: 0.52,
+          metalness: 0.06,
+          emissive: 0x000000,
+          emissiveIntensity: 0.1,
+          flatShading: false
         });
+      }
+
+      function addPart(geo, x, y, z, region, side, opts) {
+        const mat = skinMat(0x94a3b8);
         const m = new THREE.Mesh(geo, mat);
         m.position.set(x, y, z);
+        if (opts && opts.rx) m.rotation.x = opts.rx;
+        if (opts && opts.ry) m.rotation.y = opts.ry;
+        if (opts && opts.rz) m.rotation.z = opts.rz;
+        if (opts && opts.sx) m.scale.set(opts.sx, opts.sy || 1, opts.sz || opts.sx);
         m.userData.region = region;
         m.userData.side = side || 'B';
+        m.userData.baseScale = m.scale.clone();
         group.add(m);
         meshes.push(m);
         return m;
       }
 
-      // Units ~ meters-ish mannequin
-      const sphere = (r, wseg = 16, hseg = 12) => new THREE.SphereGeometry(r, wseg, hseg);
-      const cyl = (rt, rb, h, seg = 12) => new THREE.CylinderGeometry(rt, rb, h, seg);
+      const sphere = (r, ws = 28, hs = 20) => new THREE.SphereGeometry(r, ws, hs);
+      const cap = (r, len, capSeg = 8, radSeg = 20) => {
+        if (typeof THREE.CapsuleGeometry === 'function') {
+          return new THREE.CapsuleGeometry(r, len, capSeg, radSeg);
+        }
+        return new THREE.CylinderGeometry(r, r * 0.92, len + r * 2, radSeg);
+      };
 
-      addPart(sphere(0.16), 0, 1.72, 0, 'chest', 'B'); // head visual only → map light? use chest skip - head no region, color neutral always
-      // actually head not in regions - leave gray: region null
-      meshes[meshes.length - 1].userData.region = null;
+      // —— anatomical mannequin (capsule limbs, tapered torso) ——
+      addPart(sphere(0.145, 32, 24), 0, 1.74, 0, null, 'B'); // head
+      addPart(cap(0.055, 0.08), 0, 1.56, 0, null, 'B'); // neck
 
-      addPart(cyl(0.08, 0.1, 0.12), 0, 1.52, 0, null, 'B'); // neck
-      meshes[meshes.length - 1].userData.region = null;
+      // upper torso shell (neutral underlay)
+      addPart(cap(0.2, 0.22, 6, 24), 0, 1.3, 0, null, 'B', { sx: 1.05, sy: 1, sz: 0.72 });
+      // chest plate (front)
+      addPart(sphere(0.17, 24, 16), 0, 1.32, 0.09, 'chest', 'B', { sx: 1.35, sy: 0.95, sz: 0.55 });
+      // back plate
+      addPart(sphere(0.18, 24, 16), 0, 1.28, -0.1, 'back', 'B', { sx: 1.25, sy: 1.05, sz: 0.5 });
+      // core
+      addPart(cap(0.14, 0.16, 6, 20), 0, 1.02, 0.02, 'core', 'B', { sx: 1.15, sy: 1, sz: 0.75 });
 
-      // torso front chest / back
-      const torso = addPart(cyl(0.22, 0.2, 0.45, 16), 0, 1.22, 0, 'chest', 'B');
-      // second torso slice for back - same mesh colored by max chest/back - we'll split by using two half-ish
-      addPart(new THREE.BoxGeometry(0.38, 0.28, 0.12), 0, 1.28, 0.1, 'chest', 'B');
-      addPart(new THREE.BoxGeometry(0.38, 0.34, 0.14), 0, 1.22, -0.1, 'back', 'B');
-      addPart(new THREE.BoxGeometry(0.32, 0.22, 0.16), 0, 0.98, 0.05, 'core', 'B');
+      // shoulders
+      addPart(sphere(0.095, 24, 18), -0.3, 1.44, 0, 'shoulders', 'L');
+      addPart(sphere(0.095, 24, 18), 0.3, 1.44, 0, 'shoulders', 'R');
+      // upper + lower arms (slight inward angle)
+      addPart(cap(0.052, 0.28), -0.38, 1.22, 0, 'arms', 'L', { rz: 0.12 });
+      addPart(cap(0.045, 0.26), -0.42, 0.88, 0.02, 'arms', 'L', { rz: 0.08 });
+      addPart(cap(0.052, 0.28), 0.38, 1.22, 0, 'arms', 'R', { rz: -0.12 });
+      addPart(cap(0.045, 0.26), 0.42, 0.88, 0.02, 'arms', 'R', { rz: -0.08 });
+      // hands
+      addPart(sphere(0.04, 16, 12), -0.44, 0.68, 0.03, null, 'B');
+      addPart(sphere(0.04, 16, 12), 0.44, 0.68, 0.03, null, 'B');
 
-      // shoulders L/R
-      addPart(sphere(0.1), -0.28, 1.42, 0, 'shoulders', 'L');
-      addPart(sphere(0.1), 0.28, 1.42, 0, 'shoulders', 'R');
-      // arms
-      addPart(cyl(0.055, 0.045, 0.55), -0.38, 1.1, 0, 'arms', 'L');
-      addPart(cyl(0.055, 0.045, 0.55), 0.38, 1.1, 0, 'arms', 'R');
       // glutes
-      addPart(sphere(0.12), -0.1, 0.82, -0.06, 'glutes', 'L');
-      addPart(sphere(0.12), 0.1, 0.82, -0.06, 'glutes', 'R');
-      // quads front
-      addPart(cyl(0.08, 0.065, 0.45), -0.12, 0.52, 0.04, 'quads', 'L');
-      addPart(cyl(0.08, 0.065, 0.45), 0.12, 0.52, 0.04, 'quads', 'R');
-      // hams back
-      addPart(cyl(0.07, 0.06, 0.4), -0.12, 0.5, -0.06, 'hams', 'L');
-      addPart(cyl(0.07, 0.06, 0.4), 0.12, 0.5, -0.06, 'hams', 'R');
-      // calves
-      addPart(cyl(0.055, 0.04, 0.38), -0.12, 0.12, 0, 'calves', 'L');
-      addPart(cyl(0.055, 0.04, 0.38), 0.12, 0.12, 0, 'calves', 'R');
+      addPart(sphere(0.11, 20, 16), -0.1, 0.84, -0.07, 'glutes', 'L', { sx: 1.05, sy: 0.9, sz: 0.95 });
+      addPart(sphere(0.11, 20, 16), 0.1, 0.84, -0.07, 'glutes', 'R', { sx: 1.05, sy: 0.9, sz: 0.95 });
 
-      // floor ring
+      // quads (front thigh)
+      addPart(cap(0.078, 0.32), -0.125, 0.55, 0.05, 'quads', 'L', { sx: 1.05, sy: 1, sz: 0.95 });
+      addPart(cap(0.078, 0.32), 0.125, 0.55, 0.05, 'quads', 'R', { sx: 1.05, sy: 1, sz: 0.95 });
+      // hams (rear thigh)
+      addPart(cap(0.07, 0.28), -0.125, 0.54, -0.07, 'hams', 'L', { sx: 0.95, sy: 1, sz: 0.9 });
+      addPart(cap(0.07, 0.28), 0.125, 0.54, -0.07, 'hams', 'R', { sx: 0.95, sy: 1, sz: 0.9 });
+      // calves
+      addPart(cap(0.055, 0.28), -0.12, 0.16, 0.01, 'calves', 'L', { sx: 1.05, sy: 1, sz: 1.1 });
+      addPart(cap(0.055, 0.28), 0.12, 0.16, 0.01, 'calves', 'R', { sx: 1.05, sy: 1, sz: 1.1 });
+      // feet
+      addPart(sphere(0.05, 14, 10), -0.12, -0.02, 0.06, null, 'B', { sx: 1.1, sy: 0.55, sz: 1.6 });
+      addPart(sphere(0.05, 14, 10), 0.12, -0.02, 0.06, null, 'B', { sx: 1.1, sy: 0.55, sz: 1.6 });
+
+      // floor disc + glow ring
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(0.72, 48),
+        new THREE.MeshStandardMaterial({
+          color: 0x1e293b, roughness: 0.9, metalness: 0.05,
+          transparent: true, opacity: 0.65
+        })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.04;
+      group.add(floor);
+
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.55, 0.7, 40),
-        new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+        new THREE.RingGeometry(0.58, 0.74, 64),
+        new THREE.MeshBasicMaterial({
+          color: 0x6366f1, side: THREE.DoubleSide, transparent: true, opacity: 0.45
+        })
       );
       ring.rotation.x = -Math.PI / 2;
-      ring.position.y = 0;
+      ring.position.y = -0.035;
       group.add(ring);
 
-      group.position.y = -0.15;
+      // soft ground highlight
+      const glow = new THREE.Mesh(
+        new THREE.CircleGeometry(0.5, 32),
+        new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.12 })
+      );
+      glow.rotation.x = -Math.PI / 2;
+      glow.position.y = -0.03;
+      group.add(glow);
+
+      group.position.y = -0.08;
       if (bodyFatigueView === 'back') group.rotation.y = Math.PI;
 
-      // interaction
-      let dragging = false, lastX = 0, lastY = 0;
+      let dragging = false, lastX = 0, lastY = 0, moved = false;
       const onDown = (e) => {
-        dragging = true;
+        dragging = true; moved = false;
         const p = e.touches ? e.touches[0] : e;
         lastX = p.clientX; lastY = p.clientY;
       };
@@ -5104,28 +5518,29 @@
         const p = e.touches ? e.touches[0] : e;
         const dx = p.clientX - lastX;
         const dy = p.clientY - lastY;
+        if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
         lastX = p.clientX; lastY = p.clientY;
         group.rotation.y += dx * 0.01;
-        group.rotation.x += dy * 0.008;
-        group.rotation.x = Math.max(-0.5, Math.min(0.5, group.rotation.x));
+        group.rotation.x += dy * 0.007;
+        group.rotation.x = Math.max(-0.45, Math.min(0.45, group.rotation.x));
       };
       const onUp = () => { dragging = false; };
       const onWheel = (e) => {
         e.preventDefault();
-        camera.position.z = Math.max(2.2, Math.min(5, camera.position.z + e.deltaY * 0.002));
+        camera.position.z = Math.max(2.1, Math.min(4.8, camera.position.z + e.deltaY * 0.002));
       };
       const raycaster = new THREE.Raycaster();
       const pointer = new THREE.Vector2();
       const onClick = (e) => {
+        if (moved) return;
         const rect = renderer.domElement.getBoundingClientRect();
         const p = e.changedTouches ? e.changedTouches[0] : e;
         pointer.x = ((p.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((p.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(pointer, camera);
         const hits = raycaster.intersectObjects(meshes, false);
-        if (hits.length && hits[0].object.userData.region) {
-          selectBodyRegion(hits[0].object.userData.region);
-        }
+        const hit = hits.find(h => h.object.userData.region);
+        if (hit) selectBodyRegion(hit.object.userData.region);
       };
       renderer.domElement.addEventListener('mousedown', onDown);
       renderer.domElement.addEventListener('mousemove', onMove);
@@ -5138,7 +5553,9 @@
 
       const animate = () => {
         bf3d.raf = requestAnimationFrame(animate);
-        if (!dragging) group.rotation.y += 0.003;
+        if (!dragging) group.rotation.y += 0.0025;
+        // subtle ring pulse
+        ring.material.opacity = 0.32 + Math.sin(performance.now() * 0.0015) * 0.1;
         renderer.render(scene, camera);
       };
 
@@ -5153,7 +5570,12 @@
       bf3d.meshes.forEach(m => {
         const reg = m.userData.region;
         if (!reg || !m.material) {
-          if (m.material && m.material.color) m.material.color.setHex(0xcbd5e1);
+          if (m.material && m.material.color) {
+            m.material.color.setHex(0xcbd5e1);
+            m.material.emissive.setHex(0x0f172a);
+            m.material.emissiveIntensity = 0.05;
+            m.material.roughness = 0.55;
+          }
           return;
         }
         const it = byId[reg];
@@ -5163,13 +5585,14 @@
         const c = new THREE.Color(fatigueHeatColor(sc));
         m.material.color.copy(c);
         m.material.emissive.copy(c);
-        m.material.emissiveIntensity = 0.12 + (sc / 100) * 0.35;
-        // highlight selected
+        m.material.emissiveIntensity = 0.1 + (sc / 100) * 0.42;
+        m.material.roughness = 0.42 + (1 - sc / 100) * 0.2;
+        const base = m.userData.baseScale || { x: 1, y: 1, z: 1 };
         if (bodyFatigueSelected === reg) {
-          m.material.emissiveIntensity += 0.25;
-          m.scale.setScalar(1.04);
+          m.material.emissiveIntensity += 0.28;
+          m.scale.set(base.x * 1.05, base.y * 1.05, base.z * 1.05);
         } else {
-          m.scale.setScalar(1);
+          m.scale.set(base.x, base.y, base.z);
         }
       });
     }
@@ -11623,7 +12046,7 @@ function roundRect(ctx, x, y, w, h, r) {
       const gemini = loadGeminiSettings();
       return {
         app: 'fit-tracker-2',
-        version: 4.18,
+        version: APP_VERSION,
         exportedAt: new Date().toISOString(),
         data: S,
         gemini: gemini.apiKey
@@ -11907,9 +12330,277 @@ function roundRect(ctx, x, y, w, h, r) {
     ensureGeminiSeeded();
     updateGeminiStatusUI();
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    // —— App version / force refresh / SW updates ——
+    let _swReg = null;
+    let _updateBannerDismissed = false;
+    let _swRefreshing = false;
+
+    function updateAppVersionUI() {
+      const badge = document.getElementById('appVerBadge');
+      if (badge) badge.textContent = APP_VERSION;
+      const lab = document.getElementById('appVerLabel');
+      if (lab) lab.textContent = 'v' + APP_VERSION;
+      refreshAppUpdateStatus();
     }
+
+    async function getSwVersionInfo() {
+      if (!('serviceWorker' in navigator)) return null;
+      try {
+        const reg = _swReg || await navigator.serviceWorker.getRegistration();
+        const worker = reg && (reg.active || reg.waiting || reg.installing);
+        if (!worker) return null;
+        return await new Promise((resolve) => {
+          const ch = new MessageChannel();
+          const t = setTimeout(() => resolve(null), 1200);
+          ch.port1.onmessage = (ev) => {
+            clearTimeout(t);
+            resolve(ev.data || null);
+          };
+          try {
+            worker.postMessage({ type: 'GET_VERSION' }, [ch.port2]);
+          } catch (e) {
+            clearTimeout(t);
+            resolve(null);
+          }
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function refreshAppUpdateStatus() {
+      const el = document.getElementById('appUpdateStatus');
+      if (!el) return;
+      const parts = ['앱 버전 ' + APP_VERSION];
+      try {
+        if (!('serviceWorker' in navigator)) {
+          parts.push('서비스워커 미지원 · 브라우저 새로고침 사용');
+          el.textContent = parts.join(' · ');
+          return;
+        }
+        const reg = _swReg || await navigator.serviceWorker.getRegistration();
+        if (!reg) {
+          parts.push('오프라인 캐시 미등록');
+        } else if (reg.waiting) {
+          parts.push('새 버전 대기 중 → 「지금 적용」 또는 강제 새로고침');
+        } else if (reg.installing) {
+          parts.push('업데이트 설치 중…');
+        } else {
+          parts.push('서비스워커 활성');
+        }
+        const info = await getSwVersionInfo();
+        if (info && info.cache) parts.push('캐시 ' + info.cache);
+        if (info && info.appVersion && info.appVersion !== APP_VERSION) {
+          parts.push('SW v' + info.appVersion + ' (불일치 → 강제 새로고침 권장)');
+        }
+      } catch (e) {
+        parts.push('상태 확인 실패');
+      }
+      el.textContent = parts.join(' · ');
+    }
+
+    function showUpdateBanner(force) {
+      if (_updateBannerDismissed && !force) return;
+      const bar = document.getElementById('updateBanner');
+      if (!bar) return;
+      bar.classList.add('on');
+      const body = document.getElementById('updateBannerBody');
+      if (body) {
+        body.textContent = '캐시에 새 앱이 받아졌습니다. 적용하면 화면을 새로 불러옵니다. 기록 데이터는 유지됩니다. (현재 v' + APP_VERSION + ')';
+      }
+    }
+
+    function dismissUpdateBanner() {
+      _updateBannerDismissed = true;
+      const bar = document.getElementById('updateBanner');
+      if (bar) bar.classList.remove('on');
+    }
+
+    async function applyAppUpdate() {
+      try {
+        const reg = _swReg || await navigator.serviceWorker.getRegistration();
+        if (reg && reg.waiting) {
+          toast('업데이트 적용 중…');
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          // controllerchange → reload
+          setTimeout(() => {
+            if (!_swRefreshing) softReloadApp();
+          }, 1800);
+          return;
+        }
+      } catch (e) {}
+      await forceAppRefresh(true);
+    }
+
+    function softReloadApp() {
+      try {
+        const url = new URL(location.href);
+        url.searchParams.set('_r', String(Date.now()));
+        location.replace(url.pathname + url.search + (url.hash || ''));
+      } catch (e) {
+        location.reload();
+      }
+    }
+
+    async function clearAppCachesOnly() {
+      if (!confirm('앱 캐시만 비울까요?\n기록 데이터는 유지되고, 다음 로드 때 파일을 다시 받습니다.')) return;
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHES' });
+        }
+        toast('캐시 비움 · 새로고침하면 최신 파일을 받습니다');
+        await refreshAppUpdateStatus();
+      } catch (e) {
+        toast('캐시 비우기 실패: ' + (e.message || e));
+      }
+    }
+
+    async function forceAppRefresh(skipConfirm) {
+      if (!skipConfirm) {
+        if (!confirm(
+          '강제 새로고침할까요?\n\n'
+          + '· 서비스워커·오프라인 캐시를 지웁니다\n'
+          + '· 최신 앱 파일을 다시 받습니다\n'
+          + '· 식단·운동·체중 등 기록은 유지됩니다'
+        )) return;
+      }
+      toast('강제 새로고침 중…');
+      try {
+        if ('serviceWorker' in navigator) {
+          try {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            if (reg && reg.active) reg.active.postMessage({ type: 'CLEAR_CACHES' });
+          } catch (e) {}
+          try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          } catch (e) {}
+        }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+      } catch (e) {
+        console.warn('forceAppRefresh cleanup', e);
+      }
+      // Hard navigation with cache-bust — avoids SW serving old shell
+      try {
+        const url = new URL(location.href);
+        // strip previous bust params, add new
+        url.searchParams.delete('_r');
+        url.searchParams.set('_force', String(Date.now()));
+        url.searchParams.set('v', APP_VERSION);
+        location.replace(url.pathname + url.search + (url.hash || ''));
+      } catch (e) {
+        location.reload();
+      }
+    }
+
+    async function checkAppUpdate() {
+      toast('업데이트 확인 중…');
+      try {
+        if (!('serviceWorker' in navigator)) {
+          toast('SW 미지원 · 강제 새로고침을 사용하세요');
+          await refreshAppUpdateStatus();
+          return;
+        }
+        let reg = _swReg || await navigator.serviceWorker.getRegistration();
+        if (!reg) {
+          reg = await navigator.serviceWorker.register('./sw.js');
+          _swReg = reg;
+          toast('서비스워커 등록됨 · 다시 확인해 주세요');
+          await refreshAppUpdateStatus();
+          return;
+        }
+        await reg.update();
+        // give install a moment
+        await new Promise((r) => setTimeout(r, 400));
+        if (reg.waiting) {
+          _updateBannerDismissed = false;
+          showUpdateBanner(true);
+          toast('새 버전이 준비됐어요 · 지금 적용을 눌러 주세요');
+        } else if (reg.installing) {
+          toast('업데이트 설치 중… 잠시 후 다시 확인');
+          reg.installing.addEventListener('statechange', () => {
+            if (reg.waiting || (reg.installing && reg.installing.state === 'installed')) {
+              _updateBannerDismissed = false;
+              showUpdateBanner(true);
+            }
+          });
+        } else {
+          toast('이미 최신 버전이거나 서버에 변경이 없습니다');
+          // still offer force refresh if user feels stuck
+        }
+      } catch (e) {
+        toast('확인 실패: ' + (e.message || e) + ' · 강제 새로고침을 시도해 보세요');
+      }
+      await refreshAppUpdateStatus();
+    }
+
+    function setupServiceWorkerUpdate() {
+      if (!('serviceWorker' in navigator)) {
+        updateAppVersionUI();
+        return;
+      }
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (_swRefreshing) return;
+        _swRefreshing = true;
+        softReloadApp();
+      });
+
+      const boot = async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('./sw.js');
+          _swReg = reg;
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener('statechange', () => {
+              // New worker installed and old controller exists → update ready
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                _updateBannerDismissed = false;
+                showUpdateBanner(true);
+                refreshAppUpdateStatus();
+              } else if (nw.state === 'installed' && !navigator.serviceWorker.controller) {
+                // First install — activate immediately
+                nw.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+          if (reg.waiting) {
+            if (navigator.serviceWorker.controller) {
+              showUpdateBanner(true);
+            } else {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+          }
+          // check on load + when tab becomes visible
+          reg.update().catch(() => {});
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update().catch(() => {});
+              refreshAppUpdateStatus();
+            }
+          });
+          setInterval(() => {
+            if (document.visibilityState === 'visible') reg.update().catch(() => {});
+          }, 30 * 60 * 1000);
+        } catch (e) {
+          console.warn('SW register failed', e);
+        }
+        updateAppVersionUI();
+      };
+      if (document.readyState === 'complete') boot();
+      else window.addEventListener('load', boot);
+    }
+
+    updateAppVersionUI();
+    setupServiceWorkerUpdate();
   </script>
 </body>
 </html>

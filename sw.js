@@ -1,4 +1,6 @@
-const CACHE = 'fit-tracker-2-v36';
+/* FIT TRACKER 2 service worker — bump CACHE on every deploy */
+const CACHE = 'fit-tracker-2-v37';
+const APP_VERSION = '4.20';
 const ASSETS = [
   './',
   './index.html',
@@ -12,24 +14,49 @@ const ASSETS = [
   './coaches/naeun.jpg',
   './coaches/ganghyeok.jpg',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap'
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // Do not skipWaiting here — let the app show an update banner,
+  // then client posts SKIP_WAITING (or user runs force refresh).
+  e.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {}))
+  );
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// Client → SW control (update apply / force clear)
+self.addEventListener('message', (e) => {
+  const data = e.data || {};
+  const type = typeof data === 'string' ? data : data.type;
+  if (type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+  if (type === 'CLEAR_CACHES') {
+    e.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
+    return;
+  }
+  if (type === 'GET_VERSION' && e.ports && e.ports[0]) {
+    e.ports[0].postMessage({ cache: CACHE, appVersion: APP_VERSION });
+  }
 });
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url || '';
-  // HTML/앱 셸은 네트워크 우선 (옛 캐시가 클릭 먹통·구버전 고정하는 문제 방지)
+  // HTML shell: network first (prevents stuck old app shell)
   const isNav = e.request.mode === 'navigate'
     || url.endsWith('/')
     || url.endsWith('/index.html')
@@ -59,7 +86,7 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => hit);
-      // stale-while-revalidate: 캐시가 있어도 백그라운드 갱신
+      // stale-while-revalidate
       return hit || net;
     })
   );
