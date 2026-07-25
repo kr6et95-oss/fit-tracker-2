@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="foods.js"></script>
+  <script src="recipes.js"></script>
   <script src="workouts.js"></script>
   <script src="garmin.js"></script>
   <script src="micros.js"></script>
@@ -704,6 +705,54 @@
     .kpi .kl { font-size: .72rem; color: var(--muted); margin-bottom: 4px; }
     .kpi .kv { font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--p2); }
     .kpi .ks { font-size: .7rem; color: var(--muted); margin-top: 2px; }
+    /* Diet recipe recommender */
+    .recipe-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .recipe-filters .chip { font-size: .74rem; padding: 6px 10px; }
+    .recipe-hint {
+      font-size: .74rem; color: var(--muted); line-height: 1.45;
+      margin: 0 0 10px; padding: 8px 10px; border-radius: 10px;
+      background: #f3f0ff; border: 1px solid #e4e0f8;
+    }
+    .recipe-hint strong { color: var(--p2); }
+    .recipe-list { display: flex; flex-direction: column; gap: 10px; }
+    .recipe-card {
+      border: 1px solid var(--line); border-radius: 14px;
+      background: linear-gradient(165deg, #faf9ff 0%, #fff 55%);
+      padding: 12px 12px 10px;
+    }
+    .recipe-card .rc-top {
+      display: flex; justify-content: space-between; gap: 8px; align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .recipe-card .rc-title { font-weight: 800; font-size: .9rem; line-height: 1.3; color: #1e1b2e; }
+    .recipe-card .rc-badge {
+      flex-shrink: 0; font-size: .65rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px;
+      background: #ede9fe; color: #5b21b6;
+    }
+    .recipe-card .rc-badge.cvs { background: #e0f2fe; color: #0369a1; }
+    .recipe-card .rc-badge.delivery { background: #ffedd5; color: #c2410c; }
+    .recipe-card .rc-tip {
+      font-size: .74rem; color: #4b5563; line-height: 1.45;
+      margin: 0 0 8px; padding: 8px 10px; border-radius: 10px;
+      background: #f8fafc; border-left: 3px solid var(--p1);
+    }
+    .recipe-card .rc-items {
+      font-size: .72rem; color: var(--muted); line-height: 1.4; margin-bottom: 8px;
+    }
+    .recipe-card .rc-macros {
+      display: flex; flex-wrap: wrap; gap: 6px 10px;
+      font-family: Poppins, sans-serif; font-size: .72rem; font-weight: 700;
+      color: var(--p1); margin-bottom: 10px;
+    }
+    .recipe-card .rc-macros span { color: #64748b; font-weight: 600; }
+    .recipe-card .rc-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .recipe-card .rc-actions .btn { width: auto; padding: 8px 12px; font-size: .74rem; }
+    .recipe-empty {
+      text-align: center; padding: 16px 12px; color: var(--muted);
+      font-size: .8rem; line-height: 1.45;
+    }
+
     .food-search-wrap { position: relative; margin-bottom: 10px; }
     .food-results {
       max-height: 180px; overflow: auto;
@@ -1910,7 +1959,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.33</div>
+        <div class="ver" id="appVerBadge">4.34</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2489,6 +2538,31 @@
         </div>
       </div>
 
+      <div class="card" id="recipeRecCard">
+        <div class="card-h">
+          <h2>🥗 다이어트 레시피</h2>
+          <button type="button" class="btn btn-g" style="width:auto;padding:6px 10px;font-size:.72rem" onclick="refreshRecipeRecs(true)">🔄 새로고침</button>
+        </div>
+        <p class="muted" style="margin-bottom:8px;line-height:1.4;font-size:.74rem">
+          영양 꿀팁 조합 · 집밥/편의점/배달. 자유롭게 구경하거나, 오늘 남은 칼로리·단백에 맞춰 추천받아요.
+        </p>
+        <div class="recipe-filters" id="recipeModeChips"></div>
+        <div class="recipe-filters" id="recipeSrcChips"></div>
+        <div class="recipe-filters" id="recipeMealChips"></div>
+        <div class="recipe-filters" id="recipeTagChips"></div>
+        <div class="recipe-hint" id="recipeRemainHint">목표·기록을 불러오는 중…</div>
+        <div class="field" style="margin-bottom:10px">
+          <label>어느 끼니에 넣을까?</label>
+          <select id="recipeTargetMeal">
+            <option value="breakfast">아침</option>
+            <option value="lunch" selected>점심</option>
+            <option value="dinner">저녁</option>
+            <option value="snack">간식</option>
+          </select>
+        </div>
+        <div class="recipe-list" id="recipeRecList"></div>
+      </div>
+
       <div class="card">
         <div class="card-h"><h2>📋 끼니 템플릿</h2><span class="muted" id="mealTplCount">0개</span></div>
         <p class="muted" style="margin-bottom:8px;line-height:1.4">자주 먹는 조합을 저장해 원탭으로 넣습니다. 끼니 모달에서 「이 끼를 템플릿으로」도 가능.</p>
@@ -2897,7 +2971,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.33</span>
+            <span class="muted" id="appVerLabel">v4.34</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3255,7 +3329,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.33';
+    const APP_VERSION = '4.34';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -3263,6 +3337,7 @@
       micro: f.micro
     }));
     const FOOD_CATS = window.FT_FOOD_CATS || ['전체'];
+    const RECIPES = window.FT_RECIPES || [];
     function foodLabel(f, portion) {
       if (window.FT_foodLabel) return window.FT_foodLabel(f, portion);
       if (!f) return '';
@@ -3299,6 +3374,11 @@
     let woVolChart = null;
     let reportRange = 'week';
     let foodCat = '전체';
+    let recipeMode = 'free'; // free | remaining
+    let recipeSrc = 'all'; // all | home | cvs | delivery
+    let recipeMealFilter = 'any'; // any | breakfast | lunch | dinner | snack
+    let recipeTag = 'all'; // all | 꿀팁 | 고단백 | 저칼로리
+    let recipeShuffle = 0;
     let restForm = { sleepQ: 3, energy: 3, soreness: 2, stress: 2, restDay: false };
     let portion = 1;
     let foodBase = null; // { n, cal, pro, carb, fat } before portion
@@ -3464,6 +3544,324 @@
       if (f.micro) o.micro = typeof f.micro === 'object' ? JSON.parse(JSON.stringify(f.micro)) : f.micro;
       if (f.cat) o.cat = f.cat;
       return o;
+    }
+
+    // ===== Diet recipe recommender =====
+    function remainingMacros() {
+      const g = S.goals || { cal: 0, pro: 0, carb: 0, fat: 0 };
+      const m = mealTotals();
+      return {
+        cal: Math.max(0, Math.round((+g.cal || 0) - m.cal)),
+        pro: Math.max(0, Math.round(((+g.pro || 0) - m.pro) * 10) / 10),
+        carb: Math.max(0, Math.round(((+g.carb || 0) - m.carb) * 10) / 10),
+        fat: Math.max(0, Math.round(((+g.fat || 0) - m.fat) * 10) / 10),
+        goalCal: +g.cal || 0,
+        goalPro: +g.pro || 0,
+        eatenCal: Math.round(m.cal),
+        eatenPro: Math.round(m.pro * 10) / 10
+      };
+    }
+
+    function resolveRecipeItem(it) {
+      const p = (it.p != null && isFinite(+it.p)) ? +it.p : 1;
+      if (it.ref && it.ref.n) {
+        const f = FOODS.find(x => x.n === it.ref.n && (!it.ref.unit || x.unit === it.ref.unit))
+          || FOODS.find(x => x.n === it.ref.n);
+        if (f) {
+          const o = {
+            name: f.n + (p !== 1 && f.unit ? ` (${Math.round(p * 100) / 100}×${f.unit})` : (f.unit ? ` ${f.unit}` : '')),
+            cal: Math.round((+f.cal || 0) * p * 10) / 10,
+            pro: Math.round((+f.pro || 0) * p * 10) / 10,
+            carb: Math.round((+f.carb || 0) * p * 10) / 10,
+            fat: Math.round((+f.fat || 0) * p * 10) / 10
+          };
+          if (f.g != null) o.g = Math.round(f.g * p);
+          if (f.unit) o.unit = f.unit;
+          if (f.cat) o.cat = f.cat;
+          o.micro = attachMicro({ name: f.n, n: f.n, cat: f.cat, cal: o.cal, micro: f.micro });
+          return o;
+        }
+      }
+      const o = {
+        name: it.name || '음식',
+        cal: Math.round((+it.cal || 0) * p * 10) / 10,
+        pro: Math.round((+it.pro || 0) * p * 10) / 10,
+        carb: Math.round((+it.carb || 0) * p * 10) / 10,
+        fat: Math.round((+it.fat || 0) * p * 10) / 10
+      };
+      if (it.g != null) o.g = Math.round((+it.g) * p);
+      if (it.unit) o.unit = it.unit;
+      o.micro = attachMicro({ name: o.name, cal: o.cal });
+      return o;
+    }
+
+    function resolveRecipe(r) {
+      if (!r) return null;
+      const items = (r.items || []).map(resolveRecipeItem);
+      const totals = items.reduce((s, f) => {
+        s.cal += +f.cal || 0;
+        s.pro += +f.pro || 0;
+        s.carb += +f.carb || 0;
+        s.fat += +f.fat || 0;
+        return s;
+      }, { cal: 0, pro: 0, carb: 0, fat: 0 });
+      totals.cal = Math.round(totals.cal);
+      totals.pro = Math.round(totals.pro * 10) / 10;
+      totals.carb = Math.round(totals.carb * 10) / 10;
+      totals.fat = Math.round(totals.fat * 10) / 10;
+      return { ...r, resolved: items, totals };
+    }
+
+    function recipeSrcLabel(src) {
+      if (src === 'cvs') return '편의점';
+      if (src === 'delivery') return '배달';
+      return '집밥';
+    }
+
+    function filterRecipes() {
+      return RECIPES.filter(r => {
+        if (recipeSrc !== 'all' && r.src !== recipeSrc) return false;
+        if (recipeMealFilter !== 'any') {
+          const meals = r.meal || [];
+          if (meals.length && !meals.includes(recipeMealFilter) && !meals.includes('any')) return false;
+        }
+        if (recipeTag !== 'all') {
+          const tags = r.tags || [];
+          if (!tags.includes(recipeTag)) return false;
+        }
+        return true;
+      });
+    }
+
+    function scoreRecipe(resolved, rem) {
+      if (!resolved) return -1e9;
+      const t = resolved.totals;
+      let score = 0;
+      // tip recipes slightly preferred in free mode
+      if ((resolved.tags || []).includes('꿀팁')) score += 8;
+      if ((resolved.tags || []).includes('고단백')) score += 4;
+      if (recipeMode === 'remaining') {
+        const rc = rem.cal || 0;
+        const rp = rem.pro || 0;
+        if (rc < 80) {
+          // almost over — prefer very light snacks
+          score += t.cal <= 200 ? 30 : (t.cal <= 350 ? 10 : -40);
+        } else {
+          // ideal meal uses ~35–90% of remaining cal
+          const ratio = t.cal / Math.max(1, rc);
+          if (ratio >= 0.35 && ratio <= 0.95) score += 40 - Math.abs(ratio - 0.65) * 50;
+          else if (ratio < 0.35) score += 10 + ratio * 20;
+          else if (ratio <= 1.1) score += 5;
+          else score -= (ratio - 1.1) * 80;
+        }
+        if (rp > 0) {
+          const pr = t.pro / Math.max(1, rp);
+          if (pr >= 0.25 && pr <= 1.05) score += 25;
+          else if (t.pro >= 20) score += 12;
+          else score += Math.min(10, t.pro / 3);
+        }
+        // protein density bonus
+        if (t.cal > 0 && t.pro / t.cal >= 0.08) score += 10;
+      } else {
+        // free: balanced variety by calories mid-range
+        if (t.cal >= 200 && t.cal <= 550) score += 12;
+        if (t.pro >= 20) score += 8;
+        score += (recipeShuffle + (resolved.id || '').length) % 7;
+      }
+      // mild shuffle salt
+      const salt = ((resolved.id || '').charCodeAt(0) || 0) + recipeShuffle * 17;
+      score += (salt % 13) - 6;
+      return score;
+    }
+
+    function pickRecipeRecs(n = 3) {
+      const rem = remainingMacros();
+      const pool = filterRecipes().map(resolveRecipe).filter(Boolean);
+      const scored = pool.map(r => ({ r, s: scoreRecipe(r, rem) }))
+        .sort((a, b) => b.s - a.s);
+      const out = [];
+      const used = new Set();
+      for (const x of scored) {
+        if (out.length >= n) break;
+        if (used.has(x.r.id)) continue;
+        // diversify sources a bit
+        if (out.length >= 1 && recipeSrc === 'all') {
+          const sameSrc = out.filter(o => o.src === x.r.src).length;
+          if (sameSrc >= 2 && scored.length > n + 2) continue;
+        }
+        used.add(x.r.id);
+        out.push(x.r);
+      }
+      // if diversify skipped too many, fill
+      if (out.length < n) {
+        for (const x of scored) {
+          if (out.length >= n) break;
+          if (used.has(x.r.id)) continue;
+          used.add(x.r.id);
+          out.push(x.r);
+        }
+      }
+      return { list: out, rem };
+    }
+
+    function setRecipeMode(mode) {
+      recipeMode = mode;
+      refreshRecipeRecs(false);
+    }
+    function setRecipeSrc(src) {
+      recipeSrc = src;
+      refreshRecipeRecs(false);
+    }
+    function setRecipeMealFilter(m) {
+      recipeMealFilter = m;
+      refreshRecipeRecs(false);
+    }
+    function setRecipeTag(tag) {
+      recipeTag = tag;
+      refreshRecipeRecs(false);
+    }
+    function refreshRecipeRecs(spin) {
+      if (spin) recipeShuffle = (recipeShuffle + 1 + Math.floor(Math.random() * 5)) % 1000;
+      renderRecipeRecs();
+    }
+
+    function recipeTargetMeal() {
+      const el = document.getElementById('recipeTargetMeal');
+      return (el && el.value) || 'lunch';
+    }
+
+    function applyRecipeToMeal(id, mealType) {
+      const raw = RECIPES.find(r => r.id === id);
+      if (!raw) return toast('레시피를 찾지 못했어요');
+      const r = resolveRecipe(raw);
+      const meal = mealType || recipeTargetMeal();
+      if (!day().meals[meal]) day().meals[meal] = [];
+      r.resolved.forEach(f => day().meals[meal].unshift(cloneFoodItem(f)));
+      save();
+      toast(`「${r.n}」 ${r.resolved.length}품목 추가 · ${r.totals.cal}kcal`);
+      try { renderMealModal(); } catch (e) {}
+      render();
+    }
+
+    function saveRecipeAsTemplate(id) {
+      const raw = RECIPES.find(r => r.id === id);
+      if (!raw) return toast('레시피를 찾지 못했어요');
+      const r = resolveRecipe(raw);
+      const meal = recipeTargetMeal();
+      const items = r.resolved.map(f => {
+        const o = { name: f.name, cal: f.cal, pro: f.pro, carb: f.carb, fat: f.fat };
+        if (f.g != null) o.g = f.g;
+        if (f.unit) o.unit = f.unit;
+        if (f.micro) o.micro = f.micro;
+        return o;
+      });
+      ensureMealTemplates().unshift({
+        id: uid(),
+        name: r.n,
+        meal,
+        items,
+        createdAt: Date.now(),
+        fromRecipe: r.id
+      });
+      save();
+      renderMealTemplates();
+      toast('끼니 템플릿으로 저장!');
+    }
+
+    function renderRecipeRecs() {
+      const listEl = document.getElementById('recipeRecList');
+      const hint = document.getElementById('recipeRemainHint');
+      if (!listEl) return;
+
+      const modeBox = document.getElementById('recipeModeChips');
+      if (modeBox) {
+        modeBox.innerHTML = [
+          { id: 'free', label: '✨ 자유롭게' },
+          { id: 'remaining', label: '🎯 남은 칼로리·단백' }
+        ].map(m =>
+          `<button type="button" class="chip${recipeMode === m.id ? ' on' : ''}" onclick="setRecipeMode('${m.id}')">${m.label}</button>`
+        ).join('');
+      }
+      const srcBox = document.getElementById('recipeSrcChips');
+      if (srcBox) {
+        srcBox.innerHTML = [
+          { id: 'all', label: '전체' },
+          { id: 'home', label: '🏠 집밥' },
+          { id: 'cvs', label: '🏪 편의점' },
+          { id: 'delivery', label: '🛵 배달' }
+        ].map(m =>
+          `<button type="button" class="chip${recipeSrc === m.id ? ' on' : ''}" onclick="setRecipeSrc('${m.id}')">${m.label}</button>`
+        ).join('');
+      }
+      const mealBox = document.getElementById('recipeMealChips');
+      if (mealBox) {
+        mealBox.innerHTML = [
+          { id: 'any', label: '끼니 전체' },
+          { id: 'breakfast', label: '아침' },
+          { id: 'lunch', label: '점심' },
+          { id: 'dinner', label: '저녁' },
+          { id: 'snack', label: '간식' }
+        ].map(m =>
+          `<button type="button" class="chip${recipeMealFilter === m.id ? ' on' : ''}" onclick="setRecipeMealFilter('${m.id}')">${m.label}</button>`
+        ).join('');
+      }
+      const tagBox = document.getElementById('recipeTagChips');
+      if (tagBox) {
+        tagBox.innerHTML = [
+          { id: 'all', label: '모든 팁' },
+          { id: '꿀팁', label: '💡 영양 꿀팁' },
+          { id: '고단백', label: '💪 고단백' },
+          { id: '저칼로리', label: '🪶 저칼로리' }
+        ].map(m =>
+          `<button type="button" class="chip${recipeTag === m.id ? ' on' : ''}" onclick="setRecipeTag('${m.id}')">${m.label}</button>`
+        ).join('');
+      }
+
+      const { list, rem } = pickRecipeRecs(3);
+      if (hint) {
+        if (recipeMode === 'remaining') {
+          if (!S.goals || !S.goals.cal) {
+            hint.innerHTML = '목표 칼로리가 없어요. 프로필을 설정하면 <strong>잔여 매크로</strong> 기준 추천이 정확해져요. 지금은 대략 추천합니다.';
+          } else {
+            hint.innerHTML = `오늘 남은 <strong>${rem.cal}kcal</strong> · 단백 <strong>${rem.pro}g</strong>
+              <span style="opacity:.85"> (섭취 ${rem.eatenCal}/${rem.goalCal}kcal · P ${rem.eatenPro}/${rem.goalPro}g)</span>
+              <br>이 구간에 잘 맞는 조합을 골랐어요. 한 끼에 몰아먹지 말고 끼니에 나눠도 됩니다.`;
+          }
+        } else {
+          hint.innerHTML = `자유롭게 둘러보는 중 · 레시피 <strong>${RECIPES.length}종</strong> (꿀팁 조합 포함).
+            남은 예산에 맞추려면 위 <strong>남은 칼로리·단백</strong>을 눌러 보세요.`;
+        }
+      }
+
+      if (!list.length) {
+        listEl.innerHTML = '<div class="recipe-empty">조건에 맞는 레시피가 없어요. 필터를 넓혀 보세요.</div>';
+        return;
+      }
+
+      const badgeClass = (src) => src === 'cvs' ? 'cvs' : (src === 'delivery' ? 'delivery' : '');
+      listEl.innerHTML = list.map(r => {
+        const itemsTxt = r.resolved.map(f => f.name).join(' · ');
+        const tip = r.tip || r.why || '';
+        return `<div class="recipe-card">
+          <div class="rc-top">
+            <div class="rc-title">${esc(r.n)}</div>
+            <span class="rc-badge ${badgeClass(r.src)}">${recipeSrcLabel(r.src)}</span>
+          </div>
+          ${tip ? `<div class="rc-tip">💡 ${esc(tip)}</div>` : ''}
+          <div class="rc-items">${esc(itemsTxt)}</div>
+          <div class="rc-macros">
+            ${r.totals.cal} kcal
+            <span>P ${r.totals.pro}g</span>
+            <span>C ${r.totals.carb}g</span>
+            <span>F ${r.totals.fat}g</span>
+            <span>${r.resolved.length}품목</span>
+          </div>
+          <div class="rc-actions">
+            <button type="button" class="btn btn-p" onclick="applyRecipeToMeal('${r.id}')">이 끼니로 기록</button>
+            <button type="button" class="btn btn-s" onclick="saveRecipeAsTemplate('${r.id}')">템플릿 저장</button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     function keyFromDate(d) {
@@ -11227,6 +11625,7 @@ document.getElementById('reportInsights').innerHTML = insights.map(t =>
       if (tw) tw.value = d.waterPct != null ? d.waterPct : '';
       if (d.memo) document.getElementById('todayMemo').value = d.memo;
       renderMicroUI();
+      try { renderRecipeRecs(); } catch (e) {}
     }
 
     function renderMove() {
@@ -11920,6 +12319,9 @@ function roundRect(ctx, x, y, w, h, r) {
         try { renderHabits(); } catch (e) {}
         try { renderMyFoods(); } catch (e) {}
         try { renderMealTemplates(); } catch (e) {}
+        try {
+          if (document.getElementById('v-log')?.classList.contains('on')) renderRecipeRecs();
+        } catch (e) {}
         try { renderWeekPlanUI(); } catch (e) {}
         try { renderWeightAvgUI(); } catch (e) {}
         try { renderCoreLiftUI(); } catch (e) {}

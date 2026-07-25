@@ -1,10 +1,11 @@
 ﻿/* FIT TRACKER 2 service worker ??bump CACHE on every deploy */
-const CACHE = 'fit-tracker-2-v49';
-const APP_VERSION = '4.33';
+const CACHE = 'fit-tracker-2-v50';
+const APP_VERSION = '4.34';
 const ASSETS = [
   './',
   './index.html',
   './foods.js',
+  './recipes.js',
   './workouts.js',
   './garmin.js',
   './micros.js',
