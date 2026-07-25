@@ -1919,7 +1919,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.27</div>
+        <div class="ver" id="appVerBadge">4.28</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2661,7 +2661,7 @@
             </div>
           </div>
           <svg id="bodyFatigueSvg" style="display:none" aria-hidden="true"></svg>
-          <p class="bf-credit">해부 일러스트 기반 히트맵 · 의료 진단용이 아닌 코칭용 추정</p>
+          <p class="bf-credit">해부 일러스트 + 3D 남성 베이스 메시(CC0) · 의료 진단용이 아닌 코칭용 추정</p>
         </div>
         <div id="bf3dStage" class="bf-3d-wrap" style="display:none">
           <div class="bf-3d-hint">3D 인체 모델 · 부위 히트 · 드래그 회전 · 휠 줌 · 부위 탭</div>
@@ -2916,7 +2916,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.27</span>
+            <span class="muted" id="appVerLabel">v4.28</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3274,7 +3274,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.27';
+    const APP_VERSION = '4.28';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5609,7 +5609,7 @@
       if (!wrap.querySelector('.bf-3d-badge')) {
         const badge = document.createElement('div');
         badge.className = 'bf-3d-badge';
-        badge.innerHTML = '<span>3D BODY</span><span>DRAG · ZOOM · TAP</span>';
+        badge.innerHTML = '<span>MALE BASE</span><span>DRAG · ZOOM · TAP</span>';
         wrap.appendChild(badge);
       }
       if (bf3d && bf3d.renderer && bf3d.ready) {
@@ -5716,89 +5716,35 @@
           root.position.x -= center.x;
           root.position.z -= center.z;
           root.position.y -= box.min.y;
-          root.rotation.y = Math.PI;
-
-          // Masculine athletic proportions (source GLB is androgynous/slim "Xbot")
-          // V-taper: wider shoulders/chest, narrower waist/hips, thicker legs
-          (function applyMasculineBuild(rootObj) {
-            rootObj.updateMatrixWorld(true);
-            const b0 = new T.Box3().setFromObject(rootObj);
-            const y0 = b0.min.y, y1 = b0.max.y, yh = Math.max(1e-6, y1 - y0);
-            const cx = (b0.min.x + b0.max.x) * 0.5;
-            const cz = (b0.min.z + b0.max.z) * 0.5;
-            const v = new T.Vector3();
-            rootObj.traverse((obj) => {
-              if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
-              // Always clone so we don't morph shared buffers twice
-              obj.geometry = obj.geometry.clone();
-              const geo = obj.geometry;
-              const pos = geo.attributes.position;
-              obj.updateMatrixWorld(true);
-              const toWorld = obj.matrixWorld.clone();
-              const inv = new T.Matrix4().copy(toWorld).invert();
-              for (let i = 0; i < pos.count; i++) {
-                v.fromBufferAttribute(pos, i).applyMatrix4(toWorld);
-                const yn = (v.y - y0) / yh; // 0 feet .. 1 head
-                let sx = 1.0;
-                let sz = 1.0;
-                if (yn > 0.88) { sx = 1.07; sz = 1.05; }          // head
-                else if (yn > 0.84) { sx = 1.14; sz = 1.12; }     // neck
-                else if (yn > 0.72) { sx = 1.26; sz = 1.14; }     // shoulders
-                else if (yn > 0.58) { sx = 1.20; sz = 1.18; }     // chest / upper back
-                else if (yn > 0.48) { sx = 1.10; sz = 1.12; }     // lats taper
-                else if (yn > 0.40) { sx = 0.88; sz = 0.95; }     // waist
-                else if (yn > 0.32) { sx = 0.86; sz = 0.93; }     // hips
-                else if (yn > 0.18) { sx = 1.12; sz = 1.10; }     // quads
-                else if (yn > 0.06) { sx = 1.08; sz = 1.06; }     // calves
-                else { sx = 1.05; sz = 1.08; }                    // feet
-                v.x = cx + (v.x - cx) * sx;
-                v.z = cz + (v.z - cz) * sz;
-                v.applyMatrix4(inv);
-                pos.setXYZ(i, v.x, v.y, v.z);
-              }
-              pos.needsUpdate = true;
-              if (geo.computeVertexNormals) geo.computeVertexNormals();
-              // Rebind skinned mesh to cloned geometry if needed
-              if (obj.isSkinnedMesh && obj.bind) {
-                try { obj.bind(obj.skeleton, obj.bindMatrix); } catch (e) {}
-              }
-            });
-            rootObj.scale.x *= 1.05;
-            rootObj.scale.z *= 1.04;
-            rootObj.updateMatrixWorld(true);
-          })(root);
-
-          // re-seat on floor after morph
-          box = new T.Box3().setFromObject(root);
-          root.position.y -= box.min.y;
-          root.updateMatrixWorld(true);
+          // Male base mesh is typically +Z forward; face camera (-Z)
+          root.rotation.y = 0;
 
           const heatMeshes = [];
 
+          // Region bands tuned for adult male T-pose basemesh proportions
           function classifyVertex(x, y, z, yMin, yMax) {
             const yn = (y - yMin) / Math.max(1e-6, yMax - yMin);
             const ax = Math.abs(x);
             let region = 'core';
             let side = 'B';
-            if (yn > 0.88) region = null;
-            else if (yn > 0.78) region = ax > 0.12 ? 'shoulders' : 'chest';
-            else if (yn > 0.62) {
-              if (ax > 0.18) region = 'arms';
-              else region = z < 0 ? 'back' : 'chest';
-            } else if (yn > 0.48) {
-              if (ax > 0.16) region = 'arms';
-              else region = 'core';
-            } else if (yn > 0.38) {
-              region = z < 0 ? 'glutes' : 'core';
-            } else if (yn > 0.22) {
-              region = z < 0 ? 'hams' : 'quads';
-            } else {
-              region = 'calves';
+            // T-pose: arms extend on X — treat far-out verts as arms at torso height
+            if (ax > 0.28 && yn > 0.45 && yn < 0.82) {
+              region = 'arms';
+              side = x < 0 ? 'L' : 'R';
+              return { region, side };
             }
+            if (yn > 0.90) region = null; // head
+            else if (yn > 0.82) region = ax > 0.14 ? 'shoulders' : null; // neck/head
+            else if (yn > 0.70) region = ax > 0.16 ? 'shoulders' : (z < 0 ? 'back' : 'chest');
+            else if (yn > 0.55) region = ax > 0.20 ? 'arms' : (z < 0 ? 'back' : 'chest');
+            else if (yn > 0.45) region = ax > 0.18 ? 'arms' : 'core';
+            else if (yn > 0.36) region = z < 0 ? 'glutes' : 'core';
+            else if (yn > 0.20) region = z < 0 ? 'hams' : 'quads';
+            else region = 'calves';
             if (region && BODY_REGIONS[region] && BODY_REGIONS[region].paired) {
-              side = x < -0.03 ? 'L' : x > 0.03 ? 'R' : 'B';
+              side = x < -0.04 ? 'L' : x > 0.04 ? 'R' : 'B';
             }
-            if (region === 'chest' && z < -0.05) region = 'back';
+            if (region === 'chest' && z < -0.06) region = 'back';
             return { region, side };
           }
 
