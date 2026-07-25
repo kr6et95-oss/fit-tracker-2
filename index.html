@@ -1136,61 +1136,6 @@
       margin-top: 6px; font-size: .65rem; color: var(--muted); text-align: center; line-height: 1.35;
     }
 
-    /* Zone map mode — intentional schematic (not 3D mesh) */
-    .bf-map-panel {
-      background:
-        radial-gradient(ellipse 80% 50% at 50% 12%, rgba(99,102,241,.10), transparent 55%),
-        linear-gradient(180deg, #0f172a 0%, #111827 45%, #1e293b 100%);
-      border-color: #334155;
-    }
-    .bf-map-panel .tag { color: rgba(226,232,240,.7); }
-    .bf-map-svg { width: 100%; height: auto; display: block; }
-    .bf-map-svg .mz {
-      cursor: pointer;
-      stroke: rgba(15,23,42,.35);
-      stroke-width: 1.2;
-      stroke-linejoin: round;
-      transition: filter .15s, stroke .15s, opacity .15s;
-    }
-    .bf-map-svg .mz:hover {
-      stroke: #a5b4fc;
-      stroke-width: 2;
-      filter: brightness(1.08);
-    }
-    .bf-map-svg .mz.on {
-      stroke: #fff;
-      stroke-width: 2.4;
-      filter: drop-shadow(0 0 10px rgba(165,180,252,.55));
-    }
-    .bf-map-svg .mz.hot {
-      animation: bfHotPulse 2s ease-in-out infinite;
-    }
-    .bf-map-svg .mz-score {
-      font-family: Poppins, system-ui, sans-serif;
-      font-weight: 800;
-      font-size: 11px;
-      fill: #f8fafc;
-      pointer-events: none;
-      text-anchor: middle;
-      paint-order: stroke fill;
-      stroke: rgba(15,23,42,.55);
-      stroke-width: 3px;
-    }
-    .bf-map-svg .mz-ok {
-      font-size: 9px;
-      fill: #86efac;
-      stroke: rgba(15,23,42,.5);
-    }
-    .bf-map-svg .body-base {
-      fill: #334155;
-      stroke: rgba(148,163,184,.35);
-      stroke-width: 1.2;
-    }
-    .bf-map-svg .body-shade {
-      fill: rgba(15,23,42,.25);
-      pointer-events: none;
-    }
-
     .bf-list { margin-top: 8px; }
     .bf-row {
       display: grid; grid-template-columns: 72px 1fr 52px; gap: 8px; align-items: center;
@@ -5283,14 +5228,10 @@
     function syncBodyFatigueModeUI() {
       const anat = document.getElementById('bfAnatomyStage');
       if (anat) anat.style.display = '';
-      const map = document.getElementById('bfMapStage');
-      if (map) map.style.display = 'none';
-      try { document.body.classList.remove('bf-3d-on'); } catch (e) {}
     }
 
-    function setBodyFatigueMode(mode) {
+    function setBodyFatigueMode() {
       bodyFatigueMode = 'anatomy';
-      syncBodyFatigueModeUI();
       renderBodyFatigueMap();
     }
 
