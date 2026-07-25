@@ -1148,6 +1148,74 @@
       background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; line-height: 1.4;
     }
     .bf-mode-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .bf-range-row {
+      display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 0 0 10px;
+    }
+    .bf-range-row button {
+      padding: 6px 12px; border-radius: 999px; font-weight: 800; font-size: .72rem;
+      background: var(--surface, #f7f8fc); border: 1px solid var(--line); color: var(--muted);
+    }
+    .bf-range-row button.on {
+      background: linear-gradient(135deg, var(--p1), var(--p2)); color: #fff; border-color: transparent;
+    }
+    .bf-ready {
+      display: grid; grid-template-columns: 72px 1fr; gap: 10px; align-items: center;
+      margin: 0 0 10px; padding: 10px 12px; border-radius: 14px;
+      background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 1px solid var(--line);
+    }
+    .bf-ready .ring {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: conic-gradient(var(--bf-ready-col, #4ade80) calc(var(--bf-ready-pct, 0) * 1%), #e2e8f0 0);
+      display: grid; place-items: center; position: relative;
+    }
+    .bf-ready .ring::after {
+      content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #fff;
+    }
+    .bf-ready .ring .n {
+      position: relative; z-index: 1; font-family: Poppins, sans-serif; font-weight: 800; font-size: 1rem;
+    }
+    .bf-ready .ttl { font-weight: 800; font-size: .88rem; margin-bottom: 2px; }
+    .bf-ready .sub { font-size: .72rem; color: var(--muted); line-height: 1.4; font-weight: 600; }
+    .bf-row .lr {
+      display: flex; flex-direction: column; gap: 2px; margin-top: 3px;
+    }
+    .bf-row .lr i {
+      display: block; height: 3px; border-radius: 99px; background: #e2e8f0; position: relative; overflow: hidden;
+    }
+    .bf-row .lr i b {
+      display: block; height: 100%; border-radius: 99px;
+    }
+    .bf-contrib {
+      margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #fff; border: 1px solid var(--line);
+    }
+    .bf-contrib .ct { font-weight: 800; font-size: .78rem; margin-bottom: 6px; }
+    .bf-contrib .ci {
+      display: flex; justify-content: space-between; gap: 8px; font-size: .72rem; font-weight: 700;
+      padding: 4px 0; border-bottom: 1px dashed var(--line-soft, #eef0f7);
+    }
+    .bf-contrib .ci:last-child { border-bottom: 0; }
+    .bf-contrib .ci .meta { color: var(--muted); font-weight: 600; }
+    .bodyfat-svg .bf-zone.hot {
+      animation: bfHotPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes bfHotPulse {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(239,68,68,.25)); }
+      50% { filter: drop-shadow(0 0 12px rgba(239,68,68,.55)) brightness(1.06); }
+    }
+    .bf-home-card {
+      cursor: pointer; padding: 12px 14px; border-radius: var(--r); background: var(--card);
+      border: 1px solid var(--line); box-shadow: var(--shadow-soft, 0 1px 2px rgba(0,0,0,.04));
+    }
+    .bf-home-card .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .bf-home-card .top h3 { font-size: .88rem; font-weight: 800; }
+    .bf-home-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .bf-home-chips span {
+      font-size: .7rem; font-weight: 800; padding: 4px 8px; border-radius: 999px;
+      background: #f1f5f9; border: 1px solid var(--line);
+    }
+    .bf-home-chips span.hot { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+    .bf-home-chips span.mid { background: #ffedd5; border-color: #fed7aa; color: #9a3412; }
+    .bf-home-chips span.ok { background: #dcfce7; border-color: #bbf7d0; color: #166534; }
 
     .week-cal {
       display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;
@@ -1804,7 +1872,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.20</div>
+        <div class="ver" id="appVerBadge">4.21</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -1912,6 +1980,17 @@
               <button type="button" class="btn btn-s" onclick="applyCorePrescription()">+ 추천 코어</button>
               <button type="button" class="btn btn-g" onclick="show('move')">운동 탭</button>
             </div>
+          </div>
+
+          <div class="bf-home-card" id="homeBodyFatigue" onclick="show('move'); setTimeout(function(){ try{ document.getElementById('bodyFatigueCard').scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }, 120);">
+            <div class="top">
+              <h3>🧍 바디 피로</h3>
+              <span class="muted" id="homeBfReady" style="font-size:.72rem;font-weight:800">분석 중</span>
+            </div>
+            <div class="bf-home-chips" id="homeBfChips">
+              <span class="ok">운동 기록 후 표시</span>
+            </div>
+            <p class="muted" id="homeBfHint" style="margin-top:8px;font-size:.72rem;line-height:1.4">부위·좌우 피로 히트맵 · 탭하면 운동 탭으로</p>
           </div>
         </div>
       </div>
@@ -2497,12 +2576,24 @@
       <div class="card" id="bodyFatigueCard">
         <div class="card-h">
           <h2>🧍 바디 피로 맵</h2>
-          <span class="muted">해부학 · 3D · 좌우 · 7일</span>
+          <span class="muted" id="bfRangeLabel">해부학 · 좌우 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
           수행 기록을 부위·<strong>좌/우</strong>로 합산해 피로 히트맵을 그립니다.
-          의료 진단이 아닌 코칭용 추정 · 회복 시간·스트레칭 연동.
+          수면·주관 피로·휴식일이 <strong>회복 속도</strong>에 반영됩니다. (코칭용 추정)
         </p>
+        <div class="bf-ready" id="bfReadyBox">
+          <div class="ring" id="bfReadyRing" style="--bf-ready-pct:0;--bf-ready-col:#94a3b8"><span class="n" id="bfReadyScore">—</span></div>
+          <div>
+            <div class="ttl" id="bfReadyTitle">준비도 계산 중</div>
+            <div class="sub" id="bfReadySub">최근 운동·회복 데이터를 합산합니다.</div>
+          </div>
+        </div>
+        <div class="bf-range-row" id="bfRangeRow">
+          <button type="button" data-bf-days="3" onclick="setBodyFatigueDays(3)">3일</button>
+          <button type="button" class="on" data-bf-days="7" onclick="setBodyFatigueDays(7)">7일</button>
+          <button type="button" data-bf-days="14" onclick="setBodyFatigueDays(14)">14일</button>
+        </div>
         <div class="bf-mode-row bodyfat-turn">
           <button type="button" id="bfMode3d" onclick="setBodyFatigueMode('3d')">🌐 3D</button>
           <button type="button" class="on" id="bfModeSvg" onclick="setBodyFatigueMode('svg')">🗺 평면</button>
@@ -2766,7 +2857,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.20</span>
+            <span class="muted" id="appVerLabel">v4.21</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3124,7 +3215,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.20';
+    const APP_VERSION = '4.21';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -4789,6 +4880,7 @@
     let bodyFatigueMode = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
       ? 'svg' : '3d';
     let bodyFatigueSelected = null;
+    let bodyFatigueDays = 7;
     let lastBodyFatigueModel = null;
     let bf3d = null; // { renderer, scene, camera, group, meshes, raf, wrap }
 
@@ -4870,18 +4962,58 @@
       return Math.max(0, (now - then) / 3600000);
     }
 
-    function analyzeBodyFatigue(daysBack = 7) {
+    function bodyFatigueRecoveryFactor(dayKey) {
+      // >1 = slower recovery (fatigue lingers), <1 = faster recovery
+      const r = S.days[dayKey] && S.days[dayKey].rest;
+      if (!r) return 1.08; // no rest log → slightly sticky fatigue
+      let f = 1;
+      const sleep = r.sleepHrs != null ? +r.sleepHrs : null;
+      const sleepQ = r.sleepQ != null ? +r.sleepQ : 3;
+      const soreness = r.soreness != null ? +r.soreness : 2;
+      const energy = r.energy != null ? +r.energy : 3;
+      const stress = r.stress != null ? +r.stress : 2;
+      if (sleep != null) {
+        if (sleep >= 7.5) f *= 0.88;
+        else if (sleep >= 6.5) f *= 0.95;
+        else if (sleep < 5.5) f *= 1.18;
+        else if (sleep < 6.5) f *= 1.08;
+      }
+      if (sleepQ >= 4) f *= 0.94;
+      else if (sleepQ <= 2) f *= 1.1;
+      if (soreness >= 4) f *= 1.14;
+      else if (soreness <= 2) f *= 0.96;
+      if (energy <= 2) f *= 1.06;
+      if (stress >= 4) f *= 1.07;
+      if (r.restDay) f *= 0.82;
+      return Math.max(0.7, Math.min(1.35, f));
+    }
+
+    function setBodyFatigueDays(n) {
+      const d = +n;
+      bodyFatigueDays = (d === 3 || d === 14) ? d : 7;
+      document.querySelectorAll('#bfRangeRow [data-bf-days]').forEach(btn => {
+        btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === bodyFatigueDays);
+      });
+      const lab = document.getElementById('bfRangeLabel');
+      if (lab) lab.textContent = '해부학 · 좌우 · ' + bodyFatigueDays + '일';
+      renderBodyFatigueMap();
+    }
+
+    function analyzeBodyFatigue(daysBack) {
+      if (daysBack == null) daysBack = bodyFatigueDays || 7;
       const scores = {};
       const scoresL = {};
       const scoresR = {};
       const lastHit = {};
+      const contrib = {}; // id -> [{k, name, load, side}]
       Object.keys(BODY_REGIONS).forEach(id => {
-        scores[id] = 0; scoresL[id] = 0; scoresR[id] = 0; lastHit[id] = null;
+        scores[id] = 0; scoresL[id] = 0; scoresR[id] = 0; lastHit[id] = null; contrib[id] = [];
       });
 
       dateKeys(daysBack).forEach(k => {
         const list = S.days[k]?.workouts || [];
         const hours = hoursSinceDateKey(k);
+        const recF = bodyFatigueRecoveryFactor(k);
         list.forEach(w => {
           if (w.type === 'mobility') return;
           const regions = inferWorkoutMuscles(w);
@@ -4892,14 +5024,15 @@
           regions.forEach(id => {
             const reg = BODY_REGIONS[id];
             if (!reg) return;
-            const decay = Math.pow(0.5, hours / reg.halfLifeH);
+            // recovery factor stretches half-life (higher f = slower decay)
+            const effectiveHalf = reg.halfLifeH * recF;
+            const decay = Math.pow(0.5, hours / effectiveHalf);
             const load = share * decay;
             scores[id] += load;
             if (reg.paired) {
               if (side === 'L') scoresL[id] += load;
               else if (side === 'R') scoresR[id] += load;
               else if (side === 'U') {
-                // unknown unilateral → slight both, mark as imbalanced seed
                 scoresL[id] += load * 0.55;
                 scoresR[id] += load * 0.45;
               } else {
@@ -4908,8 +5041,24 @@
               }
             }
             if (!lastHit[id] || k > lastHit[id]) lastHit[id] = k;
+            if (load >= 0.8) {
+              contrib[id].push({
+                k,
+                name: w.name || '운동',
+                load: Math.round(load * 10) / 10,
+                side,
+                min: +w.min || 0,
+                type: w.type || ''
+              });
+            }
           });
         });
+      });
+
+      // sort contrib per region
+      Object.keys(contrib).forEach(id => {
+        contrib[id].sort((a, b) => b.load - a.load);
+        contrib[id] = contrib[id].slice(0, 6);
       });
 
       const allRaw = [...Object.values(scores), ...Object.values(scoresL), ...Object.values(scoresR)];
@@ -4925,6 +5074,9 @@
         let recoverH = 0;
         if (score >= 25) recoverH = Math.round(reg.halfLifeH * Math.log2(Math.max(score, 26) / 25));
         else if (score >= 10) recoverH = Math.round(reg.halfLifeH * 0.35);
+        // today's recovery factor stretches estimated recovery time
+        const todayF = bodyFatigueRecoveryFactor(today());
+        recoverH = Math.round(recoverH * todayF);
         const level = score >= 75 ? 'high' : score >= 45 ? 'mid' : score >= 20 ? 'low' : 'fresh';
         const dominant = !reg.paired ? null : scoreL - scoreR >= 12 ? 'L' : scoreR - scoreL >= 12 ? 'R' : 'even';
         return {
@@ -4932,15 +5084,41 @@
           raw: Math.round(scores[id] * 10) / 10,
           recoverH,
           recoverLabel: recoverH <= 0 ? '준비 OK' : recoverH < 24 ? `약 ${recoverH}시간` : `약 ${(recoverH / 24).toFixed(1)}일`,
-          level, lastHit: lastHit[id], stretchKeys: reg.stretchKeys, views: reg.views, paired: !!reg.paired
+          level, lastHit: lastHit[id], stretchKeys: reg.stretchKeys, views: reg.views, paired: !!reg.paired,
+          contrib: contrib[id] || []
         };
       }).sort((a, b) => b.score - a.score);
 
       const top = items.filter(x => x.score >= 20).slice(0, 3);
       const overall = items.length ? Math.round(items.reduce((a, b) => a + b.score, 0) / items.length) : 0;
+      // readiness: inverse of load-weighted fatigue (higher = more ready)
+      const loadWeighted = items.length
+        ? items.reduce((a, b) => a + b.score * (b.level === 'high' ? 1.35 : b.level === 'mid' ? 1.1 : 1), 0) / items.length
+        : 0;
+      let readiness = Math.round(Math.max(0, Math.min(100, 100 - loadWeighted * 0.92)));
+      // rest today / good sleep boost readiness slightly for display
+      const tr = day().rest;
+      if (tr && tr.restDay) readiness = Math.min(100, readiness + 6);
+      if (tr && tr.sleepHrs != null && +tr.sleepHrs >= 7.5) readiness = Math.min(100, readiness + 3);
+      const readyLevel = readiness >= 78 ? 'go' : readiness >= 58 ? 'ok' : readiness >= 38 ? 'caution' : 'rest';
+      const readyLabel = {
+        go: '훈련 창 열림',
+        ok: '조절하며 진행',
+        caution: '볼륨 주의',
+        rest: '회복 우선'
+      }[readyLevel];
+      const readyColor = {
+        go: '#22c55e',
+        ok: '#84cc16',
+        caution: '#f59e0b',
+        rest: '#ef4444'
+      }[readyLevel];
       const asymList = items.filter(x => x.paired && x.asym >= 15 && (x.scoreL >= 15 || x.scoreR >= 15))
         .sort((a, b) => b.asym - a.asym);
-      return { items, top, overall, daysBack, rawMax, asymList };
+      return {
+        items, top, overall, daysBack, rawMax, asymList,
+        readiness, readyLevel, readyLabel, readyColor, contrib
+      };
     }
 
     function fatigueHeatColor(score) {
@@ -5025,7 +5203,7 @@
         try {
           if (isMoveGeneralVisible()) {
             ensureBodyFatigue3D();
-            updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(7));
+            updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
           }
         } catch (e) {
           bodyFatigueMode = 'svg';
@@ -5234,15 +5412,25 @@
             ${item.dominant === 'even' ? ' · 좌우 균형 양호' : ''}
           </p>`
         : '';
+      const contrib = (item.contrib || []).slice(0, 5);
+      const contribHtml = contrib.length
+        ? `<div class="bf-contrib"><div class="ct">최근 기여 운동 (${bodyFatigueDays}일)</div>`
+          + contrib.map(c => {
+              const sideTag = c.side === 'L' ? ' · 왼' : c.side === 'R' ? ' · 오' : c.side === 'U' ? ' · 편측' : '';
+              return `<div class="ci"><span>${esc(c.name)}${sideTag}</span><span class="meta">${(c.k || '').slice(5)} · +${c.load}</span></div>`;
+            }).join('')
+          + `</div>`
+        : `<div class="bf-contrib"><div class="ct">기여 운동</div><div class="ci"><span class="meta">이 기간 자극이 약합니다</span></div></div>`;
       el.innerHTML = `
         <h3>${esc(item.label)} · ${levelLabel} (${item.score})</h3>
         <p class="muted" style="line-height:1.45;margin-bottom:8px">
           추정 회복: <strong>${esc(item.recoverLabel)}</strong>
-          ${item.lastHit ? ` · 최근 자극 ${item.lastHit.slice(5)}` : ' · 최근 7일 자극 적음'}
-          <br>반감기 모델 기반 추정 · 수면·스트레스·영양에 따라 달라집니다.
+          ${item.lastHit ? ` · 최근 자극 ${item.lastHit.slice(5)}` : ` · 최근 ${bodyFatigueDays}일 자극 적음`}
+          <br>반감기 + 수면·주관 피로·휴식일 보정 · 의료 진단 아님.
         </p>
         ${sideHtml}
-        <div class="card-h" style="margin-bottom:6px"><h2 style="font-size:.88rem">추천 스트레칭</h2></div>
+        ${contribHtml}
+        <div class="card-h" style="margin:10px 0 6px"><h2 style="font-size:.88rem">추천 스트레칭</h2></div>
         <div class="list bf-stretch-list">
           ${stretches.map(s => `
             <div class="item">
@@ -5281,10 +5469,59 @@
       return true;
     }
 
+    function renderHomeBodyFatigue(model) {
+      const chips = document.getElementById('homeBfChips');
+      const ready = document.getElementById('homeBfReady');
+      const hint = document.getElementById('homeBfHint');
+      if (!chips) return;
+      const m = model || lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7);
+      if (ready) ready.textContent = (m.readyLabel || '준비도') + ' · ' + (m.readiness != null ? m.readiness : '—');
+      const top = (m.top && m.top.length) ? m.top : (m.items || []).filter(x => x.score >= 15).slice(0, 3);
+      if (!top.length) {
+        chips.innerHTML = '<span class="ok">최근 자극 약함 · 기록 시 표시</span>';
+        if (hint) hint.textContent = '부위·좌우 피로 히트맵 · 탭하면 운동 탭으로';
+        return;
+      }
+      chips.innerHTML = top.map(it => {
+        const cls = it.level === 'high' ? 'hot' : it.level === 'mid' ? 'mid' : 'ok';
+        return `<span class="${cls}">${esc(it.label)} ${it.score}</span>`;
+      }).join('') + ((m.asymList && m.asymList.length)
+        ? `<span class="mid">⚖ 불균형 ${m.asymList.length}</span>` : '');
+      if (hint) {
+        hint.textContent = `평균 피로 ${m.overall} · ${bodyFatigueDays}일 창 · 탭하면 상세 맵`;
+      }
+    }
+
+    function renderBodyFatigueReady(model) {
+      const ring = document.getElementById('bfReadyRing');
+      const scoreEl = document.getElementById('bfReadyScore');
+      const title = document.getElementById('bfReadyTitle');
+      const sub = document.getElementById('bfReadySub');
+      if (!ring) return;
+      const pct = model.readiness != null ? model.readiness : 0;
+      ring.style.setProperty('--bf-ready-pct', String(pct));
+      ring.style.setProperty('--bf-ready-col', model.readyColor || '#94a3b8');
+      if (scoreEl) scoreEl.textContent = model.readiness != null ? String(model.readiness) : '—';
+      if (title) title.textContent = model.readyLabel || '준비도';
+      if (sub) {
+        const tops = (model.top || []).slice(0, 2).map(t => t.label + ' ' + t.score).join(' · ');
+        sub.textContent = tops
+          ? `주의 부위: ${tops} · 창 ${model.daysBack}일 · 수면·휴식이 회복 속도에 반영됨`
+          : `최근 ${model.daysBack}일 자극이 고르거나 낮습니다. 코어·후면사슬을 가볍게 유지하세요.`;
+      }
+    }
+
     function renderBodyFatigueMap() {
-      const model = analyzeBodyFatigue(7);
+      const model = analyzeBodyFatigue(bodyFatigueDays || 7);
       lastBodyFatigueModel = model;
       try { syncBodyFatigueModeUI(); } catch (e) {}
+      // range chips sync
+      document.querySelectorAll('#bfRangeRow [data-bf-days]').forEach(btn => {
+        btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === (bodyFatigueDays || 7));
+      });
+      const lab = document.getElementById('bfRangeLabel');
+      if (lab) lab.textContent = '해부학 · 좌우 · ' + (bodyFatigueDays || 7) + '일';
+
       // 3D/WebGL은 운동>일반 탭이 보일 때만 (백그라운드 초기화로 모바일 터치 먹김 방지)
       if (bodyFatigueMode === 'svg' || !isMoveGeneralVisible()) {
         if (!isMoveGeneralVisible() && bf3d) {
@@ -5303,13 +5540,16 @@
         }
       }
 
+      try { renderBodyFatigueReady(model); } catch (e) {}
+      try { renderHomeBodyFatigue(model); } catch (e) {}
+
       const sum = document.getElementById('bodyFatigueSummary');
       if (sum) {
         if (!model.top.length) {
-          sum.textContent = '최근 7일 자극이 약합니다. 운동을 기록하면 부위·좌우 피로가 표시됩니다.';
+          sum.textContent = `최근 ${model.daysBack}일 자극이 약합니다. 운동을 기록하면 부위·좌우 피로가 표시됩니다.`;
         } else {
           const asymN = (model.asymList || []).length;
-          sum.textContent = `전체 평균 ${model.overall} · 주의: ${model.top.map(t => t.label + ' ' + t.score).join(' · ')}`
+          sum.textContent = `준비도 ${model.readiness} · 평균 피로 ${model.overall} · 주의: ${model.top.map(t => t.label + ' ' + t.score).join(' · ')}`
             + (asymN ? ` · 좌우 불균형 ${asymN}부위` : '');
         }
       }
@@ -5317,13 +5557,20 @@
 
       const list = document.getElementById('bodyFatigueList');
       if (list) {
-        list.innerHTML = model.items.map(it => `
+        list.innerHTML = model.items.map(it => {
+          const lr = it.paired
+            ? `<div class="lr" title="L ${it.scoreL} / R ${it.scoreR}">
+                <i><b style="width:${it.scoreL}%;background:${fatigueHeatColor(it.scoreL)}"></b></i>
+                <i><b style="width:${it.scoreR}%;background:${fatigueHeatColor(it.scoreR)}"></b></i>
+              </div>`
+            : '';
+          return `
           <div class="bf-row ${bodyFatigueSelected === it.id ? 'on' : ''}" onclick="selectBodyRegion('${it.id}')">
-            <div class="nm">${esc(it.label)}${it.paired && it.asym >= 15 ? ' ⚖' : ''}</div>
+            <div class="nm">${esc(it.label)}${it.paired && it.asym >= 15 ? ' ⚖' : ''}${lr}</div>
             <div class="bar-wrap"><i style="width:${it.score}%;background:${fatigueHeatColor(it.score)}"></i></div>
             <div class="hrs" title="회복 추정">${it.score < 15 ? 'OK' : it.recoverH < 24 ? it.recoverH + 'h' : (it.recoverH / 24).toFixed(1) + 'd'}</div>
-          </div>
-        `).join('');
+          </div>`;
+        }).join('');
       }
 
       if (!bodyFatigueSelected && model.top[0]) bodyFatigueSelected = model.top[0].id;
@@ -5598,7 +5845,7 @@
     }
 
     function applyAsymBalanceWork() {
-      const model = lastBodyFatigueModel || analyzeBodyFatigue(7);
+      const model = lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7);
       const list = (model.asymList || []).slice(0, 3);
       if (!list.length) return toast('좌우 불균형이 크지 않아요');
       const adds = [];
@@ -5673,7 +5920,7 @@
     }
 
     function applyTopFatigueStretches() {
-      const model = lastBodyFatigueModel || analyzeBodyFatigue(7);
+      const model = lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7);
       const tops = model.top.length ? model.top : model.items.slice(0, 2);
       if (!tops.length || tops.every(t => t.score < 15)) {
         toast('쌓인 피로가 적어 코어·전신 스트레칭을 넣을게요');
@@ -5699,7 +5946,7 @@
     }
 
     async function geminiBodyFatigue() {
-      const model = lastBodyFatigueModel || analyzeBodyFatigue(7);
+      const model = lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7);
       const box = document.getElementById('bodyFatigueAi');
       if (!getGeminiKey || !getGeminiKey()) {
         const top = model.top.slice(0, 3);
