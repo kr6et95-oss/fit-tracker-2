@@ -998,11 +998,8 @@
       border-left: 3px solid #059669 !important;
     }
 
-    /* Body fatigue map v3 — clean premium anatomy */
-    .bodyfat-stage {
-      margin: 4px auto 8px;
-      max-width: 100%;
-    }
+    /* Body fatigue map v4 — real anatomy plates + heat overlay */
+    .bodyfat-stage { margin: 4px auto 8px; max-width: 100%; }
     .bodyfat-turn {
       display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;
     }
@@ -1013,7 +1010,9 @@
     .bodyfat-turn button.on {
       background: linear-gradient(135deg, #111827, #312e81); color: #fff; border-color: transparent;
     }
-    .bodyfat-3d { position: relative; }
+    .bodyfat-turn .bf-view-btn { display: none; }
+    body.bf-3d-on .bodyfat-turn .bf-view-btn { display: inline-flex; }
+
     .bf-dual {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1022,68 +1021,72 @@
     }
     .bf-panel {
       position: relative;
-      border-radius: 22px;
+      border-radius: 20px;
       overflow: hidden;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,.08), transparent 55%),
-        linear-gradient(180deg, #f8fafc 0%, #eef2f7 48%, #e2e8f0 100%);
-      border: 1px solid #d8dee8;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.9),
-        0 10px 28px rgba(15, 23, 42, .08);
+      background: #fafafa;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 28px rgba(15,23,42,.08);
+      aspect-ratio: 3 / 4;
     }
     .bf-panel .tag {
-      position: absolute; top: 8px; left: 0; right: 0;
-      text-align: center; z-index: 2;
+      position: absolute; top: 8px; left: 0; right: 0; z-index: 3;
+      text-align: center; pointer-events: none;
       font-family: Poppins, system-ui, sans-serif;
-      font-size: .62rem; font-weight: 800; letter-spacing: .16em;
-      color: #64748b; pointer-events: none;
+      font-size: .62rem; font-weight: 800; letter-spacing: .18em;
+      color: #64748b;
     }
-    .bodyfat-svg {
-      width: 100%; height: auto; display: block;
-      background: transparent;
+    .bf-anat-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      object-position: center 46%;
+      background: #fafafa;
+      user-select: none;
+      pointer-events: none;
+      z-index: 0;
     }
-    .bodyfat-svg .bf-zone {
+    .bodyfat-svg, .bf-heat-svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      display: block;
+    }
+    .bf-heat-svg .bf-zone {
       cursor: pointer;
-      transition: filter .15s ease, opacity .15s ease, stroke .15s ease;
-      stroke: rgba(15, 23, 42, .14);
-      stroke-width: 1.15;
+      transition: opacity .15s, stroke .15s, filter .15s;
+      stroke: rgba(15,23,42,.12);
+      stroke-width: 1;
       stroke-linejoin: round;
-      stroke-linecap: round;
+      mix-blend-mode: multiply;
     }
-    .bodyfat-svg .bf-zone:hover {
-      stroke: rgba(15, 23, 42, .45);
-      stroke-width: 1.7;
+    .bf-heat-svg .bf-zone:hover {
+      stroke: rgba(79,70,229,.7);
+      stroke-width: 1.8;
       filter: brightness(1.05);
     }
-    .bodyfat-svg .bf-zone.on {
+    .bf-heat-svg .bf-zone.on {
       stroke: #4f46e5;
-      stroke-width: 2.2;
-      filter: drop-shadow(0 0 6px rgba(79,70,229,.35));
+      stroke-width: 2.4;
+      filter: drop-shadow(0 0 8px rgba(79,70,229,.45));
+      mix-blend-mode: multiply;
     }
-    .bodyfat-svg .bf-zone.hot {
+    .bf-heat-svg .bf-zone.hot {
       animation: bfHotPulse 2s ease-in-out infinite;
     }
     @keyframes bfHotPulse {
-      0%, 100% { filter: drop-shadow(0 0 3px rgba(239,68,68,.25)); }
-      50% { filter: drop-shadow(0 0 10px rgba(239,68,68,.5)) brightness(1.04); }
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(239,68,68,.2)); }
+      50% { filter: drop-shadow(0 0 10px rgba(239,68,68,.45)) brightness(1.03); }
     }
-    .bodyfat-svg .bf-score {
+    .bf-heat-svg .bf-score {
       font-family: Poppins, system-ui, sans-serif;
       font-weight: 800;
-      font-size: 9.5px;
+      font-size: 10px;
       fill: #0f172a;
       pointer-events: none;
       text-anchor: middle;
       paint-order: stroke fill;
-      stroke: rgba(255,255,255,.85);
-      stroke-width: 2.6px;
-    }
-    .bodyfat-svg .bf-score-soft {
-      fill: rgba(15,23,42,.45);
-      stroke: rgba(255,255,255,.55);
-      stroke-width: 2px;
-      font-size: 8.5px;
+      stroke: rgba(255,255,255,.9);
+      stroke-width: 3px;
     }
     .bodyfat-legend {
       display: flex; align-items: center; gap: 8px; justify-content: center;
@@ -1092,43 +1095,39 @@
     .bodyfat-legend .bar {
       flex: 1; max-width: 180px; height: 9px; border-radius: 99px;
       background: linear-gradient(90deg, #86efac 0%, #fde047 40%, #fb923c 72%, #ef4444 100%);
-      box-shadow: inset 0 1px 1px rgba(0,0,0,.08);
     }
     .bf-3d-wrap {
       position: relative;
       width: 100%;
-      height: 440px;
-      border-radius: 24px;
+      height: 460px;
+      border-radius: 20px;
       overflow: hidden;
       background:
-        radial-gradient(ellipse 70% 45% at 50% 12%, rgba(165,180,252,.35) 0%, transparent 55%),
-        radial-gradient(ellipse 90% 55% at 50% 100%, rgba(15,23,42,.55) 0%, transparent 60%),
-        linear-gradient(180deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+        radial-gradient(ellipse 70% 40% at 50% 10%, rgba(165,180,252,.28), transparent 55%),
+        linear-gradient(180deg, #1e293b 0%, #0b1220 55%, #020617 100%);
       border: 1px solid #334155;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 40px rgba(2,6,23,.35);
+      box-shadow: 0 16px 40px rgba(2,6,23,.35);
       touch-action: none;
     }
     .bf-3d-wrap canvas { display: block; width: 100% !important; height: 100% !important; }
     .bf-3d-hint {
-      position: absolute; left: 0; right: 0; bottom: 12px;
+      position: absolute; left: 0; right: 0; bottom: 12px; z-index: 2;
       text-align: center; font-size: .68rem; color: rgba(226,232,240,.72);
       pointer-events: none; font-weight: 700;
-      text-shadow: 0 1px 4px rgba(0,0,0,.5);
     }
     .bf-3d-badge {
-      position: absolute; top: 12px; left: 12px; right: 12px;
-      display: flex; justify-content: space-between; gap: 8px;
-      pointer-events: none; z-index: 2;
+      position: absolute; top: 12px; left: 12px; right: 12px; z-index: 2;
+      display: flex; justify-content: space-between; pointer-events: none;
     }
     .bf-3d-badge span {
       font-size: .62rem; font-weight: 800; letter-spacing: .1em;
       color: rgba(226,232,240,.8); text-transform: uppercase;
-      background: rgba(15,23,42,.5); border: 1px solid rgba(148,163,184,.28);
+      background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.28);
       padding: 5px 9px; border-radius: 999px; backdrop-filter: blur(8px);
     }
-    /* hide single-view front/back toggles when dual SVG is default */
-    .bodyfat-turn .bf-view-btn { display: none; }
-    body.bf-3d-on .bodyfat-turn .bf-view-btn { display: inline-flex; }
+    .bf-credit {
+      margin-top: 6px; font-size: .65rem; color: var(--muted); text-align: center; line-height: 1.35;
+    }
 
     .bf-list { margin-top: 8px; }
     .bf-row {
@@ -1904,7 +1903,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.23</div>
+        <div class="ver" id="appVerBadge">4.24</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2611,7 +2610,7 @@
           <span class="muted" id="bfRangeLabel">해부학 · 좌우 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
-          수행 기록을 부위·<strong>좌/우</strong>로 합산해 피로 히트맵을 그립니다.
+          실제 <strong>근육 해부도</strong> 위에 부위·좌/우 피로 히트를 올립니다.
           수면·주관 피로·휴식일이 <strong>회복 속도</strong>에 반영됩니다. (코칭용 추정)
         </p>
         <div class="bf-ready" id="bfReadyBox">
@@ -2635,19 +2634,22 @@
         <div id="bfSvgStage" class="bodyfat-stage">
           <div class="bf-dual" id="bodyFatigue3d">
             <div class="bf-panel">
-              <div class="tag">FRONT</div>
-              <svg class="bodyfat-svg" id="bodyFatigueSvgFront" viewBox="0 0 200 420" role="img" aria-label="전면 피로 맵"></svg>
+              <div class="tag">FRONT · 해부도</div>
+              <img class="bf-anat-img" src="anatomy/front.jpg" alt="전면 근육 해부도" draggable="false" />
+              <svg class="bf-heat-svg" id="bodyFatigueSvgFront" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="전면 피로 히트맵"></svg>
             </div>
             <div class="bf-panel">
-              <div class="tag">BACK</div>
-              <svg class="bodyfat-svg" id="bodyFatigueSvgBack" viewBox="0 0 200 420" role="img" aria-label="후면 피로 맵"></svg>
+              <div class="tag">BACK · 해부도</div>
+              <img class="bf-anat-img" src="anatomy/back.jpg" alt="후면 근육 해부도" draggable="false" />
+              <svg class="bf-heat-svg" id="bodyFatigueSvgBack" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="후면 피로 히트맵"></svg>
             </div>
           </div>
-          <!-- legacy id kept for scripts that query bodyFatigueSvg -->
           <svg id="bodyFatigueSvg" style="display:none" aria-hidden="true"></svg>
+          <p class="bf-credit">해부 일러스트 기반 히트맵 · 의료 진단용이 아닌 코칭용 추정</p>
         </div>
         <div id="bf3dStage" class="bf-3d-wrap" style="display:none">
-          <div class="bf-3d-hint">드래그 회전 · 휠 줌 · 부위 탭</div>
+          <div class="bf-3d-hint">실제 근육 해부도 카드 · 드래그 회전 · 휠 줌 · 부위 탭</div>
+        </div>
         </div>
         <div class="bodyfat-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
         <p class="muted" id="bodyFatigueSummary" style="text-align:center;line-height:1.4;font-size:.78rem;margin-bottom:6px">운동을 기록하면 부위 피로가 채워집니다.</p>
@@ -2898,7 +2900,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.23</span>
+            <span class="muted" id="appVerLabel">v4.24</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3256,7 +3258,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.23';
+    const APP_VERSION = '4.24';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5267,68 +5269,50 @@
     }
 
     /**
-     * Clean premium anatomy map v3
-     * Dual front/back panels · athletic figure proportions · puzzle-fit muscle plates
-     * viewBox 0 0 200 420  (center x=100)
+     * Real anatomy plates + heat overlay (viewBox 0 0 200 400)
+     * Zones calibrated to anatomy/front.jpg & anatomy/back.jpg (3:4 ecorche).
+     * Coordinates: body centered x≈100, head≈y22–55, feet≈y375.
      */
     const BF_SVG_ANATOMY = {
-      // smooth athletic silhouette (single continuous fill)
-      bodyFront:
-        'M100 22c-13.5 0-24.5 11-24.5 24.5 0 10.8 7 20 17 23.5v6.5h15v-6.5c10-3.5 17-12.7 17-23.5C124.5 33 113.5 22 100 22z' +
-        'M90.5 73h19c1.9 0 3.5 1.5 3.5 3.4v13.2c0 1.4-.9 2.6-2.2 3-4.4 1.1-9 1.7-11.3 1.7s-6.9-.6-11.3-1.7c-1.3-.4-2.2-1.6-2.2-3V76.4c0-1.9 1.6-3.4 3.5-3.4z' +
-        // shoulders + torso + legs continuous outline
-        'M72 92c-11 4-22 14-26 25-3 8-3 16-1 24 6-1 13 0 19 3 5 3 9 8 11 13 1-12 2-24 2-35 0-10-.2-20-5-30z' +
-        'M128 92c11 4 22 14 26 25 3 8 3 16 1 24-6-1-13 0-19 3-5 3-9 8-11 13-1-12-2-24-2-35 0-10 .2-20 5-30z' +
-        'M66 132c-5 3-9 10-9 18v48c0 9 4 16 10 19 4 2 9 0 11-4l4-8c1-10 2-22 2-33v-24c0-7-3-12-8-15-3-2-7-2-10 0z' +
-        'M134 132c5 3 9 10 9 18v48c0 9-4 16-10 19-4 2-9 0-11-4l-4-8c-1-10-2-22-2-33v-24c0-7 3-12 8-15 3-2 7-2 10 0z' +
-        'M74 98c-3 11-4 24-2 36 2 11 7 21 14 26 5 3 10 3 14 0l7-5 7 5c4 3 9 3 14 0 7-5 12-15 14-26 2-12 1-25-2-36-9-7-21-11-34-11s-25 4-34 11z' +
-        'M80 160c-2 11-3 24-1 36 2 12 7 24 13 30h16c6-6 11-18 13-30 2-12 1-25-1-36-7-3-14-5-20-5s-13 2-20 5z' +
-        'M81 230c-4 6-6 17-6 30v40c0 10 2 18 5 23h40c3-5 5-13 5-23v-40c0-13-2-24-5-30H81z' +
-        'M83 322c-3 5-4 13-4 23v30h42v-30c0-10-1-18-4-23H83z' +
-        'M79 368c-2 2-3 6-2 11 1 4 4 7 9 8h14c3 0 5-2 5-5v-6c0-4-2-7-6-8-6-2-15-2-20 0z' +
-        'M121 368c2 2 3 6 2 11-1 4-4 7-9 8h-14c-3 0-5-2-5-5v-6c0-4 2-7 6-8 6-2 15-2 20 0z',
-      bodyBack:
-        'M100 22c-13.5 0-24.5 11-24.5 24.5 0 10.8 7 20 17 23.5v6.5h15v-6.5c10-3.5 17-12.7 17-23.5C124.5 33 113.5 22 100 22z' +
-        'M90.5 73h19c1.9 0 3.5 1.5 3.5 3.4v13.2c0 1.4-.9 2.6-2.2 3-4.4 1.1-9 1.7-11.3 1.7s-6.9-.6-11.3-1.7c-1.3-.4-2.2-1.6-2.2-3V76.4c0-1.9 1.6-3.4 3.5-3.4z' +
-        'M72 92c-11 4-22 14-26 25-3 8-3 16-1 24 6-1 13 0 19 3 5 3 9 8 11 13 1-12 2-24 2-35 0-10-.2-20-5-30z' +
-        'M128 92c11 4 22 14 26 25 3 8 3 16 1 24-6-1-13 0-19 3-5 3-9 8-11 13-1-12-2-24-2-35 0-10 .2-20 5-30z' +
-        'M66 132c-5 3-9 10-9 18v48c0 9 4 16 10 19 4 2 9 0 11-4l4-8c1-10 2-22 2-33v-24c0-7-3-12-8-15-3-2-7-2-10 0z' +
-        'M134 132c5 3 9 10 9 18v48c0 9-4 16-10 19-4 2-9 0-11-4l-4-8c-1-10-2-22-2-33v-24c0-7 3-12 8-15 3-2 7-2 10 0z' +
-        'M74 96c-3 13-4 28-2 42 2 14 7 26 14 34h28c7-8 12-20 14-34 2-14 1-29-2-42-9-8-21-12-34-12s-25 4-34 12z' +
-        'M81 220c-4 6-6 17-6 30v40c0 10 2 18 5 23h40c3-5 5-13 5-23v-40c0-13-2-24-5-30H81z' +
-        'M83 322c-3 5-4 13-4 23v30h42v-30c0-10-1-18-4-23H83z' +
-        'M79 368c-2 2-3 6-2 11 1 4 4 7 9 8h14c3 0 5-2 5-5v-6c0-4-2-7-6-8-6-2-15-2-20 0z' +
-        'M121 368c2 2 3 6 2 11-1 4-4 7-9 8h-14c-3 0-5-2-5-5v-6c0-4 2-7 6-8 6-2 15-2 20 0z',
+      // Organic muscle plates aligned to ecorche art (not geometric dolls)
       front: [
-        { id: 'shoulders', side: 'L', d: 'M88 90c-12 2-24 12-29 24-3 9-3 18-1 26 6-1 13 0 19 3 5 3 9 8 11 13 1-13 2-26 2-38 0-9-.3-18-2-28z', lx: 68, ly: 112 },
-        { id: 'shoulders', side: 'R', d: 'M112 90c12 2 24 12 29 24 3 9 3 18 1 26-6-1-13 0-19 3-5 3-9 8-11 13-1-13-2-26-2-38 0-9 .3-18 2-28z', lx: 132, ly: 112 },
-        { id: 'chest', side: 'B', d: 'M78 108c-3 10-4 22-2 33 2 10 6 18 12 23 4 3 9 3 13 0l6-4 6 4c4 3 9 3 13 0 6-5 10-13 12-23 2-11 1-23-2-33-8-6-19-9-29-9s-21 3-29 9z', lx: 100, ly: 128 },
-        { id: 'arms', side: 'L', d: 'M54 134c-5 3-8 10-8 17v46c0 9 3 15 9 18 4 1 8-1 10-4l4-8c1-10 2-21 2-31v-23c0-6-2-11-7-14-3-2-7-2-10 0z', lx: 52, ly: 164 },
-        { id: 'arms', side: 'R', d: 'M146 134c5 3 8 10 8 17v46c0 9-3 15-9 18-4 1-8-1-10-4l-4-8c-1-10-2-21-2-31v-23c0-6 2-11 7-14 3-2 7-2 10 0z', lx: 148, ly: 164 },
-        { id: 'core', side: 'B', d: 'M82 162c-2 10-3 22-1 33 2 11 6 21 12 27h14c6-6 10-16 12-27 2-11 1-23-1-33-6-3-12-4-18-4s-12 1-18 4z', lx: 100, ly: 186 },
-        { id: 'quads', side: 'L', d: 'M84 230c-5 5-7 14-7 26v46c0 11 3 19 8 24 5 4 12 3 16-2 4-5 6-14 6-25v-45c0-11-2-19-7-24-4-4-11-5-16 0z', lx: 88, ly: 268 },
-        { id: 'quads', side: 'R', d: 'M116 230c5 5 7 14 7 26v46c0 11-3 19-8 24-5 4-12 3-16-2-4-5-6-14-6-25v-45c0-11 2-19 7-24 4-4 11-5 16 0z', lx: 112, ly: 268 },
-        { id: 'calves', side: 'L', d: 'M86 322c-4 5-6 13-6 22v28c0 8 3 14 8 17 4 2 9 1 12-3 3-3 4-8 4-15v-28c0-9-1-16-5-20-3-3-9-4-13-1z', lx: 90, ly: 352 },
-        { id: 'calves', side: 'R', d: 'M114 322c4 5 6 13 6 22v28c0 8-3 14-8 17-4 2-9 1-12-3-3-3-4-8-4-15v-28c0-9 1-16 5-20 3-3 9-4 13-1z', lx: 110, ly: 352 }
+        // deltoids
+        { id: 'shoulders', side: 'L', d: 'M78 78c-14 2-26 12-30 26-3 10-2 20 2 28 7-1 14 1 19 6 4 4 7 10 8 16 1-14 2-28 2-40 0-12-1-24-1-36z', lx: 62, ly: 102 },
+        { id: 'shoulders', side: 'R', d: 'M122 78c14 2 26 12 30 26 3 10 2 20-2 28-7-1-14 1-19 6-4 4-7 10-8 16-1-14-2-28-2-40 0-12 1-24 1-36z', lx: 138, ly: 102 },
+        // pectorals
+        { id: 'chest', side: 'B', d: 'M76 100c-3 12-3 26 0 38 2 10 7 18 14 22 5 3 10 2 14-1l6-5 6 5c4 3 9 4 14 1 7-4 12-12 14-22 3-12 3-26 0-38-10-7-22-11-34-11s-24 4-34 11z', lx: 100, ly: 124 },
+        // arms (upper+fore roughly as one region)
+        { id: 'arms', side: 'L', d: 'M48 118c-6 4-10 12-10 22v58c0 11 4 18 11 21 5 2 10-1 12-6l5-10c1-12 2-26 2-38v-28c0-8-3-14-9-17-3-2-8-2-11 0z', lx: 46, ly: 158 },
+        { id: 'arms', side: 'R', d: 'M152 118c6 4 10 12 10 22v58c0 11-4 18-11 21-5 2-10-1-12-6l-5-10c-1-12-2-26-2-38v-28c0-8 3-14 9-17 3-2 8-2 11 0z', lx: 154, ly: 158 },
+        // core / abs
+        { id: 'core', side: 'B', d: 'M82 148c-2 12-3 26 0 40 2 12 7 22 13 28h10c6-6 11-16 13-28 3-14 2-28 0-40-6-3-14-5-23-5s-17 2-23 5z', lx: 100, ly: 178 },
+        // quads
+        { id: 'quads', side: 'L', d: 'M82 214c-6 6-9 16-9 30v56c0 13 3 22 10 28 6 4 13 3 17-3 4-6 6-16 6-28v-54c0-12-2-22-8-28-4-4-11-5-16-1z', lx: 86, ly: 260 },
+        { id: 'quads', side: 'R', d: 'M118 214c6 6 9 16 9 30v56c0 13-3 22-10 28-6 4-13 3-17-3-4-6-6-16-6-28v-54c0-12 2-22 8-28 4-4 11-5 16-1z', lx: 114, ly: 260 },
+        // calves
+        { id: 'calves', side: 'L', d: 'M84 318c-4 6-6 16-6 26v34c0 10 3 16 9 20 4 2 9 0 12-4 2-4 4-10 4-18v-34c0-10-1-18-5-23-3-4-10-5-14-1z', lx: 88, ly: 352 },
+        { id: 'calves', side: 'R', d: 'M116 318c4 6 6 16 6 26v34c0 10-3 16-9 20-4 2-9 0-12-4-2-4-4-10-4-18v-34c0-10 1-18 5-23 3-4 10-5 14-1z', lx: 112, ly: 352 }
       ],
       back: [
-        { id: 'shoulders', side: 'L', d: 'M88 90c-12 2-24 12-29 24-3 9-3 18-1 26 6-1 13 0 19 3 5 3 9 8 11 13 1-13 2-26 2-38 0-9-.3-18-2-28z', lx: 68, ly: 112 },
-        { id: 'shoulders', side: 'R', d: 'M112 90c12 2 24 12 29 24 3 9 3 18 1 26-6-1-13 0-19 3-5 3-9 8-11 13-1-13-2-26-2-38 0-9 .3-18 2-28z', lx: 132, ly: 112 },
-        { id: 'back', side: 'B', d: 'M76 104c-3 12-4 26-2 40 2 13 7 25 14 32h24c7-7 12-19 14-32 2-14 1-28-2-40-9-7-20-11-31-11s-22 4-31 11z', lx: 100, ly: 132 },
-        { id: 'arms', side: 'L', d: 'M54 134c-5 3-8 10-8 17v46c0 9 3 15 9 18 4 1 8-1 10-4l4-8c1-10 2-21 2-31v-23c0-6-2-11-7-14-3-2-7-2-10 0z', lx: 52, ly: 164 },
-        { id: 'arms', side: 'R', d: 'M146 134c5 3 8 10 8 17v46c0 9-3 15-9 18-4 1-8-1-10-4l-4-8c-1-10-2-21-2-31v-23c0-6 2-11 7-14 3-2 7-2 10 0z', lx: 148, ly: 164 },
-        { id: 'glutes', side: 'L', d: 'M84 212c-6 3-10 10-10 18 0 12 6 22 16 26 6 2 12 1 15-3 2-3 3-8 3-14v-18c0-7-3-12-8-14-5-3-11-1-16 5z', lx: 88, ly: 232 },
-        { id: 'glutes', side: 'R', d: 'M116 212c6 3 10 10 10 18 0 12-6 22-16 26-6 2-12 1-15-3-2-3-3-8-3-14v-18c0-7 3-12 8-14 5-3 11-1 16 5z', lx: 112, ly: 232 },
-        { id: 'hams', side: 'L', d: 'M84 244c-5 5-7 14-7 28v42c0 11 3 19 8 23 5 4 12 3 16-2 4-5 6-14 6-25v-42c0-12-2-20-7-24-4-4-11-5-16 0z', lx: 88, ly: 280 },
-        { id: 'hams', side: 'R', d: 'M116 244c5 5 7 14 7 28v42c0 11-3 19-8 23-5 4-12 3-16-2-4-5-6-14-6-25v-42c0-12 2-20 7-24 4-4 11-5 16 0z', lx: 112, ly: 280 },
-        { id: 'calves', side: 'L', d: 'M86 322c-4 5-6 13-6 22v28c0 8 3 14 8 17 4 2 9 1 12-3 3-3 4-8 4-15v-28c0-9-1-16-5-20-3-3-9-4-13-1z', lx: 90, ly: 352 },
-        { id: 'calves', side: 'R', d: 'M114 322c4 5 6 13 6 22v28c0 8-3 14-8 17-4 2-9 1-12-3-3-3-4-8-4-15v-28c0-9 1-16 5-20 3-3 9-4 13-1z', lx: 110, ly: 352 }
+        { id: 'shoulders', side: 'L', d: 'M78 78c-14 2-26 12-30 26-3 10-2 20 2 28 7-1 14 1 19 6 4 4 7 10 8 16 1-14 2-28 2-40 0-12-1-24-1-36z', lx: 62, ly: 102 },
+        { id: 'shoulders', side: 'R', d: 'M122 78c14 2 26 12 30 26 3 10 2 20-2 28-7-1-14 1-19 6-4 4-7 10-8 16-1-14-2-28-2-40 0-12 1-24 1-36z', lx: 138, ly: 102 },
+        // traps + lats / upper-mid back
+        { id: 'back', side: 'B', d: 'M74 96c-3 14-4 30-1 46 3 14 8 28 16 36h22c8-8 13-22 16-36 3-16 2-32-1-46-10-8-22-12-34-12s-24 4-34 12z', lx: 100, ly: 128 },
+        { id: 'arms', side: 'L', d: 'M48 118c-6 4-10 12-10 22v58c0 11 4 18 11 21 5 2 10-1 12-6l5-10c1-12 2-26 2-38v-28c0-8-3-14-9-17-3-2-8-2-11 0z', lx: 46, ly: 158 },
+        { id: 'arms', side: 'R', d: 'M152 118c6 4 10 12 10 22v58c0 11-4 18-11 21-5 2-10-1-12-6l-5-10c-1-12-2-26-2-38v-28c0-8 3-14 9-17 3-2 8-2 11 0z', lx: 154, ly: 158 },
+        // glutes
+        { id: 'glutes', side: 'L', d: 'M80 198c-7 4-12 12-12 22 0 14 7 26 18 30 7 3 14 1 17-4 2-4 3-9 3-15v-20c0-8-3-14-9-17-5-3-12-1-17 4z', lx: 86, ly: 222 },
+        { id: 'glutes', side: 'R', d: 'M120 198c7 4 12 12 12 22 0 14-7 26-18 30-7 3-14 1-17-4-2-4-3-9-3-15v-20c0-8 3-14 9-17 5-3 12-1 17 4z', lx: 114, ly: 222 },
+        // hamstrings
+        { id: 'hams', side: 'L', d: 'M82 236c-6 6-9 16-9 32v48c0 13 3 22 10 26 6 4 13 2 17-4 4-6 6-16 6-28v-48c0-13-2-22-8-27-4-4-11-5-16-0z', lx: 86, ly: 276 },
+        { id: 'hams', side: 'R', d: 'M118 236c6 6 9 16 9 32v48c0 13-3 22-10 26-6 4-13 2-17-4-4-6-6-16-6-28v-48c0-13 2-22 8-27 4-4 11-5 16 0z', lx: 114, ly: 276 },
+        { id: 'calves', side: 'L', d: 'M84 318c-4 6-6 16-6 26v34c0 10 3 16 9 20 4 2 9 0 12-4 2-4 4-10 4-18v-34c0-10-1-18-5-23-3-4-10-5-14-1z', lx: 88, ly: 352 },
+        { id: 'calves', side: 'R', d: 'M116 318c4 6 6 16 6 26v34c0 10-3 16-9 20-4 2-9 0-12-4-2-4-4-10-4-18v-34c0-10 1-18 5-23 3-4 10-5 14-1z', lx: 112, ly: 352 }
       ]
     };
 
-    function drawOneBodySvg(svg, model, face) {
+    function drawOneAnatomyHeat(svg, model, face) {
       if (!svg) return;
-      svg.setAttribute('viewBox', '0 0 200 420');
       const byId = {};
       (model.items || []).forEach(it => { byId[it.id] = it; });
       const scoreOf = (id, side) => {
@@ -5338,28 +5322,26 @@
         if (side === 'R' && it.scoreR != null) return it.scoreR;
         return it.score || 0;
       };
-      const colOf = (id, side) => fatigueHeatColor(scoreOf(id, side));
       const sel = bodyFatigueSelected;
-      const front = face !== 'back';
-      const zones = front ? BF_SVG_ANATOMY.front : BF_SVG_ANATOMY.back;
-      const body = front ? BF_SVG_ANATOMY.bodyFront : BF_SVG_ANATOMY.bodyBack;
-      const uid = front ? 'F' : 'B';
+      const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
+      const uid = face === 'back' ? 'B' : 'F';
 
       const zoneEls = zones.map((z, i) => {
         const sc = scoreOf(z.id, z.side);
         const on = sel === z.id ? ' on' : '';
         const hot = sc >= 70 ? ' hot' : '';
-        // mannequin-gray base when fresh; heat ramps opacity cleanly
-        const op = sc < 8 ? 0.18 : sc < 20 ? 0.38 : sc < 40 ? 0.58 : sc < 65 ? 0.78 : 0.92;
-        const scoreTxt = sc >= 16
-          ? `<text class="bf-score${sc < 28 ? ' bf-score-soft' : ''}" x="${z.lx}" y="${z.ly + 3}">${sc}</text>`
+        // keep anatomy readable: low fatigue nearly invisible, high stronger tint
+        const op = sc < 8 ? 0.05 : sc < 20 ? 0.22 : sc < 40 ? 0.38 : sc < 65 ? 0.52 : 0.62;
+        const col = fatigueHeatColor(sc);
+        const scoreTxt = sc >= 18
+          ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}">${sc}</text>`
           : '';
-        const gid = `bfg_${uid}_${z.id}_${z.side}_${i}`;
+        const gid = `anatHeat_${uid}_${z.id}_${z.side}_${i}`;
         return `
-          <radialGradient id="${gid}" cx="32%" cy="28%" r="78%">
-            <stop offset="0%" stop-color="#ffffff" stop-opacity=".42"/>
-            <stop offset="55%" stop-color="${colOf(z.id, z.side)}" stop-opacity="1"/>
-            <stop offset="100%" stop-color="${colOf(z.id, z.side)}" stop-opacity=".88"/>
+          <radialGradient id="${gid}" cx="40%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>
+            <stop offset="55%" stop-color="${col}" stop-opacity="1"/>
+            <stop offset="100%" stop-color="${col}" stop-opacity="0.9"/>
           </radialGradient>
           <path class="bf-zone${on}${hot}" data-region="${z.id}" data-side="${z.side}"
             d="${z.d}" fill="url(#${gid})" opacity="${op}"
@@ -5367,68 +5349,12 @@
           ${scoreTxt}`;
       }).join('');
 
-      // subtle anatomy lines
-      const lines = front
-        ? `<path d="M100 112v40M90 128h20M90 144h20" fill="none" stroke="rgba(15,23,42,.1)" stroke-width="1"/>
-           <path d="M90 172v36M110 172v36M100 172v42" fill="none" stroke="rgba(15,23,42,.08)" stroke-width="1"/>
-           <path d="M92 250v55M108 250v55" fill="none" stroke="rgba(15,23,42,.07)" stroke-width="1"/>`
-        : `<path d="M100 110v70" fill="none" stroke="rgba(15,23,42,.12)" stroke-width="1.2"/>
-           <path d="M88 120c5 18 7 38 7 55M112 120c-5 18-7 38-7 55" fill="none" stroke="rgba(15,23,42,.09)" stroke-width="1"/>
-           <path d="M92 260v50M108 260v50" fill="none" stroke="rgba(15,23,42,.07)" stroke-width="1"/>`;
-
-      svg.innerHTML = `
-        <defs>
-          <linearGradient id="bfSkin_${uid}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f1f5f9"/>
-            <stop offset="45%" stop-color="#e2e8f0"/>
-            <stop offset="100%" stop-color="#cbd5e1"/>
-          </linearGradient>
-          <linearGradient id="bfSkinSide_${uid}" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="rgba(15,23,42,.10)"/>
-            <stop offset="50%" stop-color="rgba(15,23,42,0)"/>
-            <stop offset="100%" stop-color="rgba(15,23,42,.10)"/>
-          </linearGradient>
-          <filter id="bfSoft_${uid}" x="-15%" y="-8%" width="130%" height="120%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="b"/>
-            <feOffset dy="2.5" result="o"/>
-            <feComponentTransfer in="o" result="s"><feFuncA type="linear" slope=".22"/></feComponentTransfer>
-            <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-          <clipPath id="bfClip_${uid}"><path d="${body}"/></clipPath>
-        </defs>
-
-        <!-- soft ground -->
-        <ellipse cx="100" cy="400" rx="52" ry="9" fill="rgba(100,116,139,.14)"/>
-
-        <!-- body mannequin -->
-        <path d="${body}" fill="url(#bfSkin_${uid})" filter="url(#bfSoft_${uid})"
-          stroke="rgba(100,116,139,.35)" stroke-width="1.15" stroke-linejoin="round"/>
-        <g clip-path="url(#bfClip_${uid})">
-          <rect x="40" y="70" width="120" height="320" fill="url(#bfSkinSide_${uid})"/>
-        </g>
-
-        <!-- heat plates -->
-        <g>${zoneEls}</g>
-
-        <!-- anatomy lines -->
-        <g pointer-events="none">${lines}</g>
-      `;
+      svg.innerHTML = `<defs></defs><g>${zoneEls}</g>`;
     }
 
     function drawBodyFatigueSvg(model) {
-      const front = document.getElementById('bodyFatigueSvgFront');
-      const back = document.getElementById('bodyFatigueSvgBack');
-      if (front || back) {
-        drawOneBodySvg(front, model, 'front');
-        drawOneBodySvg(back, model, 'back');
-        return;
-      }
-      // fallback single svg
-      const svg = document.getElementById('bodyFatigueSvg');
-      if (svg) {
-        svg.style.display = '';
-        drawOneBodySvg(svg, model, bodyFatigueView === 'back' ? 'back' : 'front');
-      }
+      drawOneAnatomyHeat(document.getElementById('bodyFatigueSvgFront'), model, 'front');
+      drawOneAnatomyHeat(document.getElementById('bodyFatigueSvgBack'), model, 'back');
     }
 
     function renderBodyFatigueDetail(item, model) {
@@ -5626,12 +5552,13 @@
       if (!bf3d) return;
       if (bf3d.raf) cancelAnimationFrame(bf3d.raf);
       if (bf3d.renderer) {
-        bf3d.renderer.dispose();
+        try { bf3d.renderer.dispose(); } catch (e) {}
         if (bf3d.wrap && bf3d.renderer.domElement && bf3d.renderer.domElement.parentNode === bf3d.wrap) {
-          bf3d.wrap.removeChild(bf3d.renderer.domElement);
+          try { bf3d.wrap.removeChild(bf3d.renderer.domElement); } catch (e) {}
         }
       }
       bf3d = null;
+      try { document.body.classList.remove('bf-3d-on'); } catch (e) {}
     }
 
     function ensureBodyFatigue3D() {
@@ -5642,148 +5569,127 @@
       if (!wrap.querySelector('.bf-3d-badge')) {
         const badge = document.createElement('div');
         badge.className = 'bf-3d-badge';
-        badge.innerHTML = '<span>3D</span><span>DRAG · ZOOM</span>';
+        badge.innerHTML = '<span>3D 해부도</span><span>DRAG · ZOOM</span>';
         wrap.appendChild(badge);
       }
       if (bf3d && bf3d.renderer) {
         const w = wrap.clientWidth || 320;
-        const h = wrap.clientHeight || 440;
+        const h = wrap.clientHeight || 460;
         bf3d.camera.aspect = w / h;
         bf3d.camera.updateProjectionMatrix();
         bf3d.renderer.setSize(w, h, false);
         return;
       }
       disposeBodyFatigue3D(true);
-      const w = wrap.clientWidth || 320;
-      const h = wrap.clientHeight || 440;
 
+      const w = wrap.clientWidth || 320;
+      const h = wrap.clientHeight || 460;
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x0b1220);
-      scene.fog = new THREE.Fog(0x0b1220, 5, 11);
+      scene.fog = new THREE.Fog(0x0b1220, 6, 14);
 
-      const camera = new THREE.PerspectiveCamera(34, w / h, 0.1, 50);
-      camera.position.set(0, 1.15, 3.55);
-      camera.lookAt(0, 0.95, 0);
+      const camera = new THREE.PerspectiveCamera(34, w / h, 0.05, 30);
+      camera.position.set(0, 0.05, 2.35);
+      camera.lookAt(0, 0.05, 0);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(w, h, false);
       if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
       if (THREE.ACESFilmicToneMapping !== undefined) {
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.18;
+        renderer.toneMappingExposure = 1.12;
       }
-
       const hint = wrap.querySelector('.bf-3d-hint');
       const badge = wrap.querySelector('.bf-3d-badge');
       wrap.insertBefore(renderer.domElement, hint || badge || null);
 
-      // clean studio lights
-      scene.add(new THREE.AmbientLight(0xb6c2d2, 0.42));
-      const hemi = new THREE.HemisphereLight(0xf8fafc, 0x1e293b, 0.7);
-      scene.add(hemi);
-      const key = new THREE.DirectionalLight(0xffffff, 1.05);
-      key.position.set(2.6, 4.2, 2.4);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.95));
+      const key = new THREE.DirectionalLight(0xffffff, 0.55);
+      key.position.set(1.5, 2.2, 2.5);
       scene.add(key);
-      const fill = new THREE.DirectionalLight(0xa5b4fc, 0.4);
-      fill.position.set(-2.8, 1.4, 0.5);
-      scene.add(fill);
-      const rim = new THREE.DirectionalLight(0x67e8f9, 0.45);
-      rim.position.set(0, 1.8, -3.2);
-      scene.add(rim);
 
       const group = new THREE.Group();
       scene.add(group);
-      const meshes = [];
 
-      function mat(hex, rough) {
-        const M = THREE.MeshStandardMaterial;
-        return new M({
-          color: hex,
-          roughness: rough != null ? rough : 0.48,
-          metalness: 0.06,
-          emissive: 0x000000,
-          emissiveIntensity: 0.04
-        });
-      }
-      function add(geo, x, y, z, region, side, o) {
-        o = o || {};
-        const mesh = new THREE.Mesh(geo, mat(0xc5ced9, o.rough));
-        mesh.position.set(x, y, z);
-        if (o.rx) mesh.rotation.x = o.rx;
-        if (o.ry) mesh.rotation.y = o.ry;
-        if (o.rz) mesh.rotation.z = o.rz;
-        if (o.sx || o.sy || o.sz) mesh.scale.set(o.sx || 1, o.sy || 1, o.sz || o.sx || 1);
-        mesh.userData.region = region;
-        mesh.userData.side = side || 'B';
-        mesh.userData.baseScale = mesh.scale.clone();
-        group.add(mesh);
-        meshes.push(mesh);
-        return mesh;
-      }
-      const sph = (r, s) => new THREE.SphereGeometry(r, s || 32, s ? s - 4 : 24);
-      const cap = (r, len) => {
-        if (typeof THREE.CapsuleGeometry === 'function') return new THREE.CapsuleGeometry(r, len, 8, 20);
-        return new THREE.CylinderGeometry(r, r * 0.94, len + r * 2, 20);
-      };
-
-      // —— clean elegant mannequin (no cluttered abs spheres) ——
-      // head / neck
-      add(sph(0.15, 36), 0, 1.82, 0.01, null, 'B', { rough: 0.42 });
-      add(cap(0.05, 0.1), 0, 1.62, 0.01, null, 'B');
-
-      // torso: one smooth capsule + muscle plates only
-      add(cap(0.2, 0.42), 0, 1.22, 0, null, 'B', { sx: 1.15, sy: 1, sz: 0.72, rough: 0.46 });
-      // chest plate
-      add(sph(0.175, 32), 0, 1.36, 0.1, 'chest', 'B', { sx: 1.38, sy: 0.92, sz: 0.5, rough: 0.4 });
-      // back plate
-      add(sph(0.19, 32), 0, 1.32, -0.1, 'back', 'B', { sx: 1.28, sy: 1.05, sz: 0.48, rough: 0.42 });
-      // core
-      add(cap(0.13, 0.18), 0, 1.02, 0.03, 'core', 'B', { sx: 1.18, sy: 1, sz: 0.78, rough: 0.44 });
-
-      // delts
-      add(sph(0.1, 28), -0.3, 1.48, 0.02, 'shoulders', 'L', { rough: 0.4 });
-      add(sph(0.1, 28), 0.3, 1.48, 0.02, 'shoulders', 'R', { rough: 0.4 });
-      // arms (upper + lower)
-      add(cap(0.052, 0.28), -0.39, 1.24, 0.02, 'arms', 'L', { rz: 0.12, rough: 0.42 });
-      add(cap(0.045, 0.26), -0.44, 0.9, 0.03, 'arms', 'L', { rz: 0.06, rough: 0.44 });
-      add(cap(0.052, 0.28), 0.39, 1.24, 0.02, 'arms', 'R', { rz: -0.12, rough: 0.42 });
-      add(cap(0.045, 0.26), 0.44, 0.9, 0.03, 'arms', 'R', { rz: -0.06, rough: 0.44 });
-      // hands
-      add(sph(0.04, 16), -0.46, 0.7, 0.04, null, 'B');
-      add(sph(0.04, 16), 0.46, 0.7, 0.04, null, 'B');
-
-      // glutes
-      add(sph(0.115, 26), -0.1, 0.86, -0.07, 'glutes', 'L', { sx: 1.05, sy: 0.9, sz: 0.95, rough: 0.44 });
-      add(sph(0.115, 26), 0.1, 0.86, -0.07, 'glutes', 'R', { sx: 1.05, sy: 0.9, sz: 0.95, rough: 0.44 });
-      // quads / hams / calves
-      add(cap(0.078, 0.34), -0.125, 0.54, 0.05, 'quads', 'L', { sx: 1.05, rough: 0.44 });
-      add(cap(0.078, 0.34), 0.125, 0.54, 0.05, 'quads', 'R', { sx: 1.05, rough: 0.44 });
-      add(cap(0.07, 0.3), -0.125, 0.54, -0.07, 'hams', 'L', { sx: 0.95, rough: 0.46 });
-      add(cap(0.07, 0.3), 0.125, 0.54, -0.07, 'hams', 'R', { sx: 0.95, rough: 0.46 });
-      add(cap(0.055, 0.3), -0.12, 0.16, 0.02, 'calves', 'L', { sx: 1.08, sz: 1.1, rough: 0.44 });
-      add(cap(0.055, 0.3), 0.12, 0.16, 0.02, 'calves', 'R', { sx: 1.08, sz: 1.1, rough: 0.44 });
-      // feet
-      add(sph(0.05, 14), -0.12, -0.04, 0.07, null, 'B', { sx: 1.15, sy: 0.5, sz: 1.65 });
-      add(sph(0.05, 14), 0.12, -0.04, 0.07, null, 'B', { sx: 1.15, sy: 0.5, sz: 1.65 });
-
-      // floor
-      const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(0.85, 64),
-        new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9, metalness: 0.1, transparent: true, opacity: 0.85 })
-      );
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.y = -0.08;
-      group.add(floor);
+      // floor ring
       const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.58, 0.78, 64),
-        new THREE.MeshBasicMaterial({ color: 0x6366f1, side: THREE.DoubleSide, transparent: true, opacity: 0.38 })
+        new THREE.RingGeometry(0.55, 0.72, 64),
+        new THREE.MeshBasicMaterial({ color: 0x6366f1, side: THREE.DoubleSide, transparent: true, opacity: 0.32 })
       );
       ring.rotation.x = -Math.PI / 2;
-      ring.position.y = -0.07;
+      ring.position.y = -0.95;
       group.add(ring);
 
-      group.position.y = -0.05;
+      const loader = new THREE.TextureLoader();
+      const maxAniso = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+
+      function makePlate(texUrl, z) {
+        const tex = loader.load(texUrl);
+        tex.colorSpace = THREE.SRGBColorSpace || tex.encoding;
+        if (tex.anisotropy != null) tex.anisotropy = maxAniso;
+        // 3:4 plate
+        const geo = new THREE.PlaneGeometry(1.05, 1.4, 1, 1);
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          side: THREE.FrontSide,
+          depthWrite: true
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.z = z;
+        return mesh;
+      }
+
+      // heat overlay canvases (drawn in updateBodyFatigue3DColors)
+      function makeHeatOverlay(face, z) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 682;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace || tex.encoding;
+        const geo = new THREE.PlaneGeometry(1.05, 1.4, 1, 1);
+        const mat = new THREE.MeshBasicMaterial({
+          map: tex,
+          transparent: true,
+          opacity: 0.85,
+          side: THREE.FrontSide,
+          depthWrite: false,
+          blending: THREE.NormalBlending
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.z = z;
+        mesh.userData.heatCanvas = canvas;
+        mesh.userData.heatCtx = ctx;
+        mesh.userData.heatTex = tex;
+        mesh.userData.face = face;
+        return mesh;
+      }
+
+      const frontPlate = makePlate('anatomy/front.jpg', 0.01);
+      const backPlate = makePlate('anatomy/back.jpg', -0.01);
+      backPlate.rotation.y = Math.PI; // face outward when card flips
+      const frontHeat = makeHeatOverlay('front', 0.02);
+      const backHeat = makeHeatOverlay('back', -0.02);
+      backHeat.rotation.y = Math.PI;
+
+      const card = new THREE.Group();
+      card.add(frontPlate);
+      card.add(backPlate);
+      card.add(frontHeat);
+      card.add(backHeat);
+      card.position.y = 0.0;
+      group.add(card);
+
+      // soft hit targets for raycast select (invisible planes matching zones)
+      // we reuse 2D zone centroids projected — simplified: raycast whole plate then map UV to region
+      frontPlate.userData.isPlate = true;
+      frontPlate.userData.face = 'front';
+      backPlate.userData.isPlate = true;
+      backPlate.userData.face = 'back';
+
       if (bodyFatigueView === 'back') group.rotation.y = Math.PI;
 
       let dragging = false, lastX = 0, lastY = 0, moved = false;
@@ -5798,14 +5704,40 @@
         const dx = p.clientX - lastX, dy = p.clientY - lastY;
         if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
         lastX = p.clientX; lastY = p.clientY;
-        group.rotation.y += dx * 0.009;
-        group.rotation.x = Math.max(-0.4, Math.min(0.4, group.rotation.x + dy * 0.006));
+        group.rotation.y += dx * 0.01;
+        group.rotation.x = Math.max(-0.25, Math.min(0.25, group.rotation.x + dy * 0.005));
       };
       const onUp = () => { dragging = false; };
       const onWheel = (e) => {
         e.preventDefault();
-        camera.position.z = Math.max(2.4, Math.min(4.8, camera.position.z + e.deltaY * 0.002));
+        camera.position.z = Math.max(1.4, Math.min(3.6, camera.position.z + e.deltaY * 0.002));
       };
+
+      function regionFromUv(face, u, v) {
+        // viewBox 0..200 x 0..400 mapped from UV (u right, v up in three plane default)
+        // PlaneGeometry UV: u 0..1 left-right, v 0..1 bottom-top
+        const x = u * 200;
+        const y = (1 - v) * 400;
+        const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
+        // pick nearest zone by label point distance (robust)
+        let best = null, bestD = 1e9;
+        zones.forEach(z => {
+          const dx = x - z.lx, dy = y - z.ly;
+          const d = dx * dx + dy * dy;
+          if (d < bestD) { bestD = d; best = z; }
+        });
+        // only accept if reasonably close to a muscle plate center
+        if (best && bestD < 55 * 55) return best.id;
+        // fallback bands
+        if (y < 90) return null;
+        if (y < 145) return Math.abs(x - 100) > 40 ? 'shoulders' : (face === 'back' ? 'back' : 'chest');
+        if (y < 200) return Math.abs(x - 100) > 48 ? 'arms' : (face === 'back' ? 'back' : 'core');
+        if (y < 240) return face === 'back' ? 'glutes' : 'core';
+        if (y < 310) return face === 'back' ? 'hams' : 'quads';
+        if (y < 380) return 'calves';
+        return null;
+      }
+
       const raycaster = new THREE.Raycaster();
       const pointer = new THREE.Vector2();
       const onClick = (e) => {
@@ -5815,10 +5747,16 @@
         pointer.x = ((p.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((p.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects(meshes, false);
-        const hit = hits.find(h => h.object.userData.region);
-        if (hit) selectBodyRegion(hit.object.userData.region);
+        const hits = raycaster.intersectObjects([frontPlate, backPlate], false);
+        if (!hits.length) return;
+        const hit = hits[0];
+        const face = hit.object.userData.face || 'front';
+        const uv = hit.uv;
+        if (!uv) return;
+        const rid = regionFromUv(face, uv.x, uv.y);
+        if (rid) selectBodyRegion(rid);
       };
+
       renderer.domElement.addEventListener('mousedown', onDown);
       renderer.domElement.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
@@ -5830,51 +5768,100 @@
 
       const animate = () => {
         bf3d.raf = requestAnimationFrame(animate);
-        if (!dragging) group.rotation.y += 0.0016;
-        ring.material.opacity = 0.28 + Math.sin(performance.now() * 0.0013) * 0.1;
+        if (!dragging) group.rotation.y += 0.0035;
+        ring.material.opacity = 0.24 + Math.sin(performance.now() * 0.0013) * 0.08;
         renderer.render(scene, camera);
       };
-      bf3d = { renderer, scene, camera, group, meshes, wrap, animate, raycaster, ring };
+
+      bf3d = {
+        renderer, scene, camera, group, wrap, animate, raycaster, ring,
+        frontHeat, backHeat, card, frontPlate, backPlate
+      };
       animate();
+      try {
+        updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
+      } catch (e) {}
+    }
+
+    function paintHeatOnCanvas(canvas, ctx, model, face) {
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      const byId = {};
+      (model.items || []).forEach(it => { byId[it.id] = it; });
+      const scoreOf = (id, side) => {
+        const it = byId[id];
+        if (!it) return 0;
+        if (side === 'L' && it.scoreL != null) return it.scoreL;
+        if (side === 'R' && it.scoreR != null) return it.scoreR;
+        return it.score || 0;
+      };
+      const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
+      const sx = W / 200, sy = H / 400;
+      zones.forEach(z => {
+        const sc = scoreOf(z.id, z.side);
+        if (sc < 6) return;
+        const op = sc < 20 ? 0.2 : sc < 40 ? 0.35 : sc < 65 ? 0.48 : 0.58;
+        const col = fatigueHeatColor(sc);
+        // approximate zone with ellipse around label point (readable heat blob on anatomy)
+        const cx = z.lx * sx, cy = z.ly * sy;
+        let rx = 28 * sx, ry = 34 * sy;
+        if (z.id === 'chest' || z.id === 'back' || z.id === 'core') { rx = 42 * sx; ry = 36 * sy; }
+        if (z.id === 'arms') { rx = 18 * sx; ry = 48 * sy; }
+        if (z.id === 'quads' || z.id === 'hams') { rx = 22 * sx; ry = 48 * sy; }
+        if (z.id === 'calves') { rx = 16 * sx; ry = 36 * sy; }
+        if (z.id === 'shoulders') { rx = 26 * sx; ry = 28 * sy; }
+        if (z.id === 'glutes') { rx = 26 * sx; ry = 24 * sy; }
+        const grd = ctx.createRadialGradient(cx - rx * 0.2, cy - ry * 0.25, 2, cx, cy, Math.max(rx, ry));
+        grd.addColorStop(0, col.replace('rgb', 'rgba').replace(')', `,${Math.min(0.95, op + 0.25)})`));
+        // fatigueHeatColor returns rgb(r,g,b)
+        const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(col);
+        if (m) {
+          const r = +m[1], g = +m[2], b = +m[3];
+          grd.addColorStop(0, `rgba(${r},${g},${b},${Math.min(0.9, op + 0.2)})`);
+          grd.addColorStop(0.65, `rgba(${r},${g},${b},${op})`);
+          grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        }
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+        // score
+        if (sc >= 18) {
+          ctx.font = 'bold 28px Poppins, system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeText(String(sc), cx, cy);
+          ctx.fillText(String(sc), cx, cy);
+        }
+        // selection ring
+        if (bodyFatigueSelected === z.id) {
+          ctx.strokeStyle = 'rgba(79,70,229,0.95)';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx + 4, ry + 4, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      });
     }
 
     function updateBodyFatigue3DColors(model) {
       if (!bf3d || !model) return;
-      const byId = {};
-      (model.items || []).forEach(it => { byId[it.id] = it; });
-      bf3d.meshes.forEach(m => {
-        if (!m.material || !m.material.color) return;
-        const reg = m.userData.region;
-        const base = m.userData.baseScale || { x: 1, y: 1, z: 1 };
-        if (!reg) {
-          m.material.color.setHex(0xc5ced9);
-          if (m.material.emissive) {
-            m.material.emissive.setHex(0x0b1220);
-            m.material.emissiveIntensity = 0.03;
-          }
-          m.scale.set(base.x, base.y, base.z);
-          return;
-        }
-        const it = byId[reg];
-        let sc = it ? it.score : 0;
-        if (it && it.paired && m.userData.side === 'L') sc = it.scoreL;
-        if (it && it.paired && m.userData.side === 'R') sc = it.scoreR;
-        const heat = new THREE.Color(fatigueHeatColor(sc));
-        const clay = new THREE.Color(0xc9d2dd);
-        const tmix = Math.pow(Math.max(0, Math.min(1, sc / 100)), 0.9);
-        m.material.color.copy(clay).lerp(heat, 0.15 + tmix * 0.82);
-        if (m.material.emissive) {
-          m.material.emissive.copy(heat);
-          m.material.emissiveIntensity = 0.04 + tmix * 0.48;
-        }
-        if (m.material.roughness != null) m.material.roughness = 0.38 + (1 - tmix) * 0.18;
-        if (bodyFatigueSelected === reg) {
-          if (m.material.emissiveIntensity != null) m.material.emissiveIntensity += 0.18;
-          m.scale.set(base.x * 1.04, base.y * 1.04, base.z * 1.04);
-        } else {
-          m.scale.set(base.x, base.y, base.z);
-        }
-      });
+      if (bf3d.frontHeat && bf3d.frontHeat.userData) {
+        const c = bf3d.frontHeat.userData;
+        paintHeatOnCanvas(c.heatCanvas, c.heatCtx, model, 'front');
+        c.heatTex.needsUpdate = true;
+      }
+      if (bf3d.backHeat && bf3d.backHeat.userData) {
+        const c = bf3d.backHeat.userData;
+        paintHeatOnCanvas(c.heatCanvas, c.heatCtx, model, 'back');
+        c.heatTex.needsUpdate = true;
+      }
     }
 
     function applyAsymBalanceWork() {

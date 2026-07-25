@@ -1,6 +1,6 @@
-/* FIT TRACKER 2 service worker — bump CACHE on every deploy */
-const CACHE = 'fit-tracker-2-v40';
-const APP_VERSION = '4.23';
+﻿/* FIT TRACKER 2 service worker ??bump CACHE on every deploy */
+const CACHE = 'fit-tracker-2-v41';
+const APP_VERSION = '4.24';
 const ASSETS = [
   './',
   './index.html',
@@ -13,13 +13,15 @@ const ASSETS = [
   './coaches/seoan.jpg',
   './coaches/naeun.jpg',
   './coaches/ganghyeok.jpg',
+  './anatomy/front.jpg',
+  './anatomy/back.jpg',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
   'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap'
 ];
 
 self.addEventListener('install', (e) => {
-  // Do not skipWaiting here — let the app show an update banner,
+  // Do not skipWaiting here ??let the app show an update banner,
   // then client posts SKIP_WAITING (or user runs force refresh).
   e.waitUntil(
     caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {}))
@@ -34,7 +36,7 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Client → SW control (update apply / force clear)
+// Client ??SW control (update apply / force clear)
 self.addEventListener('message', (e) => {
   const data = e.data || {};
   const type = typeof data === 'string' ? data : data.type;
