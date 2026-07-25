@@ -13,6 +13,15 @@
   <link rel="apple-touch-icon" href="icon.svg" />
   <title>FIT TRACKER 2</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <!-- Single Three.js module graph for GLTFLoader (bare 'three' specifier) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="foods.js"></script>
@@ -1910,7 +1919,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.25</div>
+        <div class="ver" id="appVerBadge">4.26</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2907,7 +2916,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.25</span>
+            <span class="muted" id="appVerLabel">v4.26</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3265,7 +3274,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.25';
+    const APP_VERSION = '4.26';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5253,14 +5262,13 @@
       syncBodyFatigueModeUI();
       if (bodyFatigueMode === '3d') {
         try {
-          if (isMoveGeneralVisible()) {
-            ensureBodyFatigue3D();
+          ensureBodyFatigue3D();
+          if (bf3d && bf3d.ready) {
             updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
           }
         } catch (e) {
-          bodyFatigueMode = 'svg';
-          syncBodyFatigueModeUI();
-          try { disposeBodyFatigue3D(false); } catch (e2) {}
+          console.warn('setBodyFatigueMode 3d', e);
+          toast('3D 시작 오류: ' + (e.message || e));
         }
       } else {
         try { disposeBodyFatigue3D(false); } catch (e) {}
@@ -5356,10 +5364,11 @@
           op = 0.78;
           fill = fatigueHeatColor(sc);
         }
+        // SVG y grows downward — smaller y = higher on body. OK sits above zone center.
         const scoreTxt = sc >= 12
-          ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}">${sc}</text>`
+          ? `<text class="bf-score" x="${z.lx}" y="${z.ly - 2}">${sc}</text>`
           : (sc < 8
-            ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}" style="font-size:8px;fill:#166534;stroke:rgba(255,255,255,.75)">OK</text>`
+            ? `<text class="bf-score bf-ok" x="${z.lx}" y="${z.ly - 10}" style="font-size:9px;fill:#166534;stroke:rgba(255,255,255,.9);stroke-width:3px">OK</text>`
             : '');
         const gid = `anatHeat_${uid}_${z.id}_${z.side}_${i}`;
         const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(fill);
@@ -5527,21 +5536,14 @@
       const lab = document.getElementById('bfRangeLabel');
       if (lab) lab.textContent = '해부학 · 좌우 · ' + (bodyFatigueDays || 7) + '일';
 
-      // 3D/WebGL은 운동>일반 탭이 보일 때만 (백그라운드 초기화로 모바일 터치 먹김 방지)
-      if (bodyFatigueMode === 'svg' || !isMoveGeneralVisible()) {
-        if (!isMoveGeneralVisible() && bf3d) {
-          try { disposeBodyFatigue3D(false); } catch (e) {}
-        }
-        try { drawBodyFatigueSvg(model); } catch (e) {}
-      } else {
+      // 2D heat always updates (hidden when 3D on). 3D only when mode is 3d.
+      try { drawBodyFatigueSvg(model); } catch (e) { console.warn('drawBodyFatigueSvg', e); }
+      if (bodyFatigueMode === '3d') {
         try {
           ensureBodyFatigue3D();
-          updateBodyFatigue3DColors(model);
+          if (bf3d && bf3d.ready) updateBodyFatigue3DColors(model);
         } catch (e) {
-          bodyFatigueMode = 'svg';
-          try { syncBodyFatigueModeUI(); } catch (e1) {}
-          try { disposeBodyFatigue3D(false); } catch (e2) {}
-          try { drawBodyFatigueSvg(model); } catch (e3) {}
+          console.warn('3d render', e);
         }
       }
 
@@ -5583,8 +5585,11 @@
       renderBodyFatigueDetail(sel, model);
     }
 
-    // —— Three.js mannequin ——
+    // —— Three.js real humanoid heat body ——
+    let bf3dLoadGen = 0;
+
     function disposeBodyFatigue3D(clearDom) {
+      bf3dLoadGen++; // cancel in-flight loads
       if (!bf3d) return;
       if (bf3d.raf) cancelAnimationFrame(bf3d.raf);
       if (bf3d.renderer) {
@@ -5598,7 +5603,6 @@
     }
 
     function ensureBodyFatigue3D() {
-      if (typeof THREE === 'undefined') throw new Error('THREE missing');
       const wrap = document.getElementById('bf3dStage');
       if (!wrap) return;
       document.body.classList.add('bf-3d-on');
@@ -5617,19 +5621,29 @@
         return;
       }
       if (bf3d && bf3d.loading) return;
-      disposeBodyFatigue3D(true);
 
-      const w = wrap.clientWidth || 320;
-      const h = wrap.clientHeight || 460;
-      bf3d = { loading: true, wrap, ready: false };
+      // tear down partial state without bumping gen twice
+      if (bf3d) {
+        if (bf3d.raf) cancelAnimationFrame(bf3d.raf);
+        if (bf3d.renderer && bf3d.renderer.domElement && bf3d.renderer.domElement.parentNode === wrap) {
+          try { wrap.removeChild(bf3d.renderer.domElement); } catch (e) {}
+        }
+      }
+
+      const w = Math.max(280, wrap.clientWidth || 320);
+      const h = Math.max(360, wrap.clientHeight || 460);
+      const loadGen = ++bf3dLoadGen;
+      bf3d = { loading: true, wrap, ready: false, loadGen };
 
       const hint = wrap.querySelector('.bf-3d-hint');
       if (hint) hint.textContent = '3D 인체 로딩 중…';
 
       (async () => {
         try {
-          const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
-          const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+          // Import map resolves bare "three" so GLTFLoader shares one module instance
+          const T = await import('three');
+          const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+          if (loadGen !== bf3dLoadGen) return;
 
           const scene = new T.Scene();
           scene.background = new T.Color(0x0b1220);
@@ -5639,7 +5653,7 @@
           camera.position.set(0, 1.0, 2.55);
           camera.lookAt(0, 0.9, 0);
 
-          const renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+          const renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', alpha: false });
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
           renderer.setSize(w, h, false);
           if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = T.SRGBColorSpace;
@@ -5681,10 +5695,14 @@
           group.add(ring);
 
           const loader = new GLTFLoader();
+          const glbUrl = new URL('anatomy/human.glb', window.location.href).href;
           const gltf = await new Promise((resolve, reject) => {
-            loader.load('anatomy/human.glb', resolve, undefined, reject);
+            loader.load(glbUrl, resolve, undefined, (err) => reject(err || new Error('GLB load failed')));
           });
+          if (loadGen !== bf3dLoadGen) return;
+
           const root = gltf.scene || gltf.scenes[0];
+          if (!root) throw new Error('GLB scene empty');
 
           // Normalize to ~1.75m height on floor
           root.updateMatrixWorld(true);
@@ -5698,17 +5716,16 @@
           root.position.x -= center.x;
           root.position.z -= center.z;
           root.position.y -= box.min.y;
-          root.rotation.y = Math.PI; // face camera
+          root.rotation.y = Math.PI;
 
           const heatMeshes = [];
 
-          // Map bind-pose local Y (normalized 0..1) + X to fatigue region
           function classifyVertex(x, y, z, yMin, yMax) {
             const yn = (y - yMin) / Math.max(1e-6, yMax - yMin);
             const ax = Math.abs(x);
             let region = 'core';
             let side = 'B';
-            if (yn > 0.88) region = null; // head
+            if (yn > 0.88) region = null;
             else if (yn > 0.78) region = ax > 0.12 ? 'shoulders' : 'chest';
             else if (yn > 0.62) {
               if (ax > 0.18) region = 'arms';
@@ -5726,7 +5743,6 @@
             if (region && BODY_REGIONS[region] && BODY_REGIONS[region].paired) {
               side = x < -0.03 ? 'L' : x > 0.03 ? 'R' : 'B';
             }
-            // back plate override for mid torso rear
             if (region === 'chest' && z < -0.05) region = 'back';
             return { region, side };
           }
@@ -5739,12 +5755,17 @@
           const v = new T.Vector3();
 
           root.traverse((obj) => {
-            if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
+            if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes || !obj.geometry.attributes.position) return;
+            // Clone only non-skinned meshes (cloning skinned geo breaks skeleton binding)
+            if (!obj.isSkinnedMesh) {
+              obj.geometry = obj.geometry.clone();
+            }
             const geo = obj.geometry;
             const pos = geo.attributes.position;
             const colors = new Float32Array(pos.count * 3);
             const regions = new Array(pos.count);
             const sides = new Array(pos.count);
+            obj.updateMatrixWorld(true);
             const toRoot = new T.Matrix4().multiplyMatrices(invRoot, obj.matrixWorld);
 
             for (let i = 0; i < pos.count; i++) {
@@ -5758,7 +5779,6 @@
             }
             geo.setAttribute('color', new T.BufferAttribute(colors, 3));
 
-            // Replace material with vertex-color heat material (keep skinning intact)
             const mat = new T.MeshStandardMaterial({
               color: 0xffffff,
               vertexColors: true,
@@ -5768,7 +5788,7 @@
               emissiveIntensity: 0.12
             });
             if (Array.isArray(obj.material)) {
-              obj.material.forEach(m => { try { m.dispose && m.dispose(); } catch (e) {} });
+              obj.material.forEach(m => { try { if (m && m.dispose) m.dispose(); } catch (e) {} });
             } else if (obj.material && obj.material.dispose) {
               try { obj.material.dispose(); } catch (e) {}
             }
@@ -5776,10 +5796,11 @@
             obj.userData.heatRegions = regions;
             obj.userData.heatSides = sides;
             obj.userData.isHeatMesh = true;
-            obj.castShadow = false;
-            obj.receiveShadow = false;
+            obj.frustumCulled = false;
             heatMeshes.push(obj);
           });
+
+          if (!heatMeshes.length) throw new Error('메시를 찾지 못했습니다');
 
           group.add(root);
           if (bodyFatigueView === 'back') group.rotation.y = Math.PI;
@@ -5833,34 +5854,50 @@
           renderer.domElement.addEventListener('click', onClick);
 
           const animate = () => {
-            if (!bf3d || !bf3d.renderer) return;
+            if (!bf3d || !bf3d.renderer || bf3d.loadGen !== loadGen) return;
             bf3d.raf = requestAnimationFrame(animate);
             if (!dragging) group.rotation.y += 0.0022;
-            // update skinned meshes
-            heatMeshes.forEach(m => {
-              if (m.isSkinnedMesh && m.skeleton) m.skeleton.update();
-            });
             if (ring.material) ring.material.opacity = 0.26 + Math.sin(performance.now() * 0.0013) * 0.08;
             renderer.render(scene, camera);
           };
 
+          if (loadGen !== bf3dLoadGen) {
+            try { renderer.dispose(); } catch (e) {}
+            return;
+          }
+
           bf3d = {
             renderer, scene, camera, group, wrap, animate, raycaster, ring,
-            heatMeshes, T, root, ready: true, loading: false
+            heatMeshes, T, root, ready: true, loading: false, loadGen
           };
           if (hint) hint.textContent = '3D 인체 · 부위 히트 · 드래그 회전 · 휠 줌 · 부위 탭';
           animate();
           try {
             updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
-          } catch (e) {}
+          } catch (e) { console.warn('heat apply', e); }
+          try { toast('3D 인체 준비됨'); } catch (e) {}
         } catch (err) {
           console.warn('3D human load failed', err);
-          if (hint) hint.textContent = '3D 로드 실패 · 평면 해부도를 사용하세요';
-          bodyFatigueMode = 'svg';
-          try { syncBodyFatigueModeUI(); } catch (e) {}
-          bf3d = null;
+          if (loadGen !== bf3dLoadGen) return;
+          const msg = (err && err.message) ? err.message : String(err);
+          if (hint) {
+            hint.innerHTML = '3D 로드 실패 · <button type="button" class="btn btn-s" style="width:auto;padding:4px 10px;margin-left:6px" onclick="retryBodyFatigue3D()">다시 시도</button>';
+          }
+          try { toast('3D 실패: ' + msg); } catch (e) {}
+          // Stay on 3D panel so user can retry — do NOT auto-bounce to 2D
+          if (bf3d && bf3d.renderer && bf3d.renderer.domElement && bf3d.renderer.domElement.parentNode === wrap) {
+            try { wrap.removeChild(bf3d.renderer.domElement); } catch (e) {}
+          }
+          bf3d = { loading: false, ready: false, wrap, loadGen, failed: true };
         }
       })();
+    }
+
+    function retryBodyFatigue3D() {
+      bf3d = null;
+      bodyFatigueMode = '3d';
+      syncBodyFatigueModeUI();
+      ensureBodyFatigue3D();
     }
 
     function updateBodyFatigue3DColors(model) {
