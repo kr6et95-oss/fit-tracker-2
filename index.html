@@ -1965,7 +1965,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.30</div>
+        <div class="ver" id="appVerBadge">4.31</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2669,11 +2669,11 @@
       <div class="card" id="bodyFatigueCard">
         <div class="card-h">
           <h2>🧍 바디 피로 맵</h2>
-          <span class="muted" id="bfRangeLabel">해부학 · 좌우 · 7일</span>
+          <span class="muted" id="bfRangeLabel">해부도 · 좌우 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
-          <strong>해부도</strong>는 실제 근육 그림 위 히트, <strong>존 맵</strong>은 부위 자극을 읽기 쉽게 도식화한 뷰입니다.
-          운동 자극이 있으면 색이 변합니다 (없음=초록 · 강함=빨강). 의료 진단용이 아닙니다.
+          실제 <strong>근육 해부도</strong> 위에 운동 자극 히트를 표시합니다 (없음=초록 · 강함=빨강).
+          수면·주관 피로·휴식일이 회복 속도에 반영됩니다. 의료 진단용이 아닙니다.
         </p>
         <div class="bf-ready" id="bfReadyBox">
           <div class="ring" id="bfReadyRing" style="--bf-ready-pct:0;--bf-ready-col:#94a3b8"><span class="n" id="bfReadyScore">—</span></div>
@@ -2687,11 +2687,7 @@
           <button type="button" class="on" data-bf-days="7" onclick="setBodyFatigueDays(7)">7일</button>
           <button type="button" data-bf-days="14" onclick="setBodyFatigueDays(14)">14일</button>
         </div>
-        <div class="bf-mode-row bodyfat-turn" id="bfModeRow">
-          <button type="button" class="on" id="bfModeAnatomy" onclick="setBodyFatigueMode('anatomy')">🔬 해부도</button>
-          <button type="button" id="bfModeMap" onclick="setBodyFatigueMode('map')">🗺 존 맵</button>
-        </div>
-        <div id="bfSvgStage" class="bodyfat-stage">
+<div id="bfSvgStage" class="bodyfat-stage">
           <!-- Anatomy plates (photo ecorche) -->
           <div class="bf-dual" id="bfAnatomyStage">
             <div class="bf-panel">
@@ -2705,11 +2701,7 @@
               <svg class="bf-heat-svg" id="bodyFatigueSvgBack" viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="후면 피로 히트맵"></svg>
             </div>
           </div>
-          <!-- Schematic zone map (designed for heat, not fake 3D) -->
-          <div class="bf-dual bf-map-stage" id="bfMapStage" style="display:none">
-            <div class="bf-panel bf-map-panel">
-              <div class="tag">FRONT · ZONE</div>
-              <svg class="bf-map-svg" id="bfMapFront" viewBox="0 0 200 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="전면 존 맵"></svg>
+<svg class="bf-map-svg" id="bfMapFront" viewBox="0 0 200 420" preserveAspectRatio="xMidYMid meet" role="img" aria-label="전면 존 맵"></svg>
             </div>
             <div class="bf-panel bf-map-panel">
               <div class="tag">BACK · ZONE</div>
@@ -2717,7 +2709,7 @@
             </div>
           </div>
           <svg id="bodyFatigueSvg" style="display:none" aria-hidden="true"></svg>
-          <p class="bf-credit" id="bfCredit">해부도: 근육 사진 위 히트 · 존 맵: 부위별 자극 전용 도식 · 코칭용 추정</p>
+          <p class="bf-credit">앞·뒤 해부도 히트맵 · 탭하면 상세 · 코칭용 추정</p>
         </div>
 </div>
         </div>
@@ -2970,7 +2962,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.30</span>
+            <span class="muted" id="appVerLabel">v4.31</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3328,7 +3320,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.30';
+    const APP_VERSION = '4.31';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -4989,7 +4981,7 @@
 
     // ===== 바디 피로 맵 (3D · 좌우 · 회복 · 스트레칭) =====
     let bodyFatigueView = 'front';
-    // anatomy = ecorche plates, map = schematic zone map (no 3D mesh)
+    // flat anatomy plates only
     let bodyFatigueMode = 'anatomy';
     let bodyFatigueSelected = null;
     let bodyFatigueDays = 7;
@@ -5107,7 +5099,7 @@
         btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === bodyFatigueDays);
       });
       const lab = document.getElementById('bfRangeLabel');
-      if (lab) lab.textContent = '해부학 · 좌우 · ' + bodyFatigueDays + '일';
+      if (lab) lab.textContent = '해부도 · 좌우 · ' + bodyFatigueDays + '일';
       renderBodyFatigueMap();
     }
 
@@ -5298,28 +5290,16 @@
     }
 
     function syncBodyFatigueModeUI() {
-      const ma = document.getElementById('bfModeAnatomy');
-      const mm = document.getElementById('bfModeMap');
-      if (ma) ma.classList.toggle('on', bodyFatigueMode === 'anatomy');
-      if (mm) mm.classList.toggle('on', bodyFatigueMode === 'map');
       const anat = document.getElementById('bfAnatomyStage');
+      if (anat) anat.style.display = '';
       const map = document.getElementById('bfMapStage');
-      if (anat) anat.style.display = bodyFatigueMode === 'anatomy' ? '' : 'none';
-      if (map) map.style.display = bodyFatigueMode === 'map' ? '' : 'none';
-      const credit = document.getElementById('bfCredit');
-      if (credit) {
-        credit.textContent = bodyFatigueMode === 'map'
-          ? '존 맵: 부위 자극 전용 도식 · 탭하면 상세 · 코칭용 추정'
-          : '해부도: 근육 그림 위 히트 · 탭하면 상세 · 코칭용 추정';
-      }
+      if (map) map.style.display = 'none';
       try { document.body.classList.remove('bf-3d-on'); } catch (e) {}
     }
 
     function setBodyFatigueMode(mode) {
-      bodyFatigueMode = (mode === 'map') ? 'map' : 'anatomy';
+      bodyFatigueMode = 'anatomy';
       syncBodyFatigueModeUI();
-      // stop any legacy 3D session
-      try { if (typeof disposeBodyFatigue3D === 'function') disposeBodyFatigue3D(false); } catch (e) {}
       renderBodyFatigueMap();
     }
 
@@ -5448,138 +5428,6 @@
       drawOneAnatomyHeat(document.getElementById('bodyFatigueSvgFront'), model, 'front');
       drawOneAnatomyHeat(document.getElementById('bodyFatigueSvgBack'), model, 'back');
     }
-
-    /**
-     * Schematic male zone map — designed for heat readability (fitness-app style).
-     * Not a 3D mannequin: intentional flat medical diagram with clear muscle plates.
-     * viewBox 0 0 200 420, center x=100
-     */
-    const BF_ZONE_MAP = {
-      // male athletic silhouette bases
-      baseFront:
-        'M100 28c-12 0-22 10-22 22s9 21 18 24v7h8v-7c9-3 18-12 18-24s-10-22-22-22z' +
-        'M91 78h18c1.6 0 3 1.3 3 3v12c0 1.2-.8 2.3-2 2.6-3.8 1-7.8 1.5-10 1.5s-6.2-.5-10-1.5c-1.2-.3-2-1.4-2-2.6V81c0-1.7 1.4-3 3-3z' +
-        'M72 96c-10 3-20 12-24 22-3 8-3 16 0 24 6-1 13 0 18 4 4 3 8 8 10 13 1-12 2-24 2-34 0-10 0-19-6-29z' +
-        'M128 96c10 3 20 12 24 22 3 8 3 16 0 24-6-1-13 0-18 4-4 3-8 8-10 13-1-12-2-24-2-34 0-10 0-19 6-29z' +
-        'M68 134c-5 3-8 10-8 18v50c0 10 4 17 10 20 5 2 9-1 11-5l4-9c1-11 2-23 2-34v-24c0-7-3-13-8-16-3-2-8-2-11 0z' +
-        'M132 134c5 3 8 10 8 18v50c0 10-4 17-10 20-5 2-9-1-11-5l-4-9c-1-11-2-23-2-34v-24c0-7 3-13 8-16 3-2 8-2 11 0z' +
-        'M76 104c-3 12-4 26-1 38 3 11 8 20 15 25 5 3 10 2 14-1l6-4 6 4c4 3 9 4 14 1 7-5 12-14 15-25 3-12 2-26-1-38-10-7-22-11-34-11s-24 4-34 11z' +
-        'M82 166c-2 12-3 26 0 38 3 12 8 22 14 28h8c6-6 11-16 14-28 3-12 2-26 0-38-7-3-14-5-22-5s-15 2-22 5z' +
-        'M84 236c-5 6-7 18-7 32v44c0 12 2 20 6 26h34c4-6 6-14 6-26v-44c0-14-2-26-6-32H84z' +
-        'M86 336c-3 5-5 14-5 24v28h38v-28c0-10-2-19-5-24H86z' +
-        'M82 384c-2 2-3 6-2 10 1 4 4 7 8 8h14c3 0 5-2 5-5v-6c0-4-2-6-6-7-6-2-14-2-19 0z' +
-        'M118 384c2 2 3 6 2 10-1 4-4 7-8 8h-14c-3 0-5-2-5-5v-6c0-4 2-6 6-7 6-2 14-2 19 0z',
-      baseBack:
-        'M100 28c-12 0-22 10-22 22s9 21 18 24v7h8v-7c9-3 18-12 18-24s-10-22-22-22z' +
-        'M91 78h18c1.6 0 3 1.3 3 3v12c0 1.2-.8 2.3-2 2.6-3.8 1-7.8 1.5-10 1.5s-6.2-.5-10-1.5c-1.2-.3-2-1.4-2-2.6V81c0-1.7 1.4-3 3-3z' +
-        'M72 96c-10 3-20 12-24 22-3 8-3 16 0 24 6-1 13 0 18 4 4 3 8 8 10 13 1-12 2-24 2-34 0-10 0-19-6-29z' +
-        'M128 96c10 3 20 12 24 22 3 8 3 16 0 24-6-1-13 0-18 4-4 3-8 8-10 13-1-12-2-24-2-34 0-10 0-19 6-29z' +
-        'M68 134c-5 3-8 10-8 18v50c0 10 4 17 10 20 5 2 9-1 11-5l4-9c1-11 2-23 2-34v-24c0-7-3-13-8-16-3-2-8-2-11 0z' +
-        'M132 134c5 3 8 10 8 18v50c0 10-4 17-10 20-5 2-9-1-11-5l-4-9c-1-11-2-23-2-34v-24c0-7 3-13 8-16 3-2 8-2 11 0z' +
-        'M76 102c-3 14-4 30-1 44 3 13 8 24 15 31h20c7-7 12-18 15-31 3-14 2-30-1-44-10-8-22-12-34-12s-24 4-34 12z' +
-        'M84 228c-5 6-7 18-7 32v44c0 12 2 20 6 26h34c4-6 6-14 6-26v-44c0-14-2-26-6-32H84z' +
-        'M86 336c-3 5-5 14-5 24v28h38v-28c0-10-2-19-5-24H86z' +
-        'M82 384c-2 2-3 6-2 10 1 4 4 7 8 8h14c3 0 5-2 5-5v-6c0-4-2-6-6-7-6-2-14-2-19 0z' +
-        'M118 384c2 2 3 6 2 10-1 4-4 7-8 8h-14c-3 0-5-2-5-5v-6c0-4 2-6 6-7 6-2 14-2 19 0z',
-      front: [
-        { id: 'shoulders', side: 'L', d: 'M88 92c-13 2-24 12-28 24-3 9-2 18 2 26 7-1 13 1 18 5 4 4 7 9 8 15 1-13 2-26 2-38 0-11-1-22-2-32z', lx: 66, ly: 114 },
-        { id: 'shoulders', side: 'R', d: 'M112 92c13 2 24 12 28 24 3 9 2 18-2 26-7-1-13 1-18 5-4 4-7 9-8 15-1-13-2-26-2-38 0-11 1-22 2-32z', lx: 134, ly: 114 },
-        { id: 'chest', side: 'B', d: 'M80 108c-3 11-3 24 0 35 2 10 7 17 13 21 5 3 10 2 14-1l6-4 6 4c4 3 9 4 14 1 6-4 11-11 13-21 3-11 3-24 0-35-9-6-20-10-33-10s-24 4-33 10z', lx: 100, ly: 130 },
-        { id: 'arms', side: 'L', d: 'M54 130c-5 3-9 11-9 19v52c0 10 4 17 10 20 5 2 9-1 11-5l5-9c1-11 2-24 2-35v-26c0-7-3-13-8-16-3-2-8-2-11 0z', lx: 50, ly: 166 },
-        { id: 'arms', side: 'R', d: 'M146 130c5 3 9 11 9 19v52c0 10-4 17-10 20-5 2-9-1-11-5l-5-9c-1-11-2-24-2-35v-26c0-7 3-13 8-16 3-2 8-2 11 0z', lx: 150, ly: 166 },
-        { id: 'core', side: 'B', d: 'M84 162c-2 11-3 24 0 36 2 11 7 20 13 26h6c6-6 11-15 13-26 3-12 2-25 0-36-6-3-13-5-19-5s-13 2-19 5z', lx: 100, ly: 188 },
-        { id: 'quads', side: 'L', d: 'M86 236c-6 5-8 16-8 30v50c0 12 3 20 9 25 5 4 12 3 16-2 4-5 6-14 6-26v-50c0-12-2-21-8-26-4-4-11-5-15-1z', lx: 90, ly: 276 },
-        { id: 'quads', side: 'R', d: 'M114 236c6 5 8 16 8 30v50c0 12-3 20-9 25-5 4-12 3-16-2-4-5-6-14-6-26v-50c0-12 2-21 8-26 4-4 11-5 15-1z', lx: 110, ly: 276 },
-        { id: 'calves', side: 'L', d: 'M88 336c-4 5-6 14-6 24v30c0 9 3 15 8 18 4 2 9 0 12-4 2-3 4-9 4-16v-30c0-9-1-17-5-21-3-4-9-5-13-1z', lx: 92, ly: 364 },
-        { id: 'calves', side: 'R', d: 'M112 336c4 5 6 14 6 24v30c0 9-3 15-8 18-4 2-9 0-12-4-2-3-4-9-4-16v-30c0-9 1-17 5-21 3-4 9-5 13-1z', lx: 108, ly: 364 }
-      ],
-      back: [
-        { id: 'shoulders', side: 'L', d: 'M88 92c-13 2-24 12-28 24-3 9-2 18 2 26 7-1 13 1 18 5 4 4 7 9 8 15 1-13 2-26 2-38 0-11-1-22-2-32z', lx: 66, ly: 114 },
-        { id: 'shoulders', side: 'R', d: 'M112 92c13 2 24 12 28 24 3 9 2 18-2 26-7-1-13 1-18 5-4 4-7 9-8 15-1-13-2-26-2-38 0-11 1-22 2-32z', lx: 134, ly: 114 },
-        { id: 'back', side: 'B', d: 'M78 104c-3 13-4 28-1 42 3 13 8 24 15 31h16c7-7 12-18 15-31 3-14 2-29-1-42-9-7-20-11-31-11s-22 4-31 11z', lx: 100, ly: 132 },
-        { id: 'arms', side: 'L', d: 'M54 130c-5 3-9 11-9 19v52c0 10 4 17 10 20 5 2 9-1 11-5l5-9c1-11 2-24 2-35v-26c0-7-3-13-8-16-3-2-8-2-11 0z', lx: 50, ly: 166 },
-        { id: 'arms', side: 'R', d: 'M146 130c5 3 9 11 9 19v52c0 10-4 17-10 20-5 2-9-1-11-5l-5-9c-1-11-2-24-2-35v-26c0-7 3-13 8-16 3-2 8-2 11 0z', lx: 150, ly: 166 },
-        { id: 'glutes', side: 'L', d: 'M86 224c-7 3-11 11-11 20 0 13 6 24 16 28 6 2 13 1 16-3 2-3 3-8 3-14v-18c0-7-3-13-8-16-5-3-11-1-16 3z', lx: 90, ly: 246 },
-        { id: 'glutes', side: 'R', d: 'M114 224c7 3 11 11 11 20 0 13-6 24-16 28-6 2-13 1-16-3-2-3-3-8-3-14v-18c0-7 3-13 8-16 5-3 11-1 16 3z', lx: 110, ly: 246 },
-        { id: 'hams', side: 'L', d: 'M86 258c-6 5-8 16-8 32v46c0 12 3 20 9 24 5 4 12 2 16-3 4-5 6-14 6-26v-46c0-13-2-22-8-27-4-4-11-5-15 0z', lx: 90, ly: 296 },
-        { id: 'hams', side: 'R', d: 'M114 258c6 5 8 16 8 32v46c0 12-3 20-9 24-5 4-12 2-16-3-4-5-6-14-6-26v-46c0-13 2-22 8-27 4-4 11-5 15 0z', lx: 110, ly: 296 },
-        { id: 'calves', side: 'L', d: 'M88 336c-4 5-6 14-6 24v30c0 9 3 15 8 18 4 2 9 0 12-4 2-3 4-9 4-16v-30c0-9-1-17-5-21-3-4-9-5-13-1z', lx: 92, ly: 364 },
-        { id: 'calves', side: 'R', d: 'M112 336c4 5 6 14 6 24v30c0 9-3 15-8 18-4 2-9 0-12-4-2-3-4-9-4-16v-30c0-9 1-17 5-21 3-4 9-5 13-1z', lx: 108, ly: 364 }
-      ]
-    };
-
-    function drawOneZoneMap(svg, model, face) {
-      if (!svg) return;
-      const byId = {};
-      (model.items || []).forEach(it => { byId[it.id] = it; });
-      const scoreOf = (id, side) => {
-        const it = byId[id];
-        if (!it) return 0;
-        if (side === 'L' && it.scoreL != null) return it.scoreL;
-        if (side === 'R' && it.scoreR != null) return it.scoreR;
-        return it.score || 0;
-      };
-      const sel = bodyFatigueSelected;
-      const front = face !== 'back';
-      const zones = front ? BF_ZONE_MAP.front : BF_ZONE_MAP.back;
-      const base = front ? BF_ZONE_MAP.baseFront : BF_ZONE_MAP.baseBack;
-      const uid = front ? 'F' : 'B';
-
-      const zoneEls = zones.map((z, i) => {
-        const sc = scoreOf(z.id, z.side);
-        const on = sel === z.id ? ' on' : '';
-        const hot = sc >= 70 ? ' hot' : '';
-        let fill, op;
-        if (sc < 8) {
-          fill = '#22c55e';
-          op = 0.28;
-        } else {
-          fill = fatigueHeatColor(sc);
-          op = sc < 25 ? 0.55 : sc < 50 ? 0.72 : sc < 75 ? 0.84 : 0.92;
-        }
-        const label = sc >= 12
-          ? `<text class="mz-score" x="${z.lx}" y="${z.ly - 2}">${sc}</text>`
-          : (sc < 8
-            ? `<text class="mz-score mz-ok" x="${z.lx}" y="${z.ly - 10}">OK</text>`
-            : '');
-        const gid = `zm_${uid}_${z.id}_${z.side}_${i}`;
-        const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(fill);
-        let stops;
-        if (m && sc >= 8) {
-          stops = `<stop offset="0%" stop-color="rgb(${m[1]},${m[2]},${m[3]})" stop-opacity="1"/>
-                   <stop offset="100%" stop-color="rgb(${m[1]},${m[2]},${m[3]})" stop-opacity="0.75"/>`;
-        } else {
-          stops = `<stop offset="0%" stop-color="#4ade80" stop-opacity="0.9"/>
-                   <stop offset="100%" stop-color="#22c55e" stop-opacity="0.5"/>`;
-        }
-        return `
-          <radialGradient id="${gid}" cx="35%" cy="30%" r="75%">
-            ${stops}
-          </radialGradient>
-          <path class="mz${on}${hot}" data-region="${z.id}" data-side="${z.side}" data-score="${sc}"
-            d="${z.d}" fill="url(#${gid})" opacity="${op}"
-            onclick="selectBodyRegion('${z.id}')"/>
-          ${label}`;
-      }).join('');
-
-      svg.innerHTML = `
-        <defs>
-          <linearGradient id="zmBase_${uid}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#475569"/>
-            <stop offset="100%" stop-color="#1e293b"/>
-          </linearGradient>
-        </defs>
-        <ellipse cx="100" cy="404" rx="48" ry="8" fill="rgba(99,102,241,.18)"/>
-        <path class="body-base" d="${base}" fill="url(#zmBase_${uid})"/>
-        <g>${zoneEls}</g>
-      `;
-    }
-
-    function drawBodyZoneMap(model) {
-      drawOneZoneMap(document.getElementById('bfMapFront'), model, 'front');
-      drawOneZoneMap(document.getElementById('bfMapBack'), model, 'back');
-    }
-
 
 
     function renderBodyFatigueDetail(item, model) {
@@ -5714,11 +5562,10 @@
         btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === (bodyFatigueDays || 7));
       });
       const lab = document.getElementById('bfRangeLabel');
-      if (lab) lab.textContent = '해부학 · 좌우 · ' + (bodyFatigueDays || 7) + '일';
+      if (lab) lab.textContent = '해부도 · 좌우 · ' + (bodyFatigueDays || 7) + '일';
 
       try { syncBodyFatigueModeUI(); } catch (e) {}
       try { drawBodyFatigueSvg(model); } catch (e) { console.warn('drawBodyFatigueSvg', e); }
-      try { drawBodyZoneMap(model); } catch (e) { console.warn('drawBodyZoneMap', e); }
 
       try { renderBodyFatigueReady(model); } catch (e) {}
       try { renderHomeBodyFatigue(model); } catch (e) {}
