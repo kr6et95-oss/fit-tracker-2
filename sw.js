@@ -1,6 +1,6 @@
 ﻿/* FIT TRACKER 2 service worker ??bump CACHE on every deploy */
-const CACHE = 'fit-tracker-2-v45';
-const APP_VERSION = '4.28';
+const CACHE = 'fit-tracker-2-v46';
+const APP_VERSION = '4.30';
 const ASSETS = [
   './',
   './index.html',
@@ -15,7 +15,6 @@ const ASSETS = [
   './coaches/ganghyeok.jpg',
   './anatomy/front.jpg',
   './anatomy/back.jpg',
-  './anatomy/human.glb',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
   'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap'
