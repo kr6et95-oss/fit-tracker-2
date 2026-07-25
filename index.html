@@ -1910,7 +1910,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.31</div>
+        <div class="ver" id="appVerBadge">4.32</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2028,7 +2028,7 @@
             <div class="bf-home-chips" id="homeBfChips">
               <span class="ok">운동 기록 후 표시</span>
             </div>
-            <p class="muted" id="homeBfHint" style="margin-top:8px;font-size:.72rem;line-height:1.4">부위·좌우 피로 히트맵 · 탭하면 운동 탭으로</p>
+            <p class="muted" id="homeBfHint" style="margin-top:8px;font-size:.72rem;line-height:1.4">부위 피로 히트맵 · 탭하면 운동 탭으로</p>
           </div>
         </div>
       </div>
@@ -2614,7 +2614,7 @@
       <div class="card" id="bodyFatigueCard">
         <div class="card-h">
           <h2>🧍 바디 피로 맵</h2>
-          <span class="muted" id="bfRangeLabel">해부도 · 좌우 · 7일</span>
+          <span class="muted" id="bfRangeLabel">해부도 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
           실제 <strong>근육 해부도</strong> 위에 운동 자극 히트를 표시합니다 (없음=초록 · 강함=빨강).
@@ -2656,7 +2656,6 @@
         <div class="bf-detail" id="bodyFatigueDetail" style="display:none"></div>
         <div class="cn-actions" style="margin-top:10px">
           <button type="button" class="btn btn-s" style="width:auto;padding:8px 12px" onclick="applyTopFatigueStretches()">추천 스트레칭 추가</button>
-          <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px" onclick="applyAsymBalanceWork()">편측 보완 루틴</button>
           <button type="button" class="btn btn-g" style="width:auto;padding:8px 12px;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;border:0" onclick="geminiBodyFatigue()">✨ AI 부위 브리핑</button>
         </div>
         <p class="muted" id="bodyFatigueAi" style="margin-top:8px;line-height:1.45;font-size:.78rem;display:none"></p>
@@ -2898,7 +2897,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.31</span>
+            <span class="muted" id="appVerLabel">v4.32</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3256,7 +3255,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.31';
+    const APP_VERSION = '4.32';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5035,7 +5034,7 @@
         btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === bodyFatigueDays);
       });
       const lab = document.getElementById('bfRangeLabel');
-      if (lab) lab.textContent = '해부도 · 좌우 · ' + bodyFatigueDays + '일';
+      if (lab) lab.textContent = '해부도 · ' + bodyFatigueDays + '일';
       renderBodyFatigueMap();
     }
 
@@ -5289,19 +5288,17 @@
       if (!svg) return;
       const byId = {};
       (model.items || []).forEach(it => { byId[it.id] = it; });
-      const scoreOf = (id, side) => {
+      // L/R not shown — always use region total score
+      const scoreOf = (id) => {
         const it = byId[id];
-        if (!it) return 0;
-        if (side === 'L' && it.scoreL != null) return it.scoreL;
-        if (side === 'R' && it.scoreR != null) return it.scoreR;
-        return it.score || 0;
+        return it ? (it.score || 0) : 0;
       };
       const sel = bodyFatigueSelected;
       const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
       const uid = face === 'back' ? 'B' : 'F';
 
       const zoneEls = zones.map((z, i) => {
-        const sc = scoreOf(z.id, z.side);
+        const sc = scoreOf(z.id);
         const on = sel === z.id ? ' on' : '';
         const hot = sc >= 70 ? ' hot' : '';
         const trained = sc >= 12 ? ' active' : ' fresh';
@@ -5323,7 +5320,7 @@
           op = 0.78;
           fill = fatigueHeatColor(sc);
         }
-        // SVG y grows downward — smaller y = higher on body. OK sits above zone center.
+        // Same region total on every plate (no L/R split scores)
         const scoreTxt = sc >= 12
           ? `<text class="bf-score" x="${z.lx}" y="${z.ly - 2}">${sc}</text>`
           : (sc < 8
@@ -5371,27 +5368,11 @@
       el.style.display = '';
       const stretches = stretchesForRegions([item.id], 4);
       const levelLabel = { high: '피로 높음', mid: '중간', low: '가벼움', fresh: '신선' }[item.level] || item.level;
-      const sideHtml = item.paired
-        ? `<div class="bf-side-grid" style="margin:8px 0">
-            <div class="bf-side-card"><div class="t">왼 (L)</div>
-              <div class="bf-side-bars"><div class="row"><span>L</span><div class="track"><i style="width:${item.scoreL}%;background:${fatigueHeatColor(item.scoreL)}"></i></div><span>${item.scoreL}</span></div></div>
-            </div>
-            <div class="bf-side-card"><div class="t">오른 (R)</div>
-              <div class="bf-side-bars"><div class="row"><span>R</span><div class="track"><i style="width:${item.scoreR}%;background:${fatigueHeatColor(item.scoreR)}"></i></div><span>${item.scoreR}</span></div></div>
-            </div>
-          </div>
-          <p class="muted" style="font-size:.75rem;margin-bottom:6px">좌우 차 ${item.asym}
-            ${item.dominant === 'L' ? ' · <strong>왼쪽이 더 바쁨</strong> — 오른쪽 편측 보완 권장' : ''}
-            ${item.dominant === 'R' ? ' · <strong>오른쪽이 더 바쁨</strong> — 왼쪽 편측 보완 권장' : ''}
-            ${item.dominant === 'even' ? ' · 좌우 균형 양호' : ''}
-          </p>`
-        : '';
       const contrib = (item.contrib || []).slice(0, 5);
       const contribHtml = contrib.length
         ? `<div class="bf-contrib"><div class="ct">최근 기여 운동 (${bodyFatigueDays}일)</div>`
           + contrib.map(c => {
-              const sideTag = c.side === 'L' ? ' · 왼' : c.side === 'R' ? ' · 오' : c.side === 'U' ? ' · 편측' : '';
-              return `<div class="ci"><span>${esc(c.name)}${sideTag}</span><span class="meta">${(c.k || '').slice(5)} · +${c.load}</span></div>`;
+              return `<div class="ci"><span>${esc(c.name)}</span><span class="meta">${(c.k || '').slice(5)} · +${c.load}</span></div>`;
             }).join('')
           + `</div>`
         : `<div class="bf-contrib"><div class="ct">기여 운동</div><div class="ci"><span class="meta">이 기간 자극이 약합니다</span></div></div>`;
@@ -5402,7 +5383,6 @@
           ${item.lastHit ? ` · 최근 자극 ${item.lastHit.slice(5)}` : ` · 최근 ${bodyFatigueDays}일 자극 적음`}
           <br>반감기 + 수면·주관 피로·휴식일 보정 · 의료 진단 아님.
         </p>
-        ${sideHtml}
         ${contribHtml}
         <div class="card-h" style="margin:10px 0 6px"><h2 style="font-size:.88rem">추천 스트레칭</h2></div>
         <div class="list bf-stretch-list">
@@ -5453,14 +5433,13 @@
       const top = (m.top && m.top.length) ? m.top : (m.items || []).filter(x => x.score >= 15).slice(0, 3);
       if (!top.length) {
         chips.innerHTML = '<span class="ok">최근 자극 약함 · 기록 시 표시</span>';
-        if (hint) hint.textContent = '부위·좌우 피로 히트맵 · 탭하면 운동 탭으로';
+        if (hint) hint.textContent = '부위 피로 히트맵 · 탭하면 운동 탭으로';
         return;
       }
       chips.innerHTML = top.map(it => {
         const cls = it.level === 'high' ? 'hot' : it.level === 'mid' ? 'mid' : 'ok';
         return `<span class="${cls}">${esc(it.label)} ${it.score}</span>`;
-      }).join('') + ((m.asymList && m.asymList.length)
-        ? `<span class="mid">⚖ 불균형 ${m.asymList.length}</span>` : '');
+      }).join('');
       if (hint) {
         hint.textContent = `평균 피로 ${m.overall} · ${bodyFatigueDays}일 창 · 탭하면 상세 맵`;
       }
@@ -5494,7 +5473,7 @@
         btn.classList.toggle('on', +btn.getAttribute('data-bf-days') === (bodyFatigueDays || 7));
       });
       const lab = document.getElementById('bfRangeLabel');
-      if (lab) lab.textContent = '해부도 · 좌우 · ' + (bodyFatigueDays || 7) + '일';
+      if (lab) lab.textContent = '해부도 · ' + (bodyFatigueDays || 7) + '일';
 
       try { syncBodyFatigueModeUI(); } catch (e) {}
       try { drawBodyFatigueSvg(model); } catch (e) { console.warn('drawBodyFatigueSvg', e); }
@@ -5505,31 +5484,23 @@
       const sum = document.getElementById('bodyFatigueSummary');
       if (sum) {
         if (!model.top.length) {
-          sum.textContent = `최근 ${model.daysBack}일 자극이 약합니다. 운동을 기록하면 부위·좌우 피로가 표시됩니다.`;
+          sum.textContent = `최근 ${model.daysBack}일 자극이 약합니다. 운동을 기록하면 부위 피로가 표시됩니다.`;
         } else {
-          const asymN = (model.asymList || []).length;
-          sum.textContent = `준비도 ${model.readiness} · 평균 피로 ${model.overall} · 주의: ${model.top.map(t => t.label + ' ' + t.score).join(' · ')}`
-            + (asymN ? ` · 좌우 불균형 ${asymN}부위` : '');
+          sum.textContent = `준비도 ${model.readiness} · 평균 피로 ${model.overall} · 주의: ${model.top.map(t => t.label + ' ' + t.score).join(' · ')}`;
         }
       }
-      renderAsymBox(model);
+      const asymBox = document.getElementById('bfAsymBox');
+      if (asymBox) asymBox.innerHTML = '';
 
       const list = document.getElementById('bodyFatigueList');
       if (list) {
-        list.innerHTML = model.items.map(it => {
-          const lr = it.paired
-            ? `<div class="lr" title="L ${it.scoreL} / R ${it.scoreR}">
-                <i><b style="width:${it.scoreL}%;background:${fatigueHeatColor(it.scoreL)}"></b></i>
-                <i><b style="width:${it.scoreR}%;background:${fatigueHeatColor(it.scoreR)}"></b></i>
-              </div>`
-            : '';
-          return `
+        list.innerHTML = model.items.map(it => `
           <div class="bf-row ${bodyFatigueSelected === it.id ? 'on' : ''}" onclick="selectBodyRegion('${it.id}')">
-            <div class="nm">${esc(it.label)}${it.paired && it.asym >= 15 ? ' ⚖' : ''}${lr}</div>
+            <div class="nm">${esc(it.label)}</div>
             <div class="bar-wrap"><i style="width:${it.score}%;background:${fatigueHeatColor(it.score)}"></i></div>
             <div class="hrs" title="회복 추정">${it.score < 15 ? 'OK' : it.recoverH < 24 ? it.recoverH + 'h' : (it.recoverH / 24).toFixed(1) + 'd'}</div>
-          </div>`;
-        }).join('');
+          </div>
+        `).join('');
       }
 
       if (!bodyFatigueSelected && model.top[0]) bodyFatigueSelected = model.top[0].id;
