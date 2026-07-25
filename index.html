@@ -5628,9 +5628,6 @@
         } else {
           text = '로컬 분석: '
             + top.map(t => `${t.label} ${t.score}(회복 ${t.recoverLabel})`).join(', ')
-            + (asym.length
-              ? '. 좌우: ' + asym.map(a => `${a.label} L${a.scoreL}/R${a.scoreR}`).join(', ') + ' — 약한 쪽 편측 보완 권장'
-              : '')
             + '. 고피로 부위는 스트레칭·기술 위주. (Gemini 키 연결 시 더 긴 브리핑)';
         }
         if (box) { box.style.display = ''; box.textContent = text; }
@@ -5643,27 +5640,23 @@
           overall: model.overall,
           regions: model.items.map(it => ({
             id: it.id, label: it.label, fatigue: it.score,
-            L: it.scoreL, R: it.scoreR, asymmetry: it.asym, dominant: it.dominant,
             recoverHours: it.recoverH, lastHit: it.lastHit
-          })),
-          asymmetries: (model.asymList || []).map(a => ({
-            label: a.label, L: a.scoreL, R: a.scoreR, delta: a.asym, busier: a.dominant
           })),
           recentWorkouts: dateKeys(5).flatMap(k =>
             (S.days[k]?.workouts || []).slice(0, 6).map(w => ({
-              date: k, name: w.name, muscle: w.muscle, side: detectWorkoutSide(w),
+              date: k, name: w.name, muscle: w.muscle,
               min: w.min, sets: w.sets, reps: w.reps, load: w.load
             }))
           ).slice(-20),
           rest: getRest(),
-          note: '코칭용 추정. 의료 진단 금지. 좌우 불균형 있으면 약한 쪽 편측 보완 제안.'
+          note: '코칭용 추정. 의료 진단 금지. 좌우 분리는 사용하지 않음.'
         };
         const text = await callGemini({
-          system: `너는 S&C 회복 코치다. 운동 기록 기반 부위 피로 히트맵(좌우 포함)을 해석한다.
+          system: `너는 S&C 회복 코치다. 운동 기록 기반 부위 피로 히트맵을 해석한다.
 의학 진단·질병명 단정 금지. 한국어. 5~8문장.
-구조: 1) 가장 피로한 부위 2) 좌우 불균형이 있으면 명시 3) 회복 시간 가이드 4) 오늘 피한 자극 5) 스트레칭·편측 보완 2~3개.
-담백하고 실행 가능하게.`,
-          prompt: `부위·좌우 피로 데이터를 해석해 줘.\n${JSON.stringify(ctx)}`,
+구조: 1) 가장 피로한 부위 2) 회복 시간 가이드 3) 오늘 피한 자극 4) 스트레칭 2~3개.
+좌우 불균형·편측 보완은 다루지 않는다. 담백하고 실행 가능하게.`,
+          prompt: `부위 피로 데이터를 해석해 줘.\n${JSON.stringify(ctx)}`,
           temperature: 0.45,
           maxOutputTokens: 600
         });
