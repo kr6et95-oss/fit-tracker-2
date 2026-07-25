@@ -1054,24 +1054,31 @@
     .bf-heat-svg .bf-zone {
       cursor: pointer;
       transition: opacity .15s, stroke .15s, filter .15s;
-      stroke: rgba(15,23,42,.12);
-      stroke-width: 1;
+      stroke: rgba(15,23,42,.18);
+      stroke-width: 1.1;
       stroke-linejoin: round;
-      mix-blend-mode: multiply;
+      /* normal blend so workout heat is obvious on anatomy art */
+      mix-blend-mode: normal;
+    }
+    .bf-heat-svg .bf-zone.fresh {
+      fill: rgba(34, 197, 94, 0.08) !important;
+      stroke: rgba(34, 197, 94, 0.15);
     }
     .bf-heat-svg .bf-zone:hover {
-      stroke: rgba(79,70,229,.7);
-      stroke-width: 1.8;
-      filter: brightness(1.05);
+      stroke: rgba(79,70,229,.85);
+      stroke-width: 2;
+      filter: brightness(1.06);
     }
     .bf-heat-svg .bf-zone.on {
       stroke: #4f46e5;
-      stroke-width: 2.4;
-      filter: drop-shadow(0 0 8px rgba(79,70,229,.45));
-      mix-blend-mode: multiply;
+      stroke-width: 2.6;
+      filter: drop-shadow(0 0 10px rgba(79,70,229,.5));
     }
     .bf-heat-svg .bf-zone.hot {
       animation: bfHotPulse 2s ease-in-out infinite;
+    }
+    .bf-heat-svg .bf-zone.active {
+      /* has training load */
     }
     @keyframes bfHotPulse {
       0%, 100% { filter: drop-shadow(0 0 2px rgba(239,68,68,.2)); }
@@ -1903,7 +1910,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.24</div>
+        <div class="ver" id="appVerBadge">4.25</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2610,7 +2617,7 @@
           <span class="muted" id="bfRangeLabel">해부학 · 좌우 · 7일</span>
         </div>
         <p class="muted" style="margin-bottom:8px;line-height:1.45;font-size:.78rem">
-          실제 <strong>근육 해부도</strong> 위에 부위·좌/우 피로 히트를 올립니다.
+          실제 <strong>근육 해부도</strong> 위에 <strong>운동 자극</strong>이 있으면 부위 색이 바뀝니다 (없음=초록, 많음=빨강).
           수면·주관 피로·휴식일이 <strong>회복 속도</strong>에 반영됩니다. (코칭용 추정)
         </p>
         <div class="bf-ready" id="bfReadyBox">
@@ -2648,10 +2655,10 @@
           <p class="bf-credit">해부 일러스트 기반 히트맵 · 의료 진단용이 아닌 코칭용 추정</p>
         </div>
         <div id="bf3dStage" class="bf-3d-wrap" style="display:none">
-          <div class="bf-3d-hint">실제 근육 해부도 카드 · 드래그 회전 · 휠 줌 · 부위 탭</div>
+          <div class="bf-3d-hint">3D 인체 모델 · 부위 히트 · 드래그 회전 · 휠 줌 · 부위 탭</div>
         </div>
         </div>
-        <div class="bodyfat-legend"><span>낮음</span><div class="bar"></div><span>높음</span></div>
+        <div class="bodyfat-legend"><span>운동 없음</span><div class="bar"></div><span>자극 강함</span></div>
         <p class="muted" id="bodyFatigueSummary" style="text-align:center;line-height:1.4;font-size:.78rem;margin-bottom:6px">운동을 기록하면 부위 피로가 채워집니다.</p>
         <div id="bfAsymBox"></div>
         <div class="bf-list" id="bodyFatigueList"></div>
@@ -2900,7 +2907,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.24</span>
+            <span class="muted" id="appVerLabel">v4.25</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3258,7 +3265,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.24';
+    const APP_VERSION = '4.25';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5330,20 +5337,49 @@
         const sc = scoreOf(z.id, z.side);
         const on = sel === z.id ? ' on' : '';
         const hot = sc >= 70 ? ' hot' : '';
-        // keep anatomy readable: low fatigue nearly invisible, high stronger tint
-        const op = sc < 8 ? 0.05 : sc < 20 ? 0.22 : sc < 40 ? 0.38 : sc < 65 ? 0.52 : 0.62;
-        const col = fatigueHeatColor(sc);
-        const scoreTxt = sc >= 18
+        const trained = sc >= 12 ? ' active' : ' fresh';
+        // Workout-reactive opacity: no load = faint green "fresh", load = strong heat
+        let op, fill;
+        if (sc < 8) {
+          op = 0.12;
+          fill = 'rgba(34,197,94,0.18)'; // rested
+        } else if (sc < 25) {
+          op = 0.38;
+          fill = fatigueHeatColor(sc);
+        } else if (sc < 50) {
+          op = 0.55;
+          fill = fatigueHeatColor(sc);
+        } else if (sc < 75) {
+          op = 0.68;
+          fill = fatigueHeatColor(sc);
+        } else {
+          op = 0.78;
+          fill = fatigueHeatColor(sc);
+        }
+        const scoreTxt = sc >= 12
           ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}">${sc}</text>`
-          : '';
+          : (sc < 8
+            ? `<text class="bf-score" x="${z.lx}" y="${z.ly + 3}" style="font-size:8px;fill:#166534;stroke:rgba(255,255,255,.75)">OK</text>`
+            : '');
         const gid = `anatHeat_${uid}_${z.id}_${z.side}_${i}`;
+        const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(fill);
+        let gradStops;
+        if (m && sc >= 8) {
+          const r = m[1], g = m[2], b = m[3];
+          gradStops = `
+            <stop offset="0%" stop-color="rgb(${r},${g},${b})" stop-opacity="0.95"/>
+            <stop offset="55%" stop-color="rgb(${r},${g},${b})" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="rgb(${r},${g},${b})" stop-opacity="0.55"/>`;
+        } else {
+          gradStops = `
+            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#22c55e" stop-opacity="0.08"/>`;
+        }
         return `
-          <radialGradient id="${gid}" cx="40%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>
-            <stop offset="55%" stop-color="${col}" stop-opacity="1"/>
-            <stop offset="100%" stop-color="${col}" stop-opacity="0.9"/>
+          <radialGradient id="${gid}" cx="38%" cy="30%" r="72%">
+            ${gradStops}
           </radialGradient>
-          <path class="bf-zone${on}${hot}" data-region="${z.id}" data-side="${z.side}"
+          <path class="bf-zone${on}${hot}${trained}" data-region="${z.id}" data-side="${z.side}" data-score="${sc}"
             d="${z.d}" fill="url(#${gid})" opacity="${op}"
             onclick="selectBodyRegion('${z.id}')"/>
           ${scoreTxt}`;
@@ -5569,10 +5605,10 @@
       if (!wrap.querySelector('.bf-3d-badge')) {
         const badge = document.createElement('div');
         badge.className = 'bf-3d-badge';
-        badge.innerHTML = '<span>3D 해부도</span><span>DRAG · ZOOM</span>';
+        badge.innerHTML = '<span>3D BODY</span><span>DRAG · ZOOM · TAP</span>';
         wrap.appendChild(badge);
       }
-      if (bf3d && bf3d.renderer) {
+      if (bf3d && bf3d.renderer && bf3d.ready) {
         const w = wrap.clientWidth || 320;
         const h = wrap.clientHeight || 460;
         bf3d.camera.aspect = w / h;
@@ -5580,288 +5616,301 @@
         bf3d.renderer.setSize(w, h, false);
         return;
       }
+      if (bf3d && bf3d.loading) return;
       disposeBodyFatigue3D(true);
 
       const w = wrap.clientWidth || 320;
       const h = wrap.clientHeight || 460;
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0b1220);
-      scene.fog = new THREE.Fog(0x0b1220, 6, 14);
+      bf3d = { loading: true, wrap, ready: false };
 
-      const camera = new THREE.PerspectiveCamera(34, w / h, 0.05, 30);
-      camera.position.set(0, 0.05, 2.35);
-      camera.lookAt(0, 0.05, 0);
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setSize(w, h, false);
-      if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = THREE.SRGBColorSpace;
-      if (THREE.ACESFilmicToneMapping !== undefined) {
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.12;
-      }
       const hint = wrap.querySelector('.bf-3d-hint');
-      const badge = wrap.querySelector('.bf-3d-badge');
-      wrap.insertBefore(renderer.domElement, hint || badge || null);
+      if (hint) hint.textContent = '3D 인체 로딩 중…';
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.95));
-      const key = new THREE.DirectionalLight(0xffffff, 0.55);
-      key.position.set(1.5, 2.2, 2.5);
-      scene.add(key);
+      (async () => {
+        try {
+          const T = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+          const { GLTFLoader } = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 
-      const group = new THREE.Group();
-      scene.add(group);
+          const scene = new T.Scene();
+          scene.background = new T.Color(0x0b1220);
+          scene.fog = new T.Fog(0x0b1220, 5, 12);
 
-      // floor ring
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(0.55, 0.72, 64),
-        new THREE.MeshBasicMaterial({ color: 0x6366f1, side: THREE.DoubleSide, transparent: true, opacity: 0.32 })
-      );
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.y = -0.95;
-      group.add(ring);
+          const camera = new T.PerspectiveCamera(32, w / h, 0.05, 40);
+          camera.position.set(0, 1.0, 2.55);
+          camera.lookAt(0, 0.9, 0);
 
-      const loader = new THREE.TextureLoader();
-      const maxAniso = renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1;
+          const renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          renderer.setSize(w, h, false);
+          if (renderer.outputColorSpace !== undefined) renderer.outputColorSpace = T.SRGBColorSpace;
+          if (T.ACESFilmicToneMapping !== undefined) {
+            renderer.toneMapping = T.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+          }
+          const badge = wrap.querySelector('.bf-3d-badge');
+          wrap.insertBefore(renderer.domElement, hint || badge || null);
 
-      function makePlate(texUrl, z) {
-        const tex = loader.load(texUrl);
-        tex.colorSpace = THREE.SRGBColorSpace || tex.encoding;
-        if (tex.anisotropy != null) tex.anisotropy = maxAniso;
-        // 3:4 plate
-        const geo = new THREE.PlaneGeometry(1.05, 1.4, 1, 1);
-        const mat = new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          side: THREE.FrontSide,
-          depthWrite: true
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.z = z;
-        return mesh;
-      }
+          scene.add(new T.AmbientLight(0xc5d0dc, 0.55));
+          scene.add(new T.HemisphereLight(0xf8fafc, 0x1e293b, 0.8));
+          const key = new T.DirectionalLight(0xffffff, 1.2);
+          key.position.set(2.4, 4.0, 2.2);
+          scene.add(key);
+          const fill = new T.DirectionalLight(0xa5b4fc, 0.5);
+          fill.position.set(-2.6, 1.4, 0.6);
+          scene.add(fill);
+          const rim = new T.DirectionalLight(0x67e8f9, 0.45);
+          rim.position.set(0.1, 1.6, -3.0);
+          scene.add(rim);
 
-      // heat overlay canvases (drawn in updateBodyFatigue3DColors)
-      function makeHeatOverlay(face, z) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 682;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace || tex.encoding;
-        const geo = new THREE.PlaneGeometry(1.05, 1.4, 1, 1);
-        const mat = new THREE.MeshBasicMaterial({
-          map: tex,
-          transparent: true,
-          opacity: 0.85,
-          side: THREE.FrontSide,
-          depthWrite: false,
-          blending: THREE.NormalBlending
-        });
-        const mesh = new THREE.Mesh(geo, mat);
-        mesh.position.z = z;
-        mesh.userData.heatCanvas = canvas;
-        mesh.userData.heatCtx = ctx;
-        mesh.userData.heatTex = tex;
-        mesh.userData.face = face;
-        return mesh;
-      }
+          const group = new T.Group();
+          scene.add(group);
 
-      const frontPlate = makePlate('anatomy/front.jpg', 0.01);
-      const backPlate = makePlate('anatomy/back.jpg', -0.01);
-      backPlate.rotation.y = Math.PI; // face outward when card flips
-      const frontHeat = makeHeatOverlay('front', 0.02);
-      const backHeat = makeHeatOverlay('back', -0.02);
-      backHeat.rotation.y = Math.PI;
+          const floor = new T.Mesh(
+            new T.CircleGeometry(1.05, 64),
+            new T.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9, metalness: 0.1, transparent: true, opacity: 0.88 })
+          );
+          floor.rotation.x = -Math.PI / 2;
+          floor.position.y = 0;
+          group.add(floor);
+          const ring = new T.Mesh(
+            new T.RingGeometry(0.72, 0.95, 72),
+            new T.MeshBasicMaterial({ color: 0x6366f1, side: T.DoubleSide, transparent: true, opacity: 0.34 })
+          );
+          ring.rotation.x = -Math.PI / 2;
+          ring.position.y = 0.008;
+          group.add(ring);
 
-      const card = new THREE.Group();
-      card.add(frontPlate);
-      card.add(backPlate);
-      card.add(frontHeat);
-      card.add(backHeat);
-      card.position.y = 0.0;
-      group.add(card);
+          const loader = new GLTFLoader();
+          const gltf = await new Promise((resolve, reject) => {
+            loader.load('anatomy/human.glb', resolve, undefined, reject);
+          });
+          const root = gltf.scene || gltf.scenes[0];
 
-      // soft hit targets for raycast select (invisible planes matching zones)
-      // we reuse 2D zone centroids projected — simplified: raycast whole plate then map UV to region
-      frontPlate.userData.isPlate = true;
-      frontPlate.userData.face = 'front';
-      backPlate.userData.isPlate = true;
-      backPlate.userData.face = 'back';
+          // Normalize to ~1.75m height on floor
+          root.updateMatrixWorld(true);
+          let box = new T.Box3().setFromObject(root);
+          const size = box.getSize(new T.Vector3());
+          const scale = 1.75 / Math.max(size.y, 0.001);
+          root.scale.setScalar(scale);
+          root.updateMatrixWorld(true);
+          box = new T.Box3().setFromObject(root);
+          const center = box.getCenter(new T.Vector3());
+          root.position.x -= center.x;
+          root.position.z -= center.z;
+          root.position.y -= box.min.y;
+          root.rotation.y = Math.PI; // face camera
 
-      if (bodyFatigueView === 'back') group.rotation.y = Math.PI;
+          const heatMeshes = [];
 
-      let dragging = false, lastX = 0, lastY = 0, moved = false;
-      const onDown = (e) => {
-        dragging = true; moved = false;
-        const p = e.touches ? e.touches[0] : e;
-        lastX = p.clientX; lastY = p.clientY;
-      };
-      const onMove = (e) => {
-        if (!dragging) return;
-        const p = e.touches ? e.touches[0] : e;
-        const dx = p.clientX - lastX, dy = p.clientY - lastY;
-        if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
-        lastX = p.clientX; lastY = p.clientY;
-        group.rotation.y += dx * 0.01;
-        group.rotation.x = Math.max(-0.25, Math.min(0.25, group.rotation.x + dy * 0.005));
-      };
-      const onUp = () => { dragging = false; };
-      const onWheel = (e) => {
-        e.preventDefault();
-        camera.position.z = Math.max(1.4, Math.min(3.6, camera.position.z + e.deltaY * 0.002));
-      };
+          // Map bind-pose local Y (normalized 0..1) + X to fatigue region
+          function classifyVertex(x, y, z, yMin, yMax) {
+            const yn = (y - yMin) / Math.max(1e-6, yMax - yMin);
+            const ax = Math.abs(x);
+            let region = 'core';
+            let side = 'B';
+            if (yn > 0.88) region = null; // head
+            else if (yn > 0.78) region = ax > 0.12 ? 'shoulders' : 'chest';
+            else if (yn > 0.62) {
+              if (ax > 0.18) region = 'arms';
+              else region = z < 0 ? 'back' : 'chest';
+            } else if (yn > 0.48) {
+              if (ax > 0.16) region = 'arms';
+              else region = 'core';
+            } else if (yn > 0.38) {
+              region = z < 0 ? 'glutes' : 'core';
+            } else if (yn > 0.22) {
+              region = z < 0 ? 'hams' : 'quads';
+            } else {
+              region = 'calves';
+            }
+            if (region && BODY_REGIONS[region] && BODY_REGIONS[region].paired) {
+              side = x < -0.03 ? 'L' : x > 0.03 ? 'R' : 'B';
+            }
+            // back plate override for mid torso rear
+            if (region === 'chest' && z < -0.05) region = 'back';
+            return { region, side };
+          }
 
-      function regionFromUv(face, u, v) {
-        // viewBox 0..200 x 0..400 mapped from UV (u right, v up in three plane default)
-        // PlaneGeometry UV: u 0..1 left-right, v 0..1 bottom-top
-        const x = u * 200;
-        const y = (1 - v) * 400;
-        const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
-        // pick nearest zone by label point distance (robust)
-        let best = null, bestD = 1e9;
-        zones.forEach(z => {
-          const dx = x - z.lx, dy = y - z.ly;
-          const d = dx * dx + dy * dy;
-          if (d < bestD) { bestD = d; best = z; }
-        });
-        // only accept if reasonably close to a muscle plate center
-        if (best && bestD < 55 * 55) return best.id;
-        // fallback bands
-        if (y < 90) return null;
-        if (y < 145) return Math.abs(x - 100) > 40 ? 'shoulders' : (face === 'back' ? 'back' : 'chest');
-        if (y < 200) return Math.abs(x - 100) > 48 ? 'arms' : (face === 'back' ? 'back' : 'core');
-        if (y < 240) return face === 'back' ? 'glutes' : 'core';
-        if (y < 310) return face === 'back' ? 'hams' : 'quads';
-        if (y < 380) return 'calves';
-        return null;
-      }
+          root.updateMatrixWorld(true);
+          const charBox = new T.Box3().setFromObject(root);
+          const yMin = charBox.min.y;
+          const yMax = charBox.max.y;
+          const invRoot = new T.Matrix4().copy(root.matrixWorld).invert();
+          const v = new T.Vector3();
 
-      const raycaster = new THREE.Raycaster();
-      const pointer = new THREE.Vector2();
-      const onClick = (e) => {
-        if (moved) return;
-        const rect = renderer.domElement.getBoundingClientRect();
-        const p = e.changedTouches ? e.changedTouches[0] : e;
-        pointer.x = ((p.clientX - rect.left) / rect.width) * 2 - 1;
-        pointer.y = -((p.clientY - rect.top) / rect.height) * 2 + 1;
-        raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects([frontPlate, backPlate], false);
-        if (!hits.length) return;
-        const hit = hits[0];
-        const face = hit.object.userData.face || 'front';
-        const uv = hit.uv;
-        if (!uv) return;
-        const rid = regionFromUv(face, uv.x, uv.y);
-        if (rid) selectBodyRegion(rid);
-      };
+          root.traverse((obj) => {
+            if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
+            const geo = obj.geometry;
+            const pos = geo.attributes.position;
+            const colors = new Float32Array(pos.count * 3);
+            const regions = new Array(pos.count);
+            const sides = new Array(pos.count);
+            const toRoot = new T.Matrix4().multiplyMatrices(invRoot, obj.matrixWorld);
 
-      renderer.domElement.addEventListener('mousedown', onDown);
-      renderer.domElement.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-      renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
-      renderer.domElement.addEventListener('touchmove', onMove, { passive: true });
-      renderer.domElement.addEventListener('touchend', onUp);
-      renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
-      renderer.domElement.addEventListener('click', onClick);
+            for (let i = 0; i < pos.count; i++) {
+              v.fromBufferAttribute(pos, i).applyMatrix4(toRoot);
+              const cls = classifyVertex(v.x, v.y, v.z, yMin, yMax);
+              regions[i] = cls.region;
+              sides[i] = cls.side;
+              colors[i * 3] = 0.72;
+              colors[i * 3 + 1] = 0.76;
+              colors[i * 3 + 2] = 0.82;
+            }
+            geo.setAttribute('color', new T.BufferAttribute(colors, 3));
 
-      const animate = () => {
-        bf3d.raf = requestAnimationFrame(animate);
-        if (!dragging) group.rotation.y += 0.0035;
-        ring.material.opacity = 0.24 + Math.sin(performance.now() * 0.0013) * 0.08;
-        renderer.render(scene, camera);
-      };
+            // Replace material with vertex-color heat material (keep skinning intact)
+            const mat = new T.MeshStandardMaterial({
+              color: 0xffffff,
+              vertexColors: true,
+              roughness: 0.45,
+              metalness: 0.08,
+              emissive: 0x111827,
+              emissiveIntensity: 0.12
+            });
+            if (Array.isArray(obj.material)) {
+              obj.material.forEach(m => { try { m.dispose && m.dispose(); } catch (e) {} });
+            } else if (obj.material && obj.material.dispose) {
+              try { obj.material.dispose(); } catch (e) {}
+            }
+            obj.material = mat;
+            obj.userData.heatRegions = regions;
+            obj.userData.heatSides = sides;
+            obj.userData.isHeatMesh = true;
+            obj.castShadow = false;
+            obj.receiveShadow = false;
+            heatMeshes.push(obj);
+          });
 
-      bf3d = {
-        renderer, scene, camera, group, wrap, animate, raycaster, ring,
-        frontHeat, backHeat, card, frontPlate, backPlate
-      };
-      animate();
-      try {
-        updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
-      } catch (e) {}
-    }
+          group.add(root);
+          if (bodyFatigueView === 'back') group.rotation.y = Math.PI;
 
-    function paintHeatOnCanvas(canvas, ctx, model, face) {
-      const W = canvas.width, H = canvas.height;
-      ctx.clearRect(0, 0, W, H);
-      const byId = {};
-      (model.items || []).forEach(it => { byId[it.id] = it; });
-      const scoreOf = (id, side) => {
-        const it = byId[id];
-        if (!it) return 0;
-        if (side === 'L' && it.scoreL != null) return it.scoreL;
-        if (side === 'R' && it.scoreR != null) return it.scoreR;
-        return it.score || 0;
-      };
-      const zones = face === 'back' ? BF_SVG_ANATOMY.back : BF_SVG_ANATOMY.front;
-      const sx = W / 200, sy = H / 400;
-      zones.forEach(z => {
-        const sc = scoreOf(z.id, z.side);
-        if (sc < 6) return;
-        const op = sc < 20 ? 0.2 : sc < 40 ? 0.35 : sc < 65 ? 0.48 : 0.58;
-        const col = fatigueHeatColor(sc);
-        // approximate zone with ellipse around label point (readable heat blob on anatomy)
-        const cx = z.lx * sx, cy = z.ly * sy;
-        let rx = 28 * sx, ry = 34 * sy;
-        if (z.id === 'chest' || z.id === 'back' || z.id === 'core') { rx = 42 * sx; ry = 36 * sy; }
-        if (z.id === 'arms') { rx = 18 * sx; ry = 48 * sy; }
-        if (z.id === 'quads' || z.id === 'hams') { rx = 22 * sx; ry = 48 * sy; }
-        if (z.id === 'calves') { rx = 16 * sx; ry = 36 * sy; }
-        if (z.id === 'shoulders') { rx = 26 * sx; ry = 28 * sy; }
-        if (z.id === 'glutes') { rx = 26 * sx; ry = 24 * sy; }
-        const grd = ctx.createRadialGradient(cx - rx * 0.2, cy - ry * 0.25, 2, cx, cy, Math.max(rx, ry));
-        grd.addColorStop(0, col.replace('rgb', 'rgba').replace(')', `,${Math.min(0.95, op + 0.25)})`));
-        // fatigueHeatColor returns rgb(r,g,b)
-        const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(col);
-        if (m) {
-          const r = +m[1], g = +m[2], b = +m[3];
-          grd.addColorStop(0, `rgba(${r},${g},${b},${Math.min(0.9, op + 0.2)})`);
-          grd.addColorStop(0.65, `rgba(${r},${g},${b},${op})`);
-          grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+          let dragging = false, lastX = 0, lastY = 0, moved = false;
+          const onDown = (e) => {
+            dragging = true; moved = false;
+            const p = e.touches ? e.touches[0] : e;
+            lastX = p.clientX; lastY = p.clientY;
+          };
+          const onMove = (e) => {
+            if (!dragging) return;
+            const p = e.touches ? e.touches[0] : e;
+            const dx = p.clientX - lastX, dy = p.clientY - lastY;
+            if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+            lastX = p.clientX; lastY = p.clientY;
+            group.rotation.y += dx * 0.01;
+            group.rotation.x = Math.max(-0.35, Math.min(0.35, group.rotation.x + dy * 0.006));
+          };
+          const onUp = () => { dragging = false; };
+          const onWheel = (e) => {
+            e.preventDefault();
+            camera.position.z = Math.max(1.5, Math.min(4.0, camera.position.z + e.deltaY * 0.002));
+          };
+          const raycaster = new T.Raycaster();
+          const pointer = new T.Vector2();
+          const onClick = (e) => {
+            if (moved) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            const p = e.changedTouches ? e.changedTouches[0] : e;
+            pointer.x = ((p.clientX - rect.left) / rect.width) * 2 - 1;
+            pointer.y = -((p.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(pointer, camera);
+            const hits = raycaster.intersectObjects(heatMeshes, true);
+            if (!hits.length) return;
+            const hit = hits[0];
+            const mesh = hit.object;
+            const face = hit.face;
+            if (!face || !mesh.userData.heatRegions) return;
+            const idx = face.a;
+            const region = mesh.userData.heatRegions[idx];
+            if (region) selectBodyRegion(region);
+          };
+          renderer.domElement.addEventListener('mousedown', onDown);
+          renderer.domElement.addEventListener('mousemove', onMove);
+          window.addEventListener('mouseup', onUp);
+          renderer.domElement.addEventListener('touchstart', onDown, { passive: true });
+          renderer.domElement.addEventListener('touchmove', onMove, { passive: true });
+          renderer.domElement.addEventListener('touchend', onUp);
+          renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
+          renderer.domElement.addEventListener('click', onClick);
+
+          const animate = () => {
+            if (!bf3d || !bf3d.renderer) return;
+            bf3d.raf = requestAnimationFrame(animate);
+            if (!dragging) group.rotation.y += 0.0022;
+            // update skinned meshes
+            heatMeshes.forEach(m => {
+              if (m.isSkinnedMesh && m.skeleton) m.skeleton.update();
+            });
+            if (ring.material) ring.material.opacity = 0.26 + Math.sin(performance.now() * 0.0013) * 0.08;
+            renderer.render(scene, camera);
+          };
+
+          bf3d = {
+            renderer, scene, camera, group, wrap, animate, raycaster, ring,
+            heatMeshes, T, root, ready: true, loading: false
+          };
+          if (hint) hint.textContent = '3D 인체 · 부위 히트 · 드래그 회전 · 휠 줌 · 부위 탭';
+          animate();
+          try {
+            updateBodyFatigue3DColors(lastBodyFatigueModel || analyzeBodyFatigue(bodyFatigueDays || 7));
+          } catch (e) {}
+        } catch (err) {
+          console.warn('3D human load failed', err);
+          if (hint) hint.textContent = '3D 로드 실패 · 평면 해부도를 사용하세요';
+          bodyFatigueMode = 'svg';
+          try { syncBodyFatigueModeUI(); } catch (e) {}
+          bf3d = null;
         }
-        ctx.save();
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.fillStyle = grd;
-        ctx.fill();
-        // score
-        if (sc >= 18) {
-          ctx.font = 'bold 28px Poppins, system-ui, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.lineWidth = 6;
-          ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-          ctx.fillStyle = '#0f172a';
-          ctx.strokeText(String(sc), cx, cy);
-          ctx.fillText(String(sc), cx, cy);
-        }
-        // selection ring
-        if (bodyFatigueSelected === z.id) {
-          ctx.strokeStyle = 'rgba(79,70,229,0.95)';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.ellipse(cx, cy, rx + 4, ry + 4, 0, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      });
+      })();
     }
 
     function updateBodyFatigue3DColors(model) {
-      if (!bf3d || !model) return;
-      if (bf3d.frontHeat && bf3d.frontHeat.userData) {
-        const c = bf3d.frontHeat.userData;
-        paintHeatOnCanvas(c.heatCanvas, c.heatCtx, model, 'front');
-        c.heatTex.needsUpdate = true;
-      }
-      if (bf3d.backHeat && bf3d.backHeat.userData) {
-        const c = bf3d.backHeat.userData;
-        paintHeatOnCanvas(c.heatCanvas, c.heatCtx, model, 'back');
-        c.heatTex.needsUpdate = true;
-      }
+      if (!bf3d || !bf3d.ready || !model || !bf3d.heatMeshes) return;
+      const T = bf3d.T;
+      const byId = {};
+      (model.items || []).forEach(it => { byId[it.id] = it; });
+
+      bf3d.heatMeshes.forEach(mesh => {
+        const regions = mesh.userData.heatRegions;
+        const sides = mesh.userData.heatSides;
+        const colAttr = mesh.geometry && mesh.geometry.attributes.color;
+        if (!regions || !colAttr) return;
+        const arr = colAttr.array;
+        for (let i = 0; i < regions.length; i++) {
+          const reg = regions[i];
+          const side = sides[i] || 'B';
+          let r = 0.70, g = 0.75, b = 0.82; // default clay (no load)
+          if (reg && byId[reg]) {
+            const it = byId[reg];
+            let sc = it.score;
+            if (it.paired) {
+              if (side === 'L') sc = it.scoreL;
+              else if (side === 'R') sc = it.scoreR;
+            }
+            if (sc < 8) {
+              // rested green tint
+              r = 0.55; g = 0.78; b = 0.62;
+            } else {
+              const heat = new T.Color(fatigueHeatColor(sc));
+              const clay = new T.Color(0xb6c2d0);
+              const tmix = Math.pow(Math.min(1, sc / 100), 0.85);
+              clay.lerp(heat, 0.2 + tmix * 0.8);
+              r = clay.r; g = clay.g; b = clay.b;
+              if (bodyFatigueSelected === reg) {
+                r = Math.min(1, r * 1.12 + 0.05);
+                g = Math.min(1, g * 1.08 + 0.04);
+                b = Math.min(1, b * 1.15 + 0.08);
+              }
+            }
+          } else if (!reg) {
+            // head/neutral
+            r = 0.78; g = 0.74; b = 0.70;
+          }
+          arr[i * 3] = r;
+          arr[i * 3 + 1] = g;
+          arr[i * 3 + 2] = b;
+        }
+        colAttr.needsUpdate = true;
+      });
     }
 
     function applyAsymBalanceWork() {
