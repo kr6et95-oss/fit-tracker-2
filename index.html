@@ -1919,7 +1919,7 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.26</div>
+        <div class="ver" id="appVerBadge">4.27</div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2916,7 +2916,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.26</span>
+            <span class="muted" id="appVerLabel">v4.27</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3274,7 +3274,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.26';
+    const APP_VERSION = '4.27';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -5717,6 +5717,61 @@
           root.position.z -= center.z;
           root.position.y -= box.min.y;
           root.rotation.y = Math.PI;
+
+          // Masculine athletic proportions (source GLB is androgynous/slim "Xbot")
+          // V-taper: wider shoulders/chest, narrower waist/hips, thicker legs
+          (function applyMasculineBuild(rootObj) {
+            rootObj.updateMatrixWorld(true);
+            const b0 = new T.Box3().setFromObject(rootObj);
+            const y0 = b0.min.y, y1 = b0.max.y, yh = Math.max(1e-6, y1 - y0);
+            const cx = (b0.min.x + b0.max.x) * 0.5;
+            const cz = (b0.min.z + b0.max.z) * 0.5;
+            const v = new T.Vector3();
+            rootObj.traverse((obj) => {
+              if (!obj.isMesh || !obj.geometry || !obj.geometry.attributes.position) return;
+              // Always clone so we don't morph shared buffers twice
+              obj.geometry = obj.geometry.clone();
+              const geo = obj.geometry;
+              const pos = geo.attributes.position;
+              obj.updateMatrixWorld(true);
+              const toWorld = obj.matrixWorld.clone();
+              const inv = new T.Matrix4().copy(toWorld).invert();
+              for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i).applyMatrix4(toWorld);
+                const yn = (v.y - y0) / yh; // 0 feet .. 1 head
+                let sx = 1.0;
+                let sz = 1.0;
+                if (yn > 0.88) { sx = 1.07; sz = 1.05; }          // head
+                else if (yn > 0.84) { sx = 1.14; sz = 1.12; }     // neck
+                else if (yn > 0.72) { sx = 1.26; sz = 1.14; }     // shoulders
+                else if (yn > 0.58) { sx = 1.20; sz = 1.18; }     // chest / upper back
+                else if (yn > 0.48) { sx = 1.10; sz = 1.12; }     // lats taper
+                else if (yn > 0.40) { sx = 0.88; sz = 0.95; }     // waist
+                else if (yn > 0.32) { sx = 0.86; sz = 0.93; }     // hips
+                else if (yn > 0.18) { sx = 1.12; sz = 1.10; }     // quads
+                else if (yn > 0.06) { sx = 1.08; sz = 1.06; }     // calves
+                else { sx = 1.05; sz = 1.08; }                    // feet
+                v.x = cx + (v.x - cx) * sx;
+                v.z = cz + (v.z - cz) * sz;
+                v.applyMatrix4(inv);
+                pos.setXYZ(i, v.x, v.y, v.z);
+              }
+              pos.needsUpdate = true;
+              if (geo.computeVertexNormals) geo.computeVertexNormals();
+              // Rebind skinned mesh to cloned geometry if needed
+              if (obj.isSkinnedMesh && obj.bind) {
+                try { obj.bind(obj.skeleton, obj.bindMatrix); } catch (e) {}
+              }
+            });
+            rootObj.scale.x *= 1.05;
+            rootObj.scale.z *= 1.04;
+            rootObj.updateMatrixWorld(true);
+          })(root);
+
+          // re-seat on floor after morph
+          box = new T.Box3().setFromObject(root);
+          root.position.y -= box.min.y;
+          root.updateMatrixWorld(true);
 
           const heatMeshes = [];
 
