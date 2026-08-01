@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-  <meta name="theme-color" content="#667eea" />
+  <meta name="theme-color" content="#0a0a0b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FIT TRACKER 2" />
@@ -12,7 +12,7 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <title>FIT TRACKER 2</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="foods.js"></script>
   <script src="recipes.js"></script>
@@ -1916,11 +1916,11 @@
 </style>
   <link rel="stylesheet" href="v5.css" />
 </head>
-<body>
+<body class="fightlab-theme">
   <!-- First-run setup -->
   <div class="setup" id="setup">
     <div class="setup-card">
-      <div class="setup-kicker">YOUR BODY OS · 5.3</div>
+      <div class="setup-kicker">FIGHT LAB SYSTEM · 6.0</div>
       <h2>FIT TRACKER</h2>
       <p class="lead">회복부터 식단, 훈련까지 한 흐름으로.<br>기본 정보를 입력하면 오늘의 계획을 바로 만듭니다.</p>
       <div class="grid2">
@@ -1956,15 +1956,18 @@
   <div class="app">
     <header class="hero-head">
       <div class="brand-row">
-        <div>
-          <h1>FIT TRACKER</h1>
-          <div class="sub">체중 관리는 꾸준함이 답입니다</div>
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">FT</span>
+          <div>
+            <h1>FIT TRACKER</h1>
+            <div class="sub">TRAIN · FUEL · RECOVER</div>
+          </div>
         </div>
         <div class="brand-actions">
           <button type="button" class="sync-pill" id="cloudHeaderPill" onclick="show('more'); moreTab('set'); setTimeout(function(){document.getElementById('cloudAccountCard')?.scrollIntoView({behavior:'smooth',block:'start'})},120)">
             <span class="sync-dot"></span><span id="cloudHeaderText">이 기기</span>
           </button>
-          <div class="ver" id="appVerBadge">5.3</div>
+          <div class="ver" id="appVerBadge">6.0</div>
         </div>
       </div>
       <div class="date-line" id="dateLine"></div>
@@ -2945,8 +2948,8 @@
     <!-- MORE -->
     <section class="view" id="v-more">
       <div class="more-shortcuts" aria-label="빠른 메뉴">
-        <button type="button" onclick="show('rest')">휴식 · 수면</button>
-        <button type="button" onclick="show('report')">리포트</button>
+        <button type="button" onclick="show('rest')">휴식 · 회복</button>
+        <button type="button" onclick="show('report')">분석 · 리포트</button>
       </div>
       <div class="tabs" style="grid-template-columns:repeat(3,1fr)">
         <button class="tab on" data-t="water" onclick="moreTab('water')">물</button>
@@ -3027,7 +3030,7 @@
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v5.3</span>
+            <span class="muted" id="appVerLabel">v6.0</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3225,10 +3228,10 @@
   </div>
 
   <nav class="nav" aria-label="주요 메뉴">
-    <button class="on" data-v="home" onclick="show('home')">홈</button>
-    <button data-v="log" onclick="show('log')">식단</button>
-    <button data-v="move" onclick="show('move')">운동</button>
-    <button data-v="health" onclick="show('health')">건강</button>
+    <button class="on" data-v="home" onclick="show('home')">상황실</button>
+    <button data-v="log" onclick="show('log')">영양</button>
+    <button data-v="move" onclick="show('move')">훈련</button>
+    <button data-v="health" onclick="show('health')">측정</button>
     <button data-v="more" onclick="show('more')">메뉴</button>
   </nav>
 
@@ -3387,7 +3390,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '5.3';
+    const APP_VERSION = '6.0';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
