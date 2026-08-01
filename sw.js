@@ -1,6 +1,6 @@
 ﻿/* FIT TRACKER 2 service worker ??bump CACHE on every deploy */
-const CACHE = 'fit-tracker-2-v50';
-const APP_VERSION = '4.34';
+const CACHE = 'fit-tracker-2-v54';
+const APP_VERSION = '5.2';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,10 @@ const ASSETS = [
   './workouts.js',
   './garmin.js',
   './micros.js',
+  './cloud-sync.js',
+  './diet-v5.js',
+  './health-v5.js',
+  './v5.css',
   './manifest.json',
   './icon.svg',
   './coaches/seoan.jpg',
@@ -17,7 +21,6 @@ const ASSETS = [
   './anatomy/front.jpg',
   './anatomy/back.jpg',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
-  'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap'
 ];
 
@@ -25,7 +28,9 @@ self.addEventListener('install', (e) => {
   // Do not skipWaiting here ??let the app show an update banner,
   // then client posts SKIP_WAITING (or user runs force refresh).
   e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => {}))
+    caches.open(CACHE).then((c) => Promise.all(
+      ASSETS.map((asset) => c.add(asset).catch(() => null))
+    ))
   );
 });
 

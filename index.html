@@ -14,7 +14,6 @@
   <title>FIT TRACKER 2</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="foods.js"></script>
   <script src="recipes.js"></script>
   <script src="workouts.js"></script>
@@ -1915,13 +1914,15 @@
       background: rgba(255,255,255,.18);
     }
 </style>
+  <link rel="stylesheet" href="v5.css" />
 </head>
 <body>
   <!-- First-run setup -->
   <div class="setup" id="setup">
     <div class="setup-card">
-      <h2>💪 FIT TRACKER 2</h2>
-      <p class="lead">체중 관리는 꾸준함이 답입니다<br>기본 정보를 입력하면 목표가 자동 계산돼요</p>
+      <div class="setup-kicker">YOUR BODY OS · 5.2</div>
+      <h2>FIT TRACKER</h2>
+      <p class="lead">회복부터 식단, 훈련까지 한 흐름으로.<br>기본 정보를 입력하면 오늘의 계획을 바로 만듭니다.</p>
       <div class="grid2">
         <div class="field"><label>성별</label>
           <select id="setSex"><option value="female">여성</option><option value="male">남성</option></select>
@@ -1959,7 +1960,12 @@
           <h1>FIT TRACKER</h1>
           <div class="sub">체중 관리는 꾸준함이 답입니다</div>
         </div>
-        <div class="ver" id="appVerBadge">4.34</div>
+        <div class="brand-actions">
+          <button type="button" class="sync-pill" id="cloudHeaderPill" onclick="show('more'); moreTab('set'); setTimeout(function(){document.getElementById('cloudAccountCard')?.scrollIntoView({behavior:'smooth',block:'start'})},120)">
+            <span class="sync-dot"></span><span id="cloudHeaderText">이 기기</span>
+          </button>
+          <div class="ver" id="appVerBadge">5.2</div>
+        </div>
       </div>
       <div class="date-line" id="dateLine"></div>
       <div class="quote-box" id="quoteBox" onclick="shuffleQuote()" title="탭하면 다른 문구">
@@ -2968,10 +2974,57 @@
       <div id="more-habit" style="display:none"></div>
 
       <div id="more-set" style="display:none">
+        <div class="card cloud-account-card" id="cloudAccountCard">
+          <div class="card-h">
+            <div>
+              <div class="card-kicker">PRIVATE CLOUD</div>
+              <h2>로그인 · 자동 동기화</h2>
+            </div>
+            <span class="cloud-state" id="cloudStateBadge">로컬 전용</span>
+          </div>
+          <p class="muted cloud-lead">내 계정으로 로그인하면 휴대폰·PC의 기록을 하나로 맞춥니다. 인터넷이 없어도 기록되고, 연결되면 자동 업로드됩니다.</p>
+
+          <div class="cloud-setup" id="cloudSetupBox">
+            <details class="cloud-config-fold" id="cloudConfigFold">
+              <summary>처음 한 번만 · Supabase 연결 정보</summary>
+              <div class="cloud-config-body">
+                <div class="field"><label>Project URL</label><input id="cloudUrl" inputmode="url" placeholder="https://xxxxx.supabase.co" autocomplete="off" /></div>
+                <div class="field"><label>Publishable / anon key</label><input id="cloudAnonKey" type="password" placeholder="sb_publishable_... 또는 eyJ..." autocomplete="off" /></div>
+                <button type="button" class="btn btn-g" onclick="FTCloud.saveConfigFromForm()">연결 정보 저장</button>
+                <p class="muted" style="margin-top:8px">저장소의 <code>supabase-setup.sql</code>을 Supabase SQL Editor에서 한 번 실행하면 준비됩니다.</p>
+              </div>
+            </details>
+          </div>
+
+          <div class="cloud-auth-grid" id="cloudAuthBox">
+            <div class="field"><label>이메일</label><input id="cloudEmail" type="email" placeholder="me@example.com" autocomplete="email" /></div>
+            <div class="field"><label>비밀번호</label><input id="cloudPassword" type="password" minlength="6" placeholder="6자 이상" autocomplete="current-password" /></div>
+            <div class="cloud-auth-actions">
+              <button type="button" class="btn btn-p" onclick="FTCloud.signInFromForm()">로그인</button>
+              <button type="button" class="btn btn-g" onclick="FTCloud.signUpFromForm()">새 계정 만들기</button>
+            </div>
+          </div>
+
+          <div class="cloud-session" id="cloudSessionBox" hidden>
+            <div class="cloud-user-row">
+              <div class="cloud-avatar" id="cloudAvatar">ME</div>
+              <div><strong id="cloudUserEmail">—</strong><div class="muted" id="cloudLastSync">동기화 대기</div></div>
+            </div>
+            <div class="cloud-sync-actions">
+              <button type="button" class="btn btn-p" onclick="FTCloud.syncNow()">지금 동기화</button>
+              <button type="button" class="btn btn-g" onclick="FTCloud.pull(true)">클라우드 받기</button>
+              <button type="button" class="btn btn-g" onclick="FTCloud.push(true)">이 기기 올리기</button>
+            </div>
+            <label class="cloud-auto"><input type="checkbox" id="cloudAutoSync" checked onchange="FTCloud.setAutoSync(this.checked)" /> 변경사항 자동 동기화</label>
+            <button type="button" class="btn btn-x cloud-signout" onclick="FTCloud.signOut()">로그아웃</button>
+          </div>
+          <div class="cloud-message" id="cloudMessage" role="status" aria-live="polite">로그인하지 않아도 지금처럼 이 기기에 안전하게 저장됩니다.</div>
+        </div>
+
         <div class="card" id="appUpdateCard">
           <div class="card-h">
             <h2>🔄 앱 업데이트</h2>
-            <span class="muted" id="appVerLabel">v4.34</span>
+            <span class="muted" id="appVerLabel">v5.2</span>
           </div>
           <p class="muted" style="margin-bottom:10px;line-height:1.5;font-size:.78rem">
             홈 화면에 추가한 PWA는 예전 캐시가 남을 수 있어요.
@@ -3163,6 +3216,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Health assessment + supplement habit (rendered by health-v5.js) -->
+    <section class="view" id="v-health" aria-label="건강 상태와 영양제"></section>
   </div>
 
   <nav class="nav">
@@ -3170,6 +3226,7 @@
     <button data-v="log" onclick="show('log')"><span class="i">🍽️</span>기록</button>
     <button data-v="move" onclick="show('move')"><span class="i">🏃</span>운동</button>
     <button data-v="rest" onclick="show('rest')"><span class="i">😴</span>휴식</button>
+    <button data-v="health" onclick="show('health')"><span class="i">🫀</span>건강</button>
     <button data-v="report" onclick="show('report')"><span class="i">📊</span>리포트</button>
     <button data-v="more" onclick="show('more')"><span class="i">⋯</span>더보기</button>
   </nav>
@@ -3329,7 +3386,7 @@
   <script>
     const KEY = 'fit-tracker-2-v1';
     /** Bump together with sw.js CACHE / APP_VERSION on each deploy */
-    const APP_VERSION = '4.34';
+    const APP_VERSION = '5.2';
     const APP_BUILD_LABEL = 'fit-tracker-2';
     const FOODS = (window.FT_FOODS || []).map(f => ({
       n: f.n, unit: f.unit || '', g: f.g != null ? f.g : null,
@@ -3480,6 +3537,16 @@
           remind: true
         },
         phasePlan: null, // { type: 'deload'|'diet_break', start, end, cal, note, prevGoals? }
+        health: {
+          metrics: { waistCm: null, restingHr: null },
+          tests: [],
+          vitaminProfile: {
+            diet: 'omnivore', sun: 'normal', menstruation: 'na', pregnancyPlan: false,
+            medicationRisk: false, kidneyRisk: false
+          },
+          supplements: [],
+          supplementTaken: {}
+        },
         // FIGHT//LAB is part of the same app state (not a separate store)
         fightlab: {
           week: 1,
@@ -7420,6 +7487,7 @@ function startAlarmLoop() {
       document.getElementById('setup').classList.remove('on');
       fillProfileForm();
       render();
+      try { startCoreAlertLoop(); } catch (e) {}
       toast('FIT TRACKER 2 시작! 💪');
     }
 
@@ -12473,14 +12541,14 @@ function roundRect(ctx, x, y, w, h, r) {
       return { data, gemini };
     }
 
-    function applyBackup(parsed, sourceLabel, merge = false) {
+    function applyBackup(parsed, sourceLabel, merge = false, skipConfirm = false) {
       const { data, gemini } = normalizeBackup(parsed);
       const dayCount = data.days ? Object.keys(data.days).length : 0;
       const msg =
         (merge ? `백업을 현재 데이터에 병합할까요?\n\n` : `백업으로 복원(덮어쓰기)할까요?\n\n`) +
         `출처: ${sourceLabel}\n기록 일수: 약 ${dayCount}일\n프로필: ${data.profile ? '있음' : '없음'}\n\n` +
         (merge ? '같은 날짜는 가능한 한 합치고, 빈 값은 백업으로 채웁니다.' : '⚠️ 지금 기기 데이터는 백업 내용으로 덮어씁니다.');
-      if (!confirm(msg)) return;
+      if (!skipConfirm && !confirm(msg)) return false;
       if (!merge) {
         const base = defaultS();
         S = {
@@ -12577,6 +12645,7 @@ function roundRect(ctx, x, y, w, h, r) {
       updateGeminiStatusUI(); updateBackupHint();
       if (typeof refreshV1Preview === 'function') refreshV1Preview();
       toast(merge ? '병합 복원 완료! 🔀' : '복원 완료! 💾');
+      return true;
     }
 
     function importBackupFromFile(event, merge = false) {
@@ -12632,7 +12701,7 @@ function roundRect(ctx, x, y, w, h, r) {
       } catch {}
     }
     startAlarmLoop();
-    startCoreAlertLoop();
+    if (S.setup && S.profile) startCoreAlertLoop();
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -12915,5 +12984,8 @@ function roundRect(ctx, x, y, w, h, r) {
     updateAppVersionUI();
     setupServiceWorkerUpdate();
   </script>
+  <script src="cloud-sync.js"></script>
+  <script src="diet-v5.js"></script>
+  <script src="health-v5.js"></script>
 </body>
 </html>
