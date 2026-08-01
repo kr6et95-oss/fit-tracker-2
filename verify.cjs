@@ -13,6 +13,7 @@ const worker = read('sw.js');
 const cloud = read('cloud-sync.js');
 const diet = read('diet-v5.js');
 const health = read('health-v5.js');
+const polish = read('v5.css');
 const foodsSource = read('foods.js');
 
 for (const [file, source] of [['cloud-sync.js', cloud], ['diet-v5.js', diet], ['health-v5.js', health], ['sw.js', worker]]) {
@@ -33,6 +34,14 @@ if (/three(?:\.min)?\.js/i.test(index + worker)) fail('Removed Three.js dependen
 for (const marker of ['v5.css', 'cloud-sync.js', 'diet-v5.js', 'health-v5.js', 'cloudAccountCard', 'v-health', 'data-v="health"']) {
   if (!index.includes(marker)) fail(`index.html is missing ${marker}`);
 }
+
+const navBlock = index.match(/<nav class="nav"[\s\S]*?<\/nav>/)?.[0] || '';
+const navButtons = [...navBlock.matchAll(/<button\b/g)];
+if (navButtons.length !== 5) fail(`primary navigation must have exactly 5 items, found ${navButtons.length}`);
+if (/data-v="(?:rest|report)"/.test(navBlock)) fail('secondary screens must not crowd primary navigation');
+if (!/class="more-shortcuts"/.test(index)) fail('secondary quick menu is missing');
+if (!/white-space:\s*nowrap/.test(polish)) fail('single-line navigation guard is missing');
+if (!/items\.filter\(x => x\.status === 'emergency'\)/.test(index)) fail('first-use emergency popup guard is missing');
 
 const assetsBlock = worker.match(/const ASSETS = \[([\s\S]*?)\];/)?.[1] || '';
 const localAssets = [...assetsBlock.matchAll(/'\.\/([^']*)'/g)].map((match) => match[1]).filter(Boolean);

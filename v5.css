@@ -1,30 +1,27 @@
-/* FIT TRACKER 5.2 — bold editorial system, layered over the legacy UI */
+/* FIT TRACKER 5.3 — calm, compact mobile system layered over the legacy UI */
 :root {
-  --p1: #5b4bff;
-  --p2: #281f69;
-  --accent: #ff5c72;
-  --ok: #13a889;
-  --warn: #e8a82f;
-  --bg: #eef1f6;
+  --p1: #315be8;
+  --p2: #172b5a;
+  --accent: #ef6a58;
+  --ok: #139b7c;
+  --warn: #d99a25;
+  --bg: #f4f6f8;
   --card: #ffffff;
-  --ink: #101420;
-  --muted: #667085;
-  --line: #dfe4ec;
+  --ink: #172033;
+  --muted: #687386;
+  --line: #e0e5ec;
   --line-soft: #edf0f4;
-  --surface: #f5f7fa;
-  --r: 22px;
-  --r-sm: 16px;
-  --nav: 72px;
-  --shadow: 0 20px 50px rgba(24, 30, 48, .10);
-  --shadow-soft: 0 8px 28px rgba(24, 30, 48, .07);
+  --surface: #f0f3f6;
+  --r: 18px;
+  --r-sm: 14px;
+  --nav: 62px;
+  --shadow: 0 16px 38px rgba(23, 32, 51, .09);
+  --shadow-soft: 0 5px 18px rgba(23, 32, 51, .055);
 }
 
-html { background: #e8ecf3; }
+html { background: #eef1f4; }
 body {
-  background:
-    radial-gradient(circle at 0 0, rgba(91,75,255,.10), transparent 34rem),
-    radial-gradient(circle at 100% 24rem, rgba(255,92,114,.08), transparent 28rem),
-    #eef1f6;
+  background: #f4f6f8;
   letter-spacing: -.012em;
 }
 
@@ -33,9 +30,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: .16;
-  background-image: linear-gradient(rgba(16,20,32,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(16,20,32,.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+  display: none;
 }
 
 button, input, select, textarea { letter-spacing: -.012em; }
@@ -45,20 +40,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 
 .app {
-  max-width: 560px;
-  padding: 10px 12px calc(var(--nav) + var(--safe) + 26px);
+  max-width: 600px;
+  padding: 12px 12px calc(var(--nav) + var(--safe) + 22px);
 }
 
 .hero-head {
-  min-height: 198px;
-  padding: 20px;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at 84% 6%, rgba(160,255,220,.24), transparent 13rem),
-    radial-gradient(circle at 5% 120%, rgba(255,92,114,.36), transparent 15rem),
-    #14122b;
-  box-shadow: 0 24px 56px rgba(25, 20, 70, .26);
-  margin-bottom: 18px;
+  min-height: 158px;
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #17233b, #24385e);
+  box-shadow: 0 14px 34px rgba(25, 39, 68, .20);
+  margin-bottom: 14px;
 }
 
 .hero-head::before {
@@ -73,14 +65,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   box-shadow: 0 0 22px #9dffd9;
 }
 .hero-head::after {
-  width: 220px;
-  height: 220px;
-  right: -90px;
-  top: -96px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: transparent;
+  display: none;
 }
-.brand-row { align-items: center; padding-top: 14px; }
+.brand-row { align-items: center; padding-top: 10px; }
 .brand-row h1 {
   font-size: 1.52rem;
   letter-spacing: -.045em;
@@ -89,16 +76,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .brand-row .sub { color: rgba(255,255,255,.66); margin-top: 7px; }
 .brand-actions { display: flex; align-items: center; gap: 6px; }
 .ver { padding: 7px 10px; background: rgba(255,255,255,.10); }
-.date-line { margin-top: 14px; color: rgba(255,255,255,.72); }
+.date-line { margin-top: 11px; color: rgba(255,255,255,.72); }
 .quote-box {
-  margin-top: 12px;
-  padding: 13px 14px;
+  margin-top: 10px;
+  padding: 10px 12px;
   border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.07);
+  background: rgba(255,255,255,.06);
   backdrop-filter: blur(10px);
 }
-.quote-box .q-idiom { color: #9dffd9; }
+.quote-box .q-idiom { color: #b9d3ff; }
 .quote-box .q-mean { color: rgba(255,255,255,.58); }
+.quote-box .q-hint { display: none; }
 
 .sync-pill {
   min-height: 30px;
@@ -120,7 +108,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .sync-pill.error .sync-dot { background: #ff7589; }
 @keyframes syncPulse { to { transform: scale(1.55); opacity: .45; } }
 
-.ui-section { margin-bottom: 24px; }
+.ui-section { margin-bottom: 18px; }
 .ui-section-label {
   margin: 2px 7px 10px;
   color: #344054;
@@ -139,7 +127,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .ui-stack { gap: 10px; }
 
 .card, .ui-fold {
-  border: 1px solid rgba(207,214,225,.88);
+  border: 1px solid #e0e5ec;
   box-shadow: var(--shadow-soft);
 }
 .card { padding: 16px; }
@@ -179,8 +167,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .btn:hover { filter: brightness(.99); transform: translateY(-1px); }
 .btn-p {
-  background: linear-gradient(135deg, #5b4bff, #7b6cff);
-  box-shadow: 0 9px 24px rgba(91,75,255,.24);
+  background: #315be8;
+  box-shadow: 0 7px 18px rgba(49,91,232,.20);
 }
 .btn-s { background: #141827; color: #fff; }
 .btn-g { background: #f3f5f8; border-color: #dce2eb; }
@@ -208,22 +196,36 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .meal-card .ic { filter: saturate(.86); }
 .meal-card:active { background: #f0efff; border-color: rgba(91,75,255,.35); }
 
-.tabs { background: #e5e9f0; border: 0; border-radius: 16px; padding: 5px; }
-.tab { min-height: 40px; }
+.tabs { background: #e9edf2; border: 0; border-radius: 15px; padding: 4px; }
+.tab { min-height: 40px; white-space: nowrap; }
 .tab.on { box-shadow: 0 6px 18px rgba(16,20,32,.09); }
 
 .nav {
   bottom: 8px;
-  width: min(544px, calc(100% - 16px));
+  width: min(560px, calc(100% - 16px));
   height: calc(var(--nav) + var(--safe));
-  padding: 6px 6px calc(6px + var(--safe));
-  border: 1px solid rgba(205,212,224,.9);
-  border-radius: 22px;
-  background: rgba(255,255,255,.88);
-  box-shadow: 0 20px 50px rgba(16,20,32,.20);
+  grid-template-columns: repeat(5, 1fr) !important;
+  padding: 6px calc(6px + env(safe-area-inset-right, 0px)) calc(6px + var(--safe)) calc(6px + env(safe-area-inset-left, 0px));
+  border: 1px solid rgba(210,216,225,.94);
+  border-radius: 18px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 14px 36px rgba(23,32,51,.16);
 }
-.nav button { border-radius: 15px; }
-.nav button.on { color: #fff; background: #171a2a; }
+.nav button {
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  padding: 0 4px;
+  border-radius: 13px;
+  color: #758094;
+  font-size: .76rem !important;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+.nav button .i { display: none; }
+.nav button.on { color: #fff; background: #172033; }
 
 .setup {
   background:
@@ -386,9 +388,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .diet-helper { margin: 10px 0 0; color: rgba(255,255,255,.72); font-size: .68rem; line-height: 1.45; }
 
 /* Health assessment + supplement habit */
-.nav { grid-template-columns: repeat(7, 1fr) !important; }
-.nav button { min-width: 0; font-size: .56rem !important; }
-.nav button .i { font-size: 1.02rem !important; }
 
 .health-hero {
   --health-progress: 0%;
@@ -400,17 +399,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   padding: 22px 20px;
   margin-bottom: 12px;
   overflow: hidden;
-  border-radius: 28px;
+  border-radius: 22px;
   color: #fff;
-  background:
-    radial-gradient(circle at 90% 10%, rgba(157,255,217,.22), transparent 10rem),
-    radial-gradient(circle at 0 110%, rgba(255,92,114,.34), transparent 15rem),
-    #15142d;
-  box-shadow: 0 24px 54px rgba(22,19,65,.25);
+  background: linear-gradient(145deg, #17233b, #263b63);
+  box-shadow: 0 14px 34px rgba(25,39,68,.18);
 }
 .health-hero h2 { margin: 4px 0 10px; font-size: 1.72rem; line-height: 1.12; letter-spacing: -.055em; }
 .health-hero p { max-width: 310px; color: rgba(255,255,255,.68); font-size: .76rem; line-height: 1.55; }
-.health-hero .card-kicker { color: #9dffd9; }
+.health-hero .card-kicker { color: #b9d3ff; }
 .health-ring {
   --health-progress: 0%;
   width: 82px;
@@ -438,7 +434,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background: rgba(238,241,246,.88);
   backdrop-filter: blur(16px);
 }
-.health-tabs button { min-height: 42px; border-radius: 13px; color: var(--muted); font-size: .78rem; font-weight: 850; }
+.health-tabs button { min-height: 42px; border-radius: 13px; color: var(--muted); font-size: .78rem; font-weight: 850; white-space: nowrap; }
 .health-tabs button.on { color: #fff; background: #171a2a; box-shadow: 0 7px 18px rgba(16,20,32,.17); }
 
 .health-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 12px; }
@@ -589,9 +585,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .cloud-sync-actions { grid-template-columns: 1fr; }
   .diet-macro-grid { grid-template-columns: 1fr 1fr 1fr; }
   .diet-macro { padding: 9px 7px; }
-  .nav { padding-left: 3px; padding-right: 3px; }
-  .nav button { font-size: .51rem !important; }
-  .nav button .i { font-size: .94rem !important; }
+  .nav { width: calc(100% - 12px); bottom: 6px; padding-left: 5px; padding-right: 5px; }
+  .nav button { font-size: .74rem !important; }
   .health-hero { min-height: 176px; padding: 18px 16px; }
   .health-hero h2 { font-size: 1.48rem; }
   .health-ring { width: 70px; height: 70px; }
@@ -601,6 +596,83 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .health-readout { grid-template-columns: repeat(3, 1fr); }
   .health-form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
   .supplement-add-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* 5.3 navigation and density polish */
+.more-shortcuts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.more-shortcuts button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: #263247;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  font-size: .78rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.move-subtabs .tab,
+.core-alert-strip .ca-actions button { white-space: nowrap; }
+.core-alert-strip {
+  border-color: #efd3d8;
+  background: #fff7f8;
+  box-shadow: none;
+}
+.core-alert-strip.emergency {
+  border-color: #efbcc5;
+  background: #fff5f6;
+  animation: none;
+}
+.core-alert-strip .ca-title { color: #9f354d; font-size: .87rem; }
+.core-alert-strip .ca-body { margin-bottom: 9px; font-size: .75rem; }
+.core-emergency-banner { animation: none; }
+.update-banner {
+  padding: 13px 14px;
+  border: 1px solid #dbe3f2;
+  border-left: 1px solid #dbe3f2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+.update-banner .ub-title { margin-bottom: 2px; font-size: .84rem; }
+.update-banner .ub-body { margin-bottom: 9px; font-size: .71rem; }
+.update-banner .ub-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.update-banner .ub-actions .btn { width: 100%; min-height: 40px; padding: 8px 10px; white-space: nowrap; }
+.banner#backupNudge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #dce3ed;
+  border-radius: 13px;
+  color: #566176;
+  background: #fff;
+  box-shadow: none;
+  font-size: .72rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.banner#backupNudge strong { flex: 0 0 auto; color: #263247; }
+.banner#backupNudge span { overflow: hidden; text-overflow: ellipsis; }
+.diet-command-card {
+  border-radius: 22px;
+  background: linear-gradient(145deg, #243a62, #31517e);
+  box-shadow: 0 14px 34px rgba(30,55,91,.18);
+}
+.health-summary-card { background: #fff; }
+
+@media (max-width: 350px) {
+  .app { padding-left: 8px; padding-right: 8px; }
+  .nav button { padding: 0 2px; font-size: .7rem !important; }
+  .more-shortcuts { gap: 6px; }
+  .more-shortcuts button { padding: 0 8px; font-size: .72rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

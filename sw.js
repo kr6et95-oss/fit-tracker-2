@@ -1,6 +1,6 @@
 ﻿/* FIT TRACKER 2 service worker ??bump CACHE on every deploy */
-const CACHE = 'fit-tracker-2-v54';
-const APP_VERSION = '5.2';
+const CACHE = 'fit-tracker-2-v55';
+const APP_VERSION = '5.3';
 const ASSETS = [
   './',
   './index.html',
