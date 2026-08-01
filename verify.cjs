@@ -35,6 +35,13 @@ for (const marker of ['v5.css', 'cloud-sync.js', 'diet-v5.js', 'health-v5.js', '
   if (!index.includes(marker)) fail(`index.html is missing ${marker}`);
 }
 
+for (const marker of ['fightlab-theme', 'brand-mark', 'FIGHT LAB SYSTEM', '상황실', 'TRAIN · FUEL · RECOVER']) {
+  if (!index.includes(marker)) fail(`FIGHT LAB fusion is missing ${marker}`);
+}
+for (const marker of ['--fl-red', '--fl-lime', '--font-display', 'FIT TRACKER 6.0']) {
+  if (!polish.includes(marker)) fail(`FIGHT LAB theme stylesheet is missing ${marker}`);
+}
+
 const navBlock = index.match(/<nav class="nav"[\s\S]*?<\/nav>/)?.[0] || '';
 const navButtons = [...navBlock.matchAll(/<button\b/g)];
 if (navButtons.length !== 5) fail(`primary navigation must have exactly 5 items, found ${navButtons.length}`);
